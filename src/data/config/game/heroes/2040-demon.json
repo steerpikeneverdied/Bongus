@@ -1,0 +1,33 @@
+{
+	"id": 2040,
+	"displayName": "demon",
+	"rarityKey": "mythic",
+	"weaponChainKey": "blade",
+	"baseAtk": 18,
+	"baseHp": 265,
+	"baseDef": 15,
+	"normal": {
+		"chargeMs": 6000,
+		"effect": {
+			"type": "aoe",
+			"mult": 2.2
+		}
+	},
+	"limit": {
+		"orders": 4,
+		"effect": {
+			"type": "aoe",
+			"mult": 5.5,
+			"statusKeys": [
+				"atkDown"
+			],
+			"target": "enemies",
+			"statusMag": {
+				"atkDown": 0.8
+			},
+			"durationMs": 10000
+		}
+	},
+	"classKey": "demon",
+	"flying": true
+}

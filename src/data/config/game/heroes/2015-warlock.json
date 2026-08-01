@@ -1,0 +1,25 @@
+{
+	"id": 2015,
+	"displayName": "warlock",
+	"rarityKey": "epic",
+	"weaponChainKey": "magic",
+	"baseAtk": 16,
+	"baseHp": 150,
+	"baseDef": 8,
+	"normal": {
+		"chargeMs": 6500,
+		"effect": {
+			"type": "aoe",
+			"mult": 1.8
+		}
+	},
+	"limit": {
+		"orders": 5,
+		"effect": {
+			"type": "aoe",
+			"mult": 4
+		}
+	},
+	"classKey": "warlock",
+	"flying": true
+}

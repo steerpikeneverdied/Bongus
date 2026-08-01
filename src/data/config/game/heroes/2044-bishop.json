@@ -1,0 +1,32 @@
+{
+	"id": 2044,
+	"displayName": "bishop",
+	"rarityKey": "mythic",
+	"weaponChainKey": "magic",
+	"baseAtk": 17,
+	"baseHp": 260,
+	"baseDef": 13,
+	"normal": {
+		"chargeMs": 5800,
+		"effect": {
+			"type": "heal",
+			"frac": 0.18
+		}
+	},
+	"limit": {
+		"orders": 4,
+		"effect": {
+			"type": "heal",
+			"frac": 0.55,
+			"statusKeys": [
+				"regen"
+			],
+			"target": "allies",
+			"statusMag": {
+				"regen": 0.06
+			},
+			"durationMs": 10000
+		}
+	},
+	"classKey": "bishop"
+}

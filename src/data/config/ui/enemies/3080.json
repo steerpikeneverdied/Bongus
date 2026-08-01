@@ -1,0 +1,8 @@
+{
+	"id": 3080,
+	"name": "Frost Wraith",
+	"iconAssetId": "enemy.frost-wraith",
+	"combat": {
+		"scale": 1.1
+	}
+}

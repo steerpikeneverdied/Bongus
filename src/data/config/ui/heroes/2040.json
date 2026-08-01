@@ -1,0 +1,19 @@
+{
+	"id": 2040,
+	"name": "Demon",
+	"iconAssetId": "hero.demon",
+	"emoji": "⚔️",
+	"abilityNames": {
+		"basic": "Attack",
+		"normal": "Hellfire",
+		"limit": "Infernal Ruin"
+	},
+	"portrait": {
+		"scale": 1.75,
+		"x": -0.086,
+		"y": -0.495
+	},
+	"combat": {
+		"scale": 1.05
+	}
+}

@@ -1,0 +1,16 @@
+{
+	"id": 2010,
+	"name": "Assassin",
+	"iconAssetId": "hero.assassin",
+	"emoji": "🥷",
+	"abilityNames": {
+		"basic": "Attack",
+		"normal": "Backstab",
+		"limit": "Death Mark"
+	},
+	"portrait": {
+		"scale": 1.6,
+		"x": -0.011,
+		"y": -0.342
+	}
+}

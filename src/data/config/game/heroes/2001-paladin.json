@@ -1,0 +1,33 @@
+{
+	"id": 2001,
+	"displayName": "paladin",
+	"rarityKey": "legendary",
+	"weaponChainKey": "blade",
+	"baseAtk": 22,
+	"baseHp": 315,
+	"baseDef": 18,
+	"normal": {
+		"chargeMs": 6000,
+		"effect": {
+			"type": "burst",
+			"mult": 2.2
+		}
+	},
+	"limit": {
+		"orders": 5,
+		"effect": {
+			"type": "burst",
+			"mult": 5.5,
+			"statusKeys": [
+				"defUp"
+			],
+			"target": "allies",
+			"statusMag": {
+				"defUp": 0.6
+			},
+			"durationMs": 8000
+		}
+	},
+	"classKey": "paladin",
+	"flying": true
+}

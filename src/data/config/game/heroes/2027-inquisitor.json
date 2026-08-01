@@ -1,0 +1,32 @@
+{
+	"id": 2027,
+	"displayName": "inquisitor",
+	"rarityKey": "legendary",
+	"weaponChainKey": "magic",
+	"baseAtk": 20,
+	"baseHp": 162,
+	"baseDef": 9,
+	"normal": {
+		"chargeMs": 6500,
+		"effect": {
+			"type": "aoe",
+			"mult": 1.8
+		}
+	},
+	"limit": {
+		"orders": 5,
+		"effect": {
+			"type": "aoe",
+			"mult": 4,
+			"statusKeys": [
+				"spdDown"
+			],
+			"target": "enemies",
+			"statusMag": {
+				"spdDown": 0.7
+			},
+			"durationMs": 8000
+		}
+	},
+	"classKey": "inquisitor"
+}

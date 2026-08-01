@@ -1,0 +1,24 @@
+{
+	"id": 2032,
+	"displayName": "priest",
+	"rarityKey": "common",
+	"weaponChainKey": "magic",
+	"baseAtk": 13,
+	"baseHp": 190,
+	"baseDef": 11,
+	"normal": {
+		"chargeMs": 6000,
+		"effect": {
+			"type": "heal",
+			"frac": 0.12
+		}
+	},
+	"limit": {
+		"orders": 5,
+		"effect": {
+			"type": "heal",
+			"frac": 0.35
+		}
+	},
+	"classKey": "priest"
+}

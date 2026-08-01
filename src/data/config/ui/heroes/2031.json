@@ -1,0 +1,16 @@
+{
+	"id": 2031,
+	"name": "Pirate",
+	"iconAssetId": "hero.pirate",
+	"emoji": "🏹",
+	"abilityNames": {
+		"basic": "Attack",
+		"normal": "Broadside",
+		"limit": "Cannon Barrage"
+	},
+	"portrait": {
+		"scale": 1.75,
+		"x": 0.045,
+		"y": -0.355
+	}
+}

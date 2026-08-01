@@ -1,0 +1,24 @@
+{
+	"id": 2004,
+	"displayName": "berserker",
+	"rarityKey": "epic",
+	"weaponChainKey": "blade",
+	"baseAtk": 16,
+	"baseHp": 225,
+	"baseDef": 13,
+	"normal": {
+		"chargeMs": 6500,
+		"effect": {
+			"type": "aoe",
+			"mult": 1.5
+		}
+	},
+	"limit": {
+		"orders": 5,
+		"effect": {
+			"type": "aoe",
+			"mult": 3.5
+		}
+	},
+	"classKey": "berserker"
+}

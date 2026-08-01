@@ -1,0 +1,19 @@
+{
+	"id": 2042,
+	"name": "Obsidia",
+	"iconAssetId": "hero.obsidia",
+	"emoji": "⚔️",
+	"abilityNames": {
+		"basic": "Attack",
+		"normal": "Obsidian Lance",
+		"limit": "World Ender"
+	},
+	"portrait": {
+		"scale": 1.65,
+		"x": -0.027,
+		"y": -0.376
+	},
+	"combat": {
+		"scale": 1.05
+	}
+}

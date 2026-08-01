@@ -1,0 +1,16 @@
+{
+	"id": 2006,
+	"name": "Valkyrie",
+	"iconAssetId": "hero.valkyrie",
+	"emoji": "🦸‍♀️",
+	"abilityNames": {
+		"basic": "Attack",
+		"normal": "Spear Dive",
+		"limit": "Ragnarok"
+	},
+	"portrait": {
+		"scale": 1.5,
+		"x": -0.011,
+		"y": -0.242
+	}
+}

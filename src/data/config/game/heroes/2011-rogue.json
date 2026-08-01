@@ -1,0 +1,25 @@
+{
+	"id": 2011,
+	"displayName": "rogue",
+	"rarityKey": "common",
+	"weaponChainKey": "range",
+	"baseAtk": 12,
+	"baseHp": 150,
+	"baseDef": 8,
+	"normal": {
+		"chargeMs": 5500,
+		"effect": {
+			"type": "burst",
+			"mult": 2.8
+		}
+	},
+	"limit": {
+		"orders": 5,
+		"effect": {
+			"type": "burst",
+			"mult": 7
+		}
+	},
+	"classKey": "rogue",
+	"flying": true
+}

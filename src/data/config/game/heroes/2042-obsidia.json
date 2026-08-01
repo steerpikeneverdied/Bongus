@@ -1,0 +1,32 @@
+{
+	"id": 2042,
+	"displayName": "obsidia",
+	"rarityKey": "primal",
+	"weaponChainKey": "blade",
+	"baseAtk": 19,
+	"baseHp": 290,
+	"baseDef": 16,
+	"normal": {
+		"chargeMs": 5500,
+		"effect": {
+			"type": "aoe",
+			"mult": 2.6
+		}
+	},
+	"limit": {
+		"orders": 4,
+		"effect": {
+			"type": "aoe",
+			"mult": 6.5,
+			"statusKeys": [
+				"atkDown"
+			],
+			"target": "enemies",
+			"statusMag": {
+				"atkDown": 0.4
+			},
+			"durationMs": 12000
+		}
+	},
+	"classKey": "obsidia"
+}

@@ -1,0 +1,25 @@
+{
+	"id": 2034,
+	"displayName": "shaman",
+	"rarityKey": "rare",
+	"weaponChainKey": "magic",
+	"baseAtk": 13,
+	"baseHp": 188,
+	"baseDef": 10,
+	"normal": {
+		"chargeMs": 6000,
+		"effect": {
+			"type": "heal",
+			"frac": 0.12
+		}
+	},
+	"limit": {
+		"orders": 5,
+		"effect": {
+			"type": "heal",
+			"frac": 0.35
+		}
+	},
+	"classKey": "shaman",
+	"flying": true
+}

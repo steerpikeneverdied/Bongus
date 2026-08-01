@@ -1,0 +1,25 @@
+{
+	"id": 2026,
+	"displayName": "gunslinger",
+	"rarityKey": "rare",
+	"weaponChainKey": "range",
+	"baseAtk": 18,
+	"baseHp": 150,
+	"baseDef": 8,
+	"normal": {
+		"chargeMs": 5500,
+		"effect": {
+			"type": "burst",
+			"mult": 2.4
+		}
+	},
+	"limit": {
+		"orders": 5,
+		"effect": {
+			"type": "aoe",
+			"mult": 3
+		}
+	},
+	"classKey": "gunslinger",
+	"flying": true
+}

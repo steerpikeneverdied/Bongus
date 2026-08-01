@@ -1,0 +1,8 @@
+{
+	"id": 3036,
+	"name": "Reed Lurker",
+	"iconAssetId": "enemy.reed-lurker",
+	"combat": {
+		"scale": 1.15
+	}
+}

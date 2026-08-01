@@ -1,0 +1,16 @@
+{
+	"id": 2023,
+	"name": "Dark Knight",
+	"iconAssetId": "hero.dark-knight",
+	"emoji": "⚔️",
+	"abilityNames": {
+		"basic": "Attack",
+		"normal": "Dread Slash",
+		"limit": "Abyssal Cleave"
+	},
+	"portrait": {
+		"scale": 1.55,
+		"x": -0.079,
+		"y": -0.304
+	}
+}

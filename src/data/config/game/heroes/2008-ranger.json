@@ -1,0 +1,25 @@
+{
+	"id": 2008,
+	"displayName": "ranger",
+	"rarityKey": "rare",
+	"weaponChainKey": "range",
+	"baseAtk": 16,
+	"baseHp": 165,
+	"baseDef": 9,
+	"normal": {
+		"chargeMs": 5500,
+		"effect": {
+			"type": "burst",
+			"mult": 2.4
+		}
+	},
+	"limit": {
+		"orders": 5,
+		"effect": {
+			"type": "aoe",
+			"mult": 3
+		}
+	},
+	"classKey": "ranger",
+	"flying": true
+}

@@ -1,0 +1,33 @@
+{
+	"id": 2037,
+	"displayName": "warlord",
+	"rarityKey": "legendary",
+	"weaponChainKey": "blade",
+	"baseAtk": 16,
+	"baseHp": 275,
+	"baseDef": 15,
+	"normal": {
+		"chargeMs": 6500,
+		"effect": {
+			"type": "aoe",
+			"mult": 1.5
+		}
+	},
+	"limit": {
+		"orders": 5,
+		"effect": {
+			"type": "aoe",
+			"mult": 3.5,
+			"statusKeys": [
+				"spdUp"
+			],
+			"target": "allies",
+			"statusMag": {
+				"spdUp": 1.4
+			},
+			"durationMs": 8000
+		}
+	},
+	"classKey": "warlord",
+	"flying": true
+}

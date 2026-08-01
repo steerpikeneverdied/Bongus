@@ -1,0 +1,16 @@
+{
+	"id": 2032,
+	"name": "Priest",
+	"iconAssetId": "hero.priest",
+	"emoji": "🔮",
+	"abilityNames": {
+		"basic": "Attack",
+		"normal": "Mend",
+		"limit": "Sanctuary"
+	},
+	"portrait": {
+		"scale": 1.45,
+		"x": -0.001,
+		"y": -0.198
+	}
+}

@@ -1,0 +1,35 @@
+{
+	"id": 5005,
+	"displayName": "dragons-ascent",
+	"order": 5,
+	"enemyPoolConfigIds": [
+		3085,
+		3086,
+		3087,
+		3088,
+		3089,
+		3090,
+		3091
+	],
+	"bossConfigId": 3092,
+	"accompliceConfigId": 3085,
+	"crystalRarityKey": "legendary",
+	"orderRarity": {
+		"common": 10,
+		"uncommon": 22,
+		"rare": 34,
+		"epic": 23,
+		"legendary": 11
+	},
+	"itemConfigIds": [
+		4024,
+		4025,
+		4026
+	],
+	"rewardGenerators": [
+		{
+			"level": 1,
+			"generatorKey": "blade"
+		}
+	]
+}

@@ -1,0 +1,24 @@
+{
+	"id": 2020,
+	"displayName": "alchemist",
+	"rarityKey": "rare",
+	"weaponChainKey": "magic",
+	"baseAtk": 21,
+	"baseHp": 150,
+	"baseDef": 8,
+	"normal": {
+		"chargeMs": 6500,
+		"effect": {
+			"type": "aoe",
+			"mult": 1.8
+		}
+	},
+	"limit": {
+		"orders": 5,
+		"effect": {
+			"type": "aoe",
+			"mult": 4
+		}
+	},
+	"classKey": "alchemist"
+}

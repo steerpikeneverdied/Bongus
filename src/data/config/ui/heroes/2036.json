@@ -1,0 +1,19 @@
+{
+	"id": 2036,
+	"name": "Summoner",
+	"iconAssetId": "hero.summoner",
+	"emoji": "🔮",
+	"abilityNames": {
+		"basic": "Attack",
+		"normal": "Summon Swarm",
+		"limit": "Cataclysm"
+	},
+	"portrait": {
+		"scale": 1.8,
+		"x": 0.072,
+		"y": -0.43
+	},
+	"combat": {
+		"scale": 1.05
+	}
+}

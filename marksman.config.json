@@ -1,0 +1,12 @@
+{
+  "_comment": "Marksman dev tool config (dev-only). Read by the /__marksman/config endpoint (from @fortis/bishop-marksman/endpoint, wired in vite.config.ts). inboxDir/assetsDir are where captures land. doneWhen holds this game's real gate commands, emitted verbatim into each capture. Set features.audio=true to enable voice transcription: vite.config.ts then wires @fortis/bishop-marksman/features/audio/server; recording.whisperDir/model must point at a local whisper.cpp install (ffmpeg-static is a devDep). scripts/assess-whisper.mjs recommends a model. See the @fortis/bishop-marksman package README.",
+  "doneWhen": [],
+  "inboxDir": ".cache/markdown",
+  "assetsDir": ".cache/markdown/assets",
+  "features": { "audio": false },
+  "recording": {
+    "vocabularyPrompt": "",
+    "whisperDir": "",
+    "model": ""
+  }
+}

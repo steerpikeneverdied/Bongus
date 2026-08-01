@@ -1,0 +1,25 @@
+{
+	"id": 2028,
+	"displayName": "lancer",
+	"rarityKey": "rare",
+	"weaponChainKey": "blade",
+	"baseAtk": 14,
+	"baseHp": 270,
+	"baseDef": 15,
+	"normal": {
+		"chargeMs": 6000,
+		"effect": {
+			"type": "burst",
+			"mult": 2.2
+		}
+	},
+	"limit": {
+		"orders": 5,
+		"effect": {
+			"type": "burst",
+			"mult": 5.5
+		}
+	},
+	"classKey": "lancer",
+	"flying": true
+}

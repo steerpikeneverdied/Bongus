@@ -1,0 +1,16 @@
+{
+	"id": 2028,
+	"name": "Lancer",
+	"iconAssetId": "hero.lancer",
+	"emoji": "⚔️",
+	"abilityNames": {
+		"basic": "Attack",
+		"normal": "Impale",
+		"limit": "Dragon Lance"
+	},
+	"portrait": {
+		"scale": 1.75,
+		"x": -0.062,
+		"y": -0.382
+	}
+}

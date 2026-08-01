@@ -1,0 +1,24 @@
+{
+	"id": 6001,
+	"displayName": "mythic",
+	"currencyConfigId": 1000,
+	"cost": 180,
+	"ten": 1620,
+	"weights": {
+		"rare": 62,
+		"epic": 24,
+		"legendary": 10,
+		"mythic": 3.5,
+		"primal": 0.5
+	},
+	"pity": [
+		{
+			"rarityKey": "mythic",
+			"max": 50
+		},
+		{
+			"rarityKey": "primal",
+			"max": 400
+		}
+	]
+}

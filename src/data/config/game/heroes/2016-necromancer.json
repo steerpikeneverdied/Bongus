@@ -1,0 +1,32 @@
+{
+	"id": 2016,
+	"displayName": "necromancer",
+	"rarityKey": "legendary",
+	"weaponChainKey": "magic",
+	"baseAtk": 18,
+	"baseHp": 157.5,
+	"baseDef": 9,
+	"normal": {
+		"chargeMs": 6500,
+		"effect": {
+			"type": "aoe",
+			"mult": 1.8
+		}
+	},
+	"limit": {
+		"orders": 5,
+		"effect": {
+			"type": "aoe",
+			"mult": 4,
+			"statusKeys": [
+				"atkDown"
+			],
+			"target": "enemies",
+			"statusMag": {
+				"atkDown": 0.65
+			},
+			"durationMs": 8000
+		}
+	},
+	"classKey": "necromancer"
+}

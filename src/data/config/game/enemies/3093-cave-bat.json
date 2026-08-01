@@ -1,0 +1,9 @@
+{
+	"id": 3093,
+	"displayName": "cave-bat",
+	"hpMul": 1,
+	"atkMul": 1,
+	"tags": {
+		"origin": "char-art-export"
+	}
+}

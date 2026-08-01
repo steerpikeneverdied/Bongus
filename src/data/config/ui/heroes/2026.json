@@ -1,0 +1,16 @@
+{
+	"id": 2026,
+	"name": "Gunslinger",
+	"iconAssetId": "hero.gunslinger",
+	"emoji": "🏹",
+	"abilityNames": {
+		"basic": "Attack",
+		"normal": "Fan the Hammer",
+		"limit": "Deadeye"
+	},
+	"portrait": {
+		"scale": 1.85,
+		"x": 0.02,
+		"y": -0.492
+	}
+}

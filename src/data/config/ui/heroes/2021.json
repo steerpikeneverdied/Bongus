@@ -1,0 +1,16 @@
+{
+	"id": 2021,
+	"name": "Beastmaster",
+	"iconAssetId": "hero.beastmaster",
+	"emoji": "⚔️",
+	"abilityNames": {
+		"basic": "Attack",
+		"normal": "Rally Beasts",
+		"limit": "Wild Surge"
+	},
+	"portrait": {
+		"scale": 1.55,
+		"x": 0.097,
+		"y": -0.296
+	}
+}

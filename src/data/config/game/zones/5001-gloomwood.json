@@ -1,0 +1,38 @@
+{
+	"id": 5001,
+	"displayName": "gloomwood",
+	"order": 1,
+	"enemyPoolConfigIds": [
+		3043,
+		3044,
+		3045,
+		3046,
+		3047,
+		3048,
+		3049,
+		3050,
+		3051,
+		3052
+	],
+	"bossConfigId": 3053,
+	"accompliceConfigId": 3044,
+	"crystalRarityKey": "rare",
+	"orderRarity": {
+		"common": 48,
+		"uncommon": 32,
+		"rare": 15,
+		"epic": 4,
+		"legendary": 1
+	},
+	"itemConfigIds": [
+		4012,
+		4013,
+		4014
+	],
+	"rewardGenerators": [
+		{
+			"level": 0,
+			"generatorKey": "magic"
+		}
+	]
+}

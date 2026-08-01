@@ -1,0 +1,25 @@
+{
+	"id": 2021,
+	"displayName": "beastmaster",
+	"rarityKey": "rare",
+	"weaponChainKey": "blade",
+	"baseAtk": 14,
+	"baseHp": 250,
+	"baseDef": 14,
+	"normal": {
+		"chargeMs": 6000,
+		"effect": {
+			"type": "heal",
+			"frac": 0.12
+		}
+	},
+	"limit": {
+		"orders": 5,
+		"effect": {
+			"type": "heal",
+			"frac": 0.35
+		}
+	},
+	"classKey": "beastmaster",
+	"flying": true
+}

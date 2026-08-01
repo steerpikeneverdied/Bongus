@@ -1,0 +1,24 @@
+{
+	"id": 2007,
+	"displayName": "monk",
+	"rarityKey": "rare",
+	"weaponChainKey": "blade",
+	"baseAtk": 14,
+	"baseHp": 240,
+	"baseDef": 13,
+	"normal": {
+		"chargeMs": 6000,
+		"effect": {
+			"type": "heal",
+			"frac": 0.12
+		}
+	},
+	"limit": {
+		"orders": 5,
+		"effect": {
+			"type": "heal",
+			"frac": 0.35
+		}
+	},
+	"classKey": "monk"
+}

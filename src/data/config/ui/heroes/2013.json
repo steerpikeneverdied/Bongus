@@ -1,0 +1,19 @@
+{
+	"id": 2013,
+	"name": "Wizard",
+	"iconAssetId": "hero.wizard",
+	"emoji": "🧙",
+	"abilityNames": {
+		"basic": "Attack",
+		"normal": "Fireball",
+		"limit": "Meteor"
+	},
+	"portrait": {
+		"scale": 1.7,
+		"x": 0,
+		"y": -0.307
+	},
+	"combat": {
+		"scale": 1.05
+	}
+}

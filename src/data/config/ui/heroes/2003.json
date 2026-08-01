@@ -1,0 +1,16 @@
+{
+	"id": 2003,
+	"name": "Barbarian",
+	"iconAssetId": "hero.barbarian",
+	"emoji": "🪓",
+	"abilityNames": {
+		"basic": "Attack",
+		"normal": "Wild Swing",
+		"limit": "Earthbreaker"
+	},
+	"portrait": {
+		"scale": 1.55,
+		"x": -0.034,
+		"y": -0.285
+	}
+}

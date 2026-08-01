@@ -1,0 +1,25 @@
+{
+	"id": 2038,
+	"displayName": "warrior",
+	"rarityKey": "common",
+	"weaponChainKey": "blade",
+	"baseAtk": 13,
+	"baseHp": 265,
+	"baseDef": 15,
+	"normal": {
+		"chargeMs": 6000,
+		"effect": {
+			"type": "burst",
+			"mult": 2.2
+		}
+	},
+	"limit": {
+		"orders": 5,
+		"effect": {
+			"type": "burst",
+			"mult": 5.5
+		}
+	},
+	"classKey": "warrior",
+	"flying": true
+}

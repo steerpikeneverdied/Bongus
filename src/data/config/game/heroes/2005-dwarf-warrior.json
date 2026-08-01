@@ -1,0 +1,25 @@
+{
+	"id": 2005,
+	"displayName": "dwarf-warrior",
+	"rarityKey": "common",
+	"weaponChainKey": "blade",
+	"baseAtk": 12,
+	"baseHp": 300,
+	"baseDef": 17,
+	"normal": {
+		"chargeMs": 6500,
+		"effect": {
+			"type": "aoe",
+			"mult": 1.5
+		}
+	},
+	"limit": {
+		"orders": 5,
+		"effect": {
+			"type": "aoe",
+			"mult": 3.5
+		}
+	},
+	"classKey": "dwarf-warrior",
+	"flying": true
+}

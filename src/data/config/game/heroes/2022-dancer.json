@@ -1,0 +1,24 @@
+{
+	"id": 2022,
+	"displayName": "dancer",
+	"rarityKey": "common",
+	"weaponChainKey": "blade",
+	"baseAtk": 16,
+	"baseHp": 235,
+	"baseDef": 13,
+	"normal": {
+		"chargeMs": 5500,
+		"effect": {
+			"type": "burst",
+			"mult": 2.8
+		}
+	},
+	"limit": {
+		"orders": 5,
+		"effect": {
+			"type": "burst",
+			"mult": 7
+		}
+	},
+	"classKey": "dancer"
+}

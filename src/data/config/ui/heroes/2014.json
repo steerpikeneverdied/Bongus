@@ -1,0 +1,16 @@
+{
+	"id": 2014,
+	"name": "Sorceress",
+	"iconAssetId": "hero.sorceress",
+	"emoji": "🧙‍♀️",
+	"abilityNames": {
+		"basic": "Attack",
+		"normal": "Chain Lightning",
+		"limit": "Cataclysm"
+	},
+	"portrait": {
+		"scale": 1.55,
+		"x": -0.021,
+		"y": -0.3
+	}
+}

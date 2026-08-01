@@ -1,0 +1,37 @@
+{
+	"id": 5002,
+	"displayName": "boneyard",
+	"order": 2,
+	"enemyPoolConfigIds": [
+		3054,
+		3055,
+		3056,
+		3057,
+		3058,
+		3059,
+		3060,
+		3061,
+		3062
+	],
+	"bossConfigId": 3063,
+	"accompliceConfigId": 3054,
+	"crystalRarityKey": "rare",
+	"orderRarity": {
+		"common": 36,
+		"uncommon": 34,
+		"rare": 22,
+		"epic": 7,
+		"legendary": 1
+	},
+	"itemConfigIds": [
+		4015,
+		4016,
+		4017
+	],
+	"rewardGenerators": [
+		{
+			"level": 0,
+			"generatorKey": "blade"
+		}
+	]
+}

@@ -1,0 +1,8 @@
+{
+	"id": 3062,
+	"name": "Tomb Guard",
+	"iconAssetId": "enemy.tomb-guard",
+	"combat": {
+		"scale": 1.55
+	}
+}

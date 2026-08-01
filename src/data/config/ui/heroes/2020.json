@@ -1,0 +1,16 @@
+{
+	"id": 2020,
+	"name": "Alchemist",
+	"iconAssetId": "hero.alchemist",
+	"emoji": "🔮",
+	"abilityNames": {
+		"basic": "Attack",
+		"normal": "Acid Flask",
+		"limit": "Transmute"
+	},
+	"portrait": {
+		"scale": 1.6,
+		"x": 0.001,
+		"y": -0.359
+	}
+}

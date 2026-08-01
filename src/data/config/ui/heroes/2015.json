@@ -1,0 +1,19 @@
+{
+	"id": 2015,
+	"name": "Warlock",
+	"iconAssetId": "hero.warlock",
+	"emoji": "👺",
+	"abilityNames": {
+		"basic": "Attack",
+		"normal": "Shadow Bolt",
+		"limit": "Doom"
+	},
+	"portrait": {
+		"scale": 1.45,
+		"x": 0.05,
+		"y": -0.216
+	},
+	"combat": {
+		"scale": 1
+	}
+}

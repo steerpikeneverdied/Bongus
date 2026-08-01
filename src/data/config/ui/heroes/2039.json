@@ -1,0 +1,19 @@
+{
+	"id": 2039,
+	"name": "Witch",
+	"iconAssetId": "hero.witch",
+	"emoji": "🔮",
+	"abilityNames": {
+		"basic": "Attack",
+		"normal": "Hex",
+		"limit": "Curse of Ruin"
+	},
+	"portrait": {
+		"scale": 2.05,
+		"x": -0.074,
+		"y": -0.486
+	},
+	"combat": {
+		"scale": 1.1
+	}
+}

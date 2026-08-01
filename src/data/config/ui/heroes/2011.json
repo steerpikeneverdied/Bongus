@@ -1,0 +1,19 @@
+{
+	"id": 2011,
+	"name": "Rogue",
+	"iconAssetId": "hero.rogue",
+	"emoji": "🗡️",
+	"abilityNames": {
+		"basic": "Attack",
+		"normal": "Fan of Knives",
+		"limit": "Ambush"
+	},
+	"portrait": {
+		"scale": 1.6,
+		"x": -0.03,
+		"y": -0.272
+	},
+	"combat": {
+		"scale": 1.05
+	}
+}

@@ -1,0 +1,475 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// MERGE BOARD (view layer) — a faithful port of the merge-board mockup
+// (docs/mockups/merge-board-mockup.html), driven by the reducer's `state.board`.
+//
+// MVC: `state.board` is the ONLY source of truth. Every state change is dispatched
+// through the controller (actions.moveOrMerge / actions.tapGenerator); the merge
+// RULES come from the model (Merge.canMerge / Merge.maxLevel) — never re-derived
+// here. Combat VFX routes through the shared fx engine (src/view/fx). Tiles are
+// absolutely-positioned DOM elements tracked by item id and reconciled from
+// `state.board`; all animation is ephemeral, view-only presentation. A gesture
+// animates optimistically and dispatches; the reducer echo reconciles (a merge
+// births its result, a spawn throws from the generator, a move/swap FLIP-eases),
+// while EXTERNAL board changes (an order consuming cells) reconcile with a fade.
+// JUICE is baked at 1.5.
+// ─────────────────────────────────────────────────────────────────────────────
+import { useEffect, useLayoutEffect, useRef } from 'react';
+import { useGame } from '../controller/GameContext';
+import { BOARD, TIER_PRESENTATION } from '../data/config.js';
+import { canMerge, canMergeGenerator, maxLevel } from '../model/merge.js';
+import { STRINGS } from '../data/strings.js';
+import { itemAsset, generatorAsset, itemShadow, generatorShadow, mergeStyle, resolve } from './assets.js';
+import { fx } from './fx/fx-engine.js';
+
+const N = BOARD.cols * BOARD.rows;
+// All board tuning is config (_board.json); JUICE is pre-baked into merge.burstRadii.
+const { drag: DRAG, merge: MG, spawn: SP, float: FL, idle: ID } = BOARD;
+// Rarity colour ramp (config) + tier labels (strings) — no inlined presentation.
+const RARITY = TIER_PRESENTATION.colors;
+const TIER_NAME = STRINGS.merge.tierNames;
+const rarity = (t) => RARITY[Math.min(t, RARITY.length - 1)];
+const tierName = (t) => TIER_NAME[Math.min(t, TIER_NAME.length - 1)];
+const intensity = (t) => (t >= MG.critTier ? 'crit' : t >= MG.heavyTier ? 'heavy' : 'normal');
+const RM = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+// Two tiles are a merge pair iff the model says so — items (same chain + level, not maxed) OR
+// generators (same generator + level, below max). Generators merge the same way merge items do.
+const pair = (a, b) => canMerge(a, b) || canMergeGenerator(a, b);
+
+export default function Board() {
+  const { state, actions } = useGame();
+  const shakerRef = useRef(null);
+  const tilesRef = useRef(null);
+  const connRef = useRef(null);
+  const cellEls = useRef([]);
+  const geo = useRef([]); // per-cell {x,y,w,h,cx,cy} in shaker-space
+  const tiles = useRef(new Map()); // item/generator id -> { el, inner, cell }
+  const pending = useRef(null); // {type:'merge',to} | {type:'spawn',gen,cell}
+  const drag = useRef(null);
+  const busy = useRef(false); // a merge in flight blocks new tile-drags (gens still dispense)
+  const lastInteract = useRef(0);
+  const lastWave = useRef(0);
+  const bestPair = useRef(null);
+  const bestShown = useRef(false);
+  const boardRef = useRef(state.board);
+  boardRef.current = state.board;
+
+  // ── geometry ────────────────────────────────────────────────────────────────
+  const measure = () => {
+    const sh = shakerRef.current;
+    if (!sh) return;
+    const r0 = sh.getBoundingClientRect();
+    for (let i = 0; i < N; i++) {
+      const el = cellEls.current[i];
+      if (!el) continue;
+      const r = el.getBoundingClientRect();
+      geo.current[i] = { x: r.left - r0.left, y: r.top - r0.top, w: r.width, h: r.height, cx: r.left - r0.left + r.width / 2, cy: r.top - r0.top + r.height / 2 };
+    }
+  };
+  const placeAt = (el, i) => {
+    const g = geo.current[i];
+    if (!g) { el.dataset.cell = i; return; }
+    el.style.width = `${g.w}px`; el.style.height = `${g.h}px`;
+    el.style.transform = `translate(${g.x}px,${g.y}px)`;
+    el.dataset.cell = i;
+  };
+
+  // ── tile element factory ─────────────────────────────────────────────────────
+  const makeTileEl = (cell, i) => {
+    const el = document.createElement('div');
+    const isGen = cell.kind === 'generator';
+    el.className = `mb-tile${isGen ? ' mb-gen' : ''}${cell.locked ? ' mb-locked' : ''}`;
+    const a = isGen ? generatorAsset(cell.genId, cell.level) : itemAsset(cell.chain, cell.level);
+    const bob = document.createElement('div'); bob.className = 'mb-bob';
+    const inner = document.createElement('div'); inner.className = 'mb-inner';
+    if (a && a.img) {
+      const ms = mergeStyle(a); // reg→centre + scale + rotation (1:1 with the tile) — items AND generators
+      // Baked drop-shadow layer BEHIND the sprite — the static replacement for the per-tile runtime CSS
+      // `filter: drop-shadow` (stripped from .mb-art). Absolute-centred with the SAME mergeStyle transform
+      // so it aligns 1:1 with the sprite. See src/index.css .mb-shadow / .mb-art.
+      const shSrc = isGen ? generatorShadow(cell.genId, cell.level) : itemShadow(cell.chain, cell.level);
+      if (shSrc) {
+        const sh = document.createElement('img'); sh.src = shSrc; sh.className = 'mb-shadow'; sh.draggable = false;
+        if (ms) { sh.style.height = ms.height; sh.style.width = ms.width; sh.style.maxWidth = ms.maxWidth; sh.style.transform = `translate(-50%,-50%) ${ms.transform}`; }
+        inner.appendChild(sh);
+      }
+      const im = document.createElement('img'); im.src = a.img; im.className = 'mb-art'; im.draggable = false;
+      if (ms) Object.assign(im.style, ms);
+      inner.appendChild(im);
+    } else {
+      const sp = document.createElement('span'); sp.className = 'mb-emoji'; sp.textContent = (a && a.emoji) || '?'; inner.appendChild(sp);
+    }
+    bob.appendChild(inner); el.appendChild(bob);
+    if (isGen) { const gi = resolve('icon.generator'); // generators: art only — no rarity tint
+      if (gi.img) { const im = document.createElement('img'); im.className = 'mb-plus mb-plus-img'; im.src = gi.img; el.appendChild(im); }
+      else { const p = document.createElement('span'); p.className = 'mb-plus'; p.textContent = gi.emoji; el.appendChild(p); } }
+    else {
+      el.style.setProperty('--mb-rc', rarity(cell.level));
+      el.style.setProperty('--mb-tilt', `${((cell.id * 41) % (2 * BOARD.tiltMaxDeg + 1)) - BOARD.tiltMaxDeg}deg`); // deterministic tilt in [-tiltMaxDeg, +tiltMaxDeg] (41 = hash prime)
+    }
+    tilesRef.current.appendChild(el);
+    placeAt(el, i);
+    tiles.current.set(cell.id, { el, inner, cell: i });
+    return el;
+  };
+  const removeTile = (id, fade) => {
+    const rec = tiles.current.get(id);
+    if (!rec) return;
+    tiles.current.delete(id);
+    if (fade && !RM && rec.el.animate) {
+      const t = rec.el.style.transform;
+      rec.el.animate([{ opacity: 1, transform: `${t} scale(1)` }, { opacity: 0, transform: `${t} scale(.4)` }], { duration: FL.fadeMs, easing: 'ease-in' }).onfinish = () => rec.el.remove();
+    } else rec.el.remove();
+  };
+
+  // ── float label + merge VFX (via the shared fx engine, JUICE 1.5) ────────────
+  const floatLabel = (i, text, color, big) => {
+    const g = geo.current[i]; if (!g) return;
+    const l = document.createElement('div'); l.className = 'mb-lbl'; l.textContent = text;
+    l.style.color = color; l.style.fontSize = `${big ? FL.fontBig : FL.fontSmall}px`; l.style.left = `${g.cx}px`; l.style.top = `${g.cy - FL.topOffset}px`;
+    tilesRef.current.appendChild(l);
+    l.addEventListener('animationend', () => l.remove(), { once: true });
+    setTimeout(() => l.parentNode && l.remove(), FL.lifetimeMs);
+  };
+  const mergeBurst = (i, tier) => {
+    const c = fx.cellCenter(i); // app-canvas coords for the shared fx overlay
+    if (!c) return;
+    const rc = rarity(tier); const lvl = intensity(tier);
+    // Full burst for every merge, but suppress the engine's built-in tier shake —
+    // the board drives shake itself so only the big merges move the screen.
+    fx.impact(c.x, c.y, { tier: lvl, color: rc, r: MG.burstRadii[lvl], shake: false });
+    // Screen shake ONLY on epic-or-above merges, kept tight (settles in a few frames).
+    if (tier >= MG.shakeTier) fx.shake(tier >= MG.shakeBigTier ? MG.shakeBigAmp : MG.shakeAmp);
+    if (tier >= MG.flashTier) fx.flash(MG.flashOpacity, MG.flashMs); // Elite+ → white screen flash
+    if (tier >= MG.confettiTier) fx.confetti(c.x, c.y, { colors: [rc, ...MG.confettiColors], count: MG.confettiCount, power: MG.confettiPower }); // Legendary+ → confetti pop
+  };
+
+  // ── reconcile tiles ⇄ state.board ────────────────────────────────────────────
+  const reconcile = () => {
+    // Geometry is cached; a ResizeObserver re-measures on any layout change, so we
+    // only measure here on the very first run (avoids a forced 36-rect reflow on
+    // every merge/move/tap).
+    if (geo.current.length < N) measure();
+    const board = boardRef.current;
+    const p = pending.current; pending.current = null;
+    const nowMap = new Map();
+    board.forEach((c, i) => { if (c) nowMap.set(c.id, i); });
+
+    // removals: a merge already animated its two sources (remove instantly); any
+    // other disappearance (order consumed a cell) fades out gracefully.
+    for (const id of Array.from(tiles.current.keys())) {
+      if (!nowMap.has(id)) removeTile(id, !(p && p.type === 'merge'));
+    }
+    // adds + moves
+    for (const [id, cell] of nowMap) {
+      const obj = board[cell];
+      const rec = tiles.current.get(id);
+      if (!rec) {
+        if (p && p.type === 'merge' && cell === p.to) birthResult(obj, cell);
+        else if (p && p.type === 'spawn' && cell === p.cell) throwFromGen(obj, cell, p.gen);
+        else {
+          const el = makeTileEl(obj, cell);
+          if (!RM && el.animate) el.querySelector('.mb-inner').animate([{ transform: 'scale(0)' }, { transform: `scale(${SP.popPeak})`, offset: 0.6 }, { transform: 'scale(1)' }], { duration: SP.popMs, easing: SP.popCurve });
+        }
+      } else if (rec.cell !== cell) {
+        rec.cell = cell;
+        if (drag.current && drag.current.id === id) continue; // don't yank the tile out from under the pointer
+        rec.el.style.transition = `transform ${SP.moveMs}ms ${SP.moveCurve}`;
+        placeAt(rec.el, cell);
+        rec.el.addEventListener('transitionend', () => { rec.el.style.transition = ''; }, { once: true });
+      } else {
+        placeAt(rec.el, cell);
+      }
+    }
+    computeBest();
+  };
+
+  const birthResult = (obj, cell) => {
+    const el = makeTileEl(obj, cell);
+    el.style.opacity = '0'; // hidden through the hit-stop, then flash-births in
+    setTimeout(() => {
+      el.style.opacity = '';
+      el.classList.add('mb-birth');
+      el.addEventListener('animationend', () => el.classList.remove('mb-birth'), { once: true });
+      floatLabel(cell, `+${tierName(obj.level)}`, rarity(obj.level), obj.level >= FL.bigTier);
+      busy.current = false;
+    }, RM ? 0 : SP.birthRevealMs);
+  };
+
+  const throwFromGen = (obj, cell, gen) => {
+    const el = makeTileEl(obj, cell);
+    const gg = geo.current[gen]; const dg = geo.current[cell];
+    if (gg && dg && !RM && el.animate) {
+      const apexY = Math.min(gg.y, dg.y) - SP.throwApex;
+      const [lsx, lsy] = SP.throwLandScale;
+      el.animate([
+        { transform: `translate(${gg.x}px,${gg.y}px) scale(.5) rotate(0deg)`, offset: 0 },
+        { transform: `translate(${(gg.x + dg.x) / 2}px,${apexY}px) scale(.5) rotate(200deg)`, offset: 0.5 }, // 50% size in flight
+        { transform: `translate(${dg.x}px,${dg.y}px) scale(${lsx},${lsy}) rotate(${SP.throwSpin}deg)`, offset: 0.9 }, // scales up + squashes on land
+        { transform: `translate(${dg.x}px,${dg.y}px) scale(1) rotate(${SP.throwSpin}deg)`, offset: 1 },
+      ], { duration: SP.throwMs, easing: SP.throwCurve });
+    }
+  };
+
+  // ── best-merge detection (highest-tier mergeable pair, cobwebs excluded) ──────
+  const computeBest = () => {
+    const board = boardRef.current;
+    const groups = {};
+    for (let i = 0; i < N; i++) {
+      const c = board[i];
+      if (c && c.kind === 'item' && !c.locked && c.level < maxLevel(c.chain)) (groups[`${c.chain}:${c.level}`] ||= []).push(i);
+    }
+    let bt = -1, cells = null;
+    for (const k in groups) {
+      const arr = groups[k]; if (arr.length < 2) continue;
+      const t = +k.split(':')[1];
+      if (t > bt) { bt = t; cells = [arr[0], arr[1]]; }
+    }
+    bestPair.current = cells;
+    paintBest();
+  };
+  const paintBest = () => {
+    for (const [, rec] of tiles.current) rec.el.classList.remove('mb-best');
+    const show = bestPair.current && bestShown.current;
+    if (connRef.current) connRef.current.style.display = show ? '' : 'none';
+    if (!show) return;
+    for (const i of bestPair.current) {
+      const c = boardRef.current[i]; const rec = c && tiles.current.get(c.id);
+      if (rec) rec.el.classList.add('mb-best');
+    }
+    const a = geo.current[bestPair.current[0]]; const b = geo.current[bestPair.current[1]];
+    if (a && b && connRef.current) {
+      const dx = b.cx - a.cx, dy = b.cy - a.cy;
+      connRef.current.style.width = `${Math.hypot(dx, dy)}px`;
+      connRef.current.style.left = `${a.cx}px`; connRef.current.style.top = `${a.cy}px`;
+      connRef.current.style.transform = `rotate(${Math.atan2(dy, dx)}rad)`;
+    }
+  };
+
+  // reconcile whenever the board (model) changes
+  useLayoutEffect(() => { reconcile(); /* eslint-disable-next-line */ }, [state.board]);
+  useEffect(() => {
+    const sh = shakerRef.current;
+    if (!sh || typeof ResizeObserver === 'undefined') return undefined;
+    // Re-measure only when the board box actually changes size (window resize,
+    // orientation, or the combat panel above reflowing) — not on every board mutation.
+    const ro = new ResizeObserver(() => {
+      measure();
+      for (const [, rec] of tiles.current) placeAt(rec.el, rec.cell);
+      paintBest();
+    });
+    ro.observe(sh);
+    return () => ro.disconnect();
+  }, []);
+
+  // best-merge reveal after 15s idle + irregular idle "Mexican wave" bob
+  useEffect(() => {
+    lastInteract.current = performance.now();
+    const iv = setInterval(() => {
+      const now = performance.now();
+      const wantBest = now - lastInteract.current >= ID.bestHintMs && !!bestPair.current;
+      if (wantBest !== bestShown.current) { bestShown.current = wantBest; paintBest(); }
+      if (!RM && now - lastInteract.current >= ID.waveIdleMs && now - lastWave.current >= ID.waveGapMs + Math.random() * ID.waveGapRandMs) {
+        lastWave.current = now; triggerWave();
+      }
+    }, ID.pollMs);
+    return () => clearInterval(iv);
+    /* eslint-disable-next-line */
+  }, []);
+  const triggerWave = () => {
+    for (let col = 0; col < BOARD.cols; col++) {
+      setTimeout(() => {
+        for (let row = 0; row < BOARD.rows; row++) {
+          const i = row * BOARD.cols + col; const c = boardRef.current[i];
+          if (!c || c.kind !== 'item' || c.locked) continue; // skip generators + cobwebs
+          const rec = tiles.current.get(c.id);
+          if (!rec || rec.el.classList.contains('mb-dragging')) continue;
+          rec.el.classList.remove('mb-wave'); void rec.el.offsetWidth; rec.el.classList.add('mb-wave');
+          rec.el.addEventListener('animationend', () => rec.el.classList.remove('mb-wave'), { once: true });
+        }
+      }, col * ID.waveColStaggerMs);
+    }
+  };
+  const touch = () => { lastInteract.current = performance.now(); if (bestShown.current) { bestShown.current = false; paintBest(); } };
+
+  // ── pointer interaction (drag / merge / move / swap / gen-tap) ────────────────
+  useEffect(() => {
+    const tilesEl = tilesRef.current;
+    // Nearest cell by GEOMETRY (not elementFromPoint — tiles sit above cells and
+    // would occlude them during a drag). Mirrors the mockup's cellAtPoint.
+    const cellAt = (clientX, clientY, shRect) => {
+      const sh = shRect || shakerRef.current.getBoundingClientRect();
+      const x = clientX - sh.left, y = clientY - sh.top;
+      let best = -1, bd = Infinity;
+      for (let i = 0; i < N; i++) {
+        const g = geo.current[i]; if (!g) continue;
+        const dx = x - g.cx, dy = y - g.cy; const d = dx * dx + dy * dy;
+        if (d < bd) { bd = d; best = i; }
+      }
+      if (best >= 0) { const g = geo.current[best]; if (Math.abs(x - g.cx) < g.w * DRAG.hitTolerance && Math.abs(y - g.cy) < g.h * DRAG.hitTolerance) return best; }
+      return -1;
+    };
+    const moveDrag = (cx, cy) => {
+      const d = drag.current; if (!d) return;
+      const sh = d.shRect || shakerRef.current.getBoundingClientRect(); // cached at pointerdown
+      d.el.style.transform = `translate(${cx - sh.left - d.w / 2}px,${cy - sh.top - d.h / 2}px)`;
+    };
+    const clearDragUI = (d) => {
+      if (d.hint) clearTimeout(d.hint);
+      d.el.classList.remove('mb-lifted', 'mb-dragging');
+      const inner = d.el.querySelector('.mb-inner'); if (inner) inner.style.transform = '';
+      // Ease the lifted icon back down to rest (mirrors the grab ease).
+      if (d.bob) { d.bob.style.transition = RM ? 'none' : `transform ${DRAG.easeMs}ms ${DRAG.easeCurve}`; d.bob.style.transform = ''; }
+      d.el.style.removeProperty('--mb-lift-scale'); // inner eases back via its own transition
+
+      cellEls.current.forEach((ce) => ce && ce.classList.remove('mb-dim', 'mb-dropok'));
+      for (const [, rec] of tiles.current) rec.el.classList.remove('mb-canmerge', 'mb-hovok');
+    };
+    const snapBack = (d) => {
+      d.el.style.transition = `transform ${DRAG.snapBackMs}ms ${DRAG.snapBackCurve}`;
+      placeAt(d.el, d.from);
+      d.el.addEventListener('transitionend', () => { d.el.style.transition = ''; }, { once: true });
+    };
+    const invalid = (over) => {
+      const o = boardRef.current[over]; const rec = o && tiles.current.get(o.id);
+      if (rec) { rec.el.classList.remove('mb-bad'); void rec.el.offsetWidth; rec.el.classList.add('mb-bad'); rec.el.addEventListener('animationend', () => rec.el.classList.remove('mb-bad'), { once: true }); }
+    };
+
+    const onDown = (e) => {
+      const tileEl = e.target.closest('.mb-tile'); if (!tileEl) return;
+      const cell = Number(tileEl.dataset.cell);
+      const c = boardRef.current[cell]; if (!c) return;
+      const isGen = c.kind === 'generator';
+      if (busy.current && !isGen) return; // a merge blocks tile-drags; generators still dispense
+      if (!isGen && c.locked) return; // cobweb tiles are immovable — freed only by merging a matching tile onto them
+      touch();
+      const g = geo.current[cell] || DRAG.fallbackTile;
+      drag.current = { id: c.id, from: cell, el: tileEl, w: g.w, h: g.h, isGen, sx: e.clientX, sy: e.clientY, moved: false, hint: 0, hover: -1, shRect: shakerRef.current.getBoundingClientRect() };
+      try { tileEl.setPointerCapture(e.pointerId); } catch { /* */ }
+      tileEl.classList.add('mb-lifted', 'mb-dragging'); tileEl.style.transition = '';
+      if (cellEls.current[cell]) cellEls.current[cell].classList.add('mb-dim');
+      // Lift the icon up above the finger so a thumb never covers it, eased in from
+      // rest so the grab feels natural (config: BOARD.drag). Items only — generators
+      // are tapped/relocated, not held. The lift rides .mb-bob so the el transform
+      // keeps tracking the finger 1:1 and the drop target stays under the finger.
+      if (!isGen) {
+        tileEl.style.setProperty('--mb-lift-scale', DRAG.liftScale); // held item swells (config)
+        const bob = tileEl.querySelector('.mb-bob');
+        if (bob) {
+          const lift = Math.round(g.h * DRAG.liftFactor);
+          drag.current.bob = bob;
+          bob.style.transition = RM ? 'none' : `transform ${DRAG.easeMs}ms ${DRAG.easeCurve}`;
+          if (RM) bob.style.transform = `translateY(${-lift}px)`;
+          else requestAnimationFrame(() => { if (drag.current && drag.current.el === tileEl) bob.style.transform = `translateY(${-lift}px)`; });
+        }
+      }
+      if (!isGen) {
+        drag.current.hint = setTimeout(() => { // green "possible matches" only after holding 4s
+          for (let i = 0; i < N; i++) {
+            const o = boardRef.current[i];
+            if (i !== cell && pair(c, o)) { const rec = tiles.current.get(o.id); if (rec) rec.el.classList.add('mb-canmerge'); }
+          }
+        }, DRAG.hintDelayMs);
+      }
+      moveDrag(e.clientX, e.clientY);
+    };
+    const onMove = (e) => {
+      const d = drag.current; if (!d) return;
+      if (!d.moved && Math.hypot(e.clientX - d.sx, e.clientY - d.sy) > DRAG.moveThreshold) d.moved = true;
+      moveDrag(e.clientX, e.clientY);
+      const over = cellAt(e.clientX, e.clientY, d.shRect);
+      if (over === d.hover) return; // hovered cell unchanged → skip the drop/hover class churn
+      d.hover = over;
+      cellEls.current.forEach((ce) => ce && ce.classList.remove('mb-dropok'));
+      for (const [, rec] of tiles.current) rec.el.classList.remove('mb-hovok');
+      if (over >= 0 && over !== d.from) {
+        const o = boardRef.current[over]; const src = boardRef.current[d.from];
+        if (o === null) { if (cellEls.current[over]) cellEls.current[over].classList.add('mb-dropok'); }
+        else if (pair(src, o)) { const rec = tiles.current.get(o.id); if (rec) rec.el.classList.add('mb-hovok'); } // items AND generators show the merge-target highlight
+      }
+    };
+    const onUp = (e) => {
+      const d = drag.current; if (!d) return; drag.current = null;
+      clearDragUI(d); touch();
+      const over = cellAt(e.clientX, e.clientY);
+      const src = boardRef.current[d.from];
+
+      // Slam the dragged tile into its twin, then commit the merge at contact. Shared verbatim by
+      // merge ITEMS and merge-able GENERATORS — one path, not two.
+      const slamMerge = (o) => {
+        busy.current = true;
+        const gTo = geo.current[over]; const targetRec = tiles.current.get(o.id);
+        if (gTo) { d.el.style.transition = `transform ${MG.slamMs}ms ${MG.slamCurve}`; placeAt(d.el, over); }
+        const dInner = d.el.querySelector('.mb-inner'); if (dInner) dInner.style.transform = `scale(${MG.pushScale})`;
+        if (targetRec && !RM && targetRec.inner.animate) targetRec.inner.animate([{ transform: 'scale(1)' }, { transform: `scaleX(${MG.squashPeak[0]}) scaleY(${MG.squashPeak[1]})`, offset: 0.45 }, { transform: 'scale(1)' }], { duration: MG.squashMs, easing: 'ease-out' });
+        setTimeout(() => {
+          mergeBurst(over, src.level + 1); // VFX punch fires at contact
+          if (src.locked || o.locked) floatLabel(over, STRINGS.board.unlocked, FL.unlockColor, false); // cobweb freed → feedback (items only)
+          pending.current = { type: 'merge', to: over };
+          // Reducer flips → reconcile removes sources + births the result. It ALSO emits a
+          // haptic-only 'merge' fx event (drained by FxLayer → hapticForFx) — the merge
+          // haptic rides the shared fx bus, not a view side-channel.
+          actions.moveOrMerge(d.from, over);
+          setTimeout(() => { busy.current = false; }, MG.safetyReleaseMs); // safety release
+        }, MG.slamMs);
+      };
+
+      // generator: a tap (barely moved) dispenses; a drag onto an empty cell relocates it; a drag onto a
+      // same-generator, same-level twin MERGES it to the next level (same as merge items).
+      if (d.isGen) {
+        if (!d.moved) {
+          d.el.classList.remove('mb-recoil'); void d.el.offsetWidth; d.el.classList.add('mb-recoil');
+          const spawnCell = boardRef.current.indexOf(null); // the cell the reducer will fill
+          if (spawnCell >= 0) {
+            pending.current = { type: 'spawn', gen: d.from, cell: spawnCell };
+            actions.tapGenerator(d.from);
+            setTimeout(() => { if (pending.current && pending.current.type === 'spawn') pending.current = null; }, SP.spawnClearMs); // clear if energy-gated (no reconcile)
+          }
+          snapBack(d);
+        } else if (over >= 0 && over !== d.from) {
+          const o = boardRef.current[over];
+          if (o === null) actions.moveOrMerge(d.from, over); // relocate → reconcile FLIPs it
+          else if (pair(src, o)) slamMerge(o);               // two same-level generators → next level
+          else if (o.kind === 'item' && o.locked) { snapBack(d); invalid(over); } // cobweb: immovable
+          else actions.moveOrMerge(d.from, over);            // swap generator ↔ tile / other generator → reconcile FLIP
+        } else {
+          snapBack(d);
+        }
+        return;
+      }
+
+      if (!d.moved || over < 0 || over === d.from) { snapBack(d); return; }
+      const o = boardRef.current[over];
+      if (o === null) { actions.moveOrMerge(d.from, over); return; } // move → reconcile FLIP
+      if (o.kind === 'generator') { snapBack(d); invalid(over); return; }
+      if (pair(src, o)) slamMerge(o);                       // MERGE — slam into the twin, commit at contact
+      else if (o.locked) { snapBack(d); invalid(over); }    // cobweb tile: immovable — can't be swapped/displaced
+      else actions.moveOrMerge(d.from, over);               // swap → reconcile FLIP
+    };
+    const onCancel = () => { const d = drag.current; if (!d) return; drag.current = null; clearDragUI(d); snapBack(d); };
+    tilesEl.addEventListener('pointerdown', onDown);
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+    window.addEventListener('pointercancel', onCancel);
+    return () => {
+      tilesEl.removeEventListener('pointerdown', onDown);
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', onCancel);
+    };
+    /* eslint-disable-next-line */
+  }, [actions]);
+
+  return (
+    <div className="mb2">
+      <div className="mb-shaker" ref={shakerRef} style={{ aspectRatio: `${BOARD.cols} / ${BOARD.rows}` }}>
+        <div className="mb-board" style={{ gridTemplateColumns: `repeat(${BOARD.cols}, 1fr)`, gridTemplateRows: `repeat(${BOARD.rows}, 1fr)` }}>
+          {Array.from({ length: N }, (_, i) => (
+            <div key={i} className={`mb-cell mb-cell-${(Math.floor(i / BOARD.cols) + (i % BOARD.cols)) % 2 ? 'b' : 'a'}`} data-cell-index={i} ref={(el) => { cellEls.current[i] = el; }} />
+          ))}
+        </div>
+        <div className="mb-tiles" ref={tilesRef} />
+        <div className="mb-conn" ref={connRef} style={{ display: 'none' }} />
+      </div>
+    </div>
+  );
+}

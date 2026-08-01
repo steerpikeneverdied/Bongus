@@ -1,0 +1,24 @@
+{
+	"id": 2039,
+	"displayName": "witch",
+	"rarityKey": "common",
+	"weaponChainKey": "magic",
+	"baseAtk": 20,
+	"baseHp": 148,
+	"baseDef": 8,
+	"normal": {
+		"chargeMs": 6500,
+		"effect": {
+			"type": "aoe",
+			"mult": 1.8
+		}
+	},
+	"limit": {
+		"orders": 5,
+		"effect": {
+			"type": "aoe",
+			"mult": 4
+		}
+	},
+	"classKey": "witch"
+}

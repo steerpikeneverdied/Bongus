@@ -1,0 +1,9 @@
+{
+	"id": 3034,
+	"name": "Goblin",
+	"iconAssetId": "enemy.goblin",
+	"emoji": "👾",
+	"combat": {
+		"scale": 1.15
+	}
+}

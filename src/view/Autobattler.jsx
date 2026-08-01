@@ -1,0 +1,416 @@
+// AFK autobattler: enemies on top, heroes below, over a cinematic battlefield.
+// Each hero has its OWN limit break (the gold bar becomes a tap button when
+// charged). HP bars animate down. data-battle-* attributes let the FX layer aim
+// attack trails. Boss levels swap to a dramatic red backdrop + a big boss sticker
+// and telegraph/slam VFX (fired via the fx queue in FxLayer). Pure presentation
+// on top of the existing battle simulation + fx pipeline.
+import { useState, useEffect, useLayoutEffect, useRef } from 'react';
+import { useGame } from '../controller/GameContext';
+import { heroAsset, resolve, anchorStyle, generatorAsset } from './assets.js';
+import Art, { Icon } from './Art.jsx';
+import HpBar from './HpBar.jsx';
+import LoseScreen from './LoseScreen.jsx';
+import { normalChargeFrac, limitChargeFrac, isLimitReady } from '../model/battle.js';
+import { heroPower } from '../model/heroes.js';
+import { heroGearPower } from '../model/gear.js';
+import { isBossLevel } from '../model/map.js';
+import { zoneForLevel } from '../data/zones.js'; // MERGED zone (presentation: biome/keyArt/nameKey), not the logical sim selector
+import { ENEMY_BY_ID } from '../data/enemies.js'; // per-enemy combatScale (in-combat chip size) + name/asset
+import { HEROES } from '../data/heroes.js'; // per-hero combatScale (in-combat avatar size) + name/asset
+import { STATUSES } from '../data/statuses.js'; // status table (name/colour/icon) for in-combat badges
+import { GENERATORS } from '../data/generators.js'; // generator display name for the area-unlock card
+import { STRINGS } from '../data/strings.js';
+import { ANIM } from '../data/config.js';
+import { fmtK as fmt } from './fmt.js';
+import { displayFrac } from './fx/limit-fill.js';
+import { limitReadyPop } from './fx/limit-energy.js';
+import { subscribeBar } from './fx/bar-ticker.js';
+import { acquireLimitEmitter } from './fx/limit-badge-emitter.js';
+
+const AB = ANIM.autobattler;
+const AC = ANIM.areaComplete;
+
+// Reward count-up for the AREA CLEARED synopsis — ease-out cubic to the target over AC.countUpMs.
+function CountUp({ to }) {
+  const [v, setV] = useState(0);
+  useEffect(() => {
+    let raf; const t0 = performance.now();
+    const tick = (t) => {
+      const p = Math.min(1, (t - t0) / AC.countUpMs);
+      setV(Math.round(to * (1 - Math.pow(1 - p, 3))));
+      if (p < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [to]);
+  return <b className="ac-num">{fmt(v)}</b>;
+}
+const nextIsBoss = (level) => isBossLevel(level + 1);
+
+// Combat sprite base heights — MUST mirror asset_tool.html's applyChipImg `baseH` (the 1:1 trim-tool
+// contract): the in-combat sprite renders at baseH × cooked combat.scale, bottom-anchored on the
+// baseline, width auto with NO clamp. This is a locked render contract with the tool, not a tunable.
+const COMBAT_BASE_H = 54;        // enemy
+const COMBAT_BASE_H_BOSS = 108;  // boss (2×)
+const COMBAT_BASE_H_HERO = 75.6; // hero avatars render 1.4× the 54px base
+
+// Ambient embers — presentation constants in _anim (no runtime randomness so it stays a
+// pure render). Each entry {l:left%, d:delay s, dur:duration s, s:size px}; a handful of
+// always-on animating DOM nodes spread across the width read as ambient life cheaply.
+const EMBERS = AB.embers;
+
+function LevelTrack({ level }) {
+  const N = AB.trackWindow;
+  const start = Math.max(1, level - AB.trackPast);
+  const dots = [];
+  for (let i = 0; i < N; i++) {
+    const lv = start + i;
+    const boss = isBossLevel(lv);
+    const cls = ['ldot', boss && 'boss', lv < level && 'past', lv === level && 'current'].filter(Boolean).join(' ');
+    dots.push(<span key={lv} className={cls} title={`Level ${lv}${boss ? ' (Boss)' : ''}`}>{lv === level ? <b>{lv}</b> : null}</span>);
+  }
+  return (
+    <div className="level-track">
+      <div className="track-line" />
+      <div className="dots">{dots}</div>
+    </div>
+  );
+}
+
+// The limit bar fills IN SYNC with the arriving energy mote (limit-fill store), not on the reducer
+// grant — so it fills as the mote lands, then ready-pops when it visually caps. Mirrors HpBar's
+// persistent-rAF read. Tappability stays on the TRUE ready state (canFire); only the fill lags.
+function LimitBar({ h, canFire }) {
+  const ref = useRef(null);
+  const trueRef = useRef(0);
+  trueRef.current = limitChargeFrac(h);
+  const chargedRef = useRef(false); // last committed `full` — so we setState only ON THE TRANSITION
+  const [charged, setCharged] = useState(false); // fill visually FULL → yellow (independent of canFire, so it stays yellow out of combat)
+  useEffect(() => {
+    const btn = ref.current;
+    if (!btn) return undefined;
+    const span = btn.querySelector('.lb-fill');
+    let wasFull = null; // null = establish baseline on the first frame (no spurious pop on mount)
+    const step = () => {
+      const d = displayFrac(h.id, trueRef.current);
+      if (span) span.style.width = `${Math.round(100 * d)}%`;
+      const full = d >= 0.999;
+      if (full !== chargedRef.current) { chargedRef.current = full; setCharged(full); } // re-render ONLY on the transition, not 60×/s (#7)
+      if (wasFull === null) { wasFull = full; return; }
+      if (full && !wasFull) limitReadyPop(btn);
+      wasFull = full;
+    };
+    return subscribeBar(step); // one shared rAF drives all bars (#7)
+  }, [h.id]);
+  // Charged LIMIT badge: while full, hold a ref on the shared pooled blob emitter (one timer for all
+  // charged bars, pooled nodes) instead of a per-bar setInterval spawning fresh DOM (#4).
+  useEffect(() => {
+    if (!charged) return undefined;
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
+    return acquireLimitEmitter();
+  }, [charged]);
+  return (
+    <button
+      ref={ref}
+      type="button"
+      className={`bar limit lb-btn ${charged ? 'charged' : ''} ${canFire ? 'ready' : ''}`}
+      disabled={!canFire}
+      tabIndex={-1}
+      title="Limit Break"
+    >
+      <span className="lb-fill" style={{ width: `${Math.round(100 * limitChargeFrac(h))}%` }} />
+      <i className="lb-label">
+        <i className="lb-track">{STRINGS.combat.limitLabel}</i>
+        <b className="lb-emit lb-emit-l" />
+        <b className="lb-emit lb-emit-r" />
+      </i>
+    </button>
+  );
+}
+
+// Read-only: renders a unit's active statuses as icon badges with a per-second countdown. Pure view —
+// the sim (battle.ts) owns the statuses map + expiry; this just paints h.statuses / e.statuses.
+function StatusBadges({ statuses, kind }) {
+  const keys = statuses ? Object.keys(statuses) : [];
+  if (!keys.length) return null;
+  return (
+    <div className={`status-badges status-badges-${kind}`} aria-hidden="true">
+      {keys.map((k) => {
+        const s = STATUSES[k];
+        if (!s) return null;
+        const secs = Math.max(0, Math.ceil((statuses[k].remainingMs || 0) / 1000));
+        return (
+          <span key={k} className="status-badge" style={{ '--sc': s.color || '#fff' }} title={s.name}>
+            <Art a={resolve(s.asset)} className="status-ic" />
+            <s className="status-cd">{secs}</s>
+          </span>
+        );
+      })}
+    </div>
+  );
+}
+
+function HeroChip({ h, pow, onLimit, fighting }) {
+  const dead = h.hp <= 0;
+  const lbReady = isLimitReady(h); // charged (from board orders) — drives the golden glow
+  const canFire = lbReady && fighting; // actually TAPPABLE (fireLimitBreak needs status:fighting)
+  const ha = heroAsset(h.hero); // resolved once → art + registration-point placement
+  // Tapping ANYWHERE on the hero — the art or any of its bars — fires the limit when it's ready.
+  // A tap on the (enabled) limit button bubbles here too, so there's a single fire path (no double-fire).
+  return (
+    <div
+      className={`chip hero-chip ${dead ? 'dead' : ''} ${lbReady ? 'lb-ready' : ''} ${canFire ? 'can-fire' : ''}`}
+      data-battle-hero={h.id}
+      onClick={canFire ? () => onLimit(h.id) : undefined}
+    >
+      <div className="hero-charge" aria-hidden="true">
+        {Array.from({ length: AB.chargePips }, (_, i) => (
+          <span key={i} className="cp" />
+        ))}
+      </div>
+      <div className="chip-art">
+        {/* In-combat AVATAR, 1:1 with the trim tool: sprite HEIGHT = COMBAT_BASE_H × cooked combat.scale,
+            bottom-anchored, no clamp, translated by its registration-point anchor. (The hero TILE portrait
+            is a separate system — portraitStyle — and is untouched here.) */}
+        <Art a={ha} className="chip-emoji" style={{ ...(anchorStyle(ha) || {}), height: `calc(var(--cbh-hero, ${COMBAT_BASE_H_HERO}px) * ${HEROES[h.hero]?.combatScale ?? 1})` }} />
+      </div>
+      {/* power badge lives on the (non-bobbing) .chip root, not inside the idle-animated .chip-art */}
+      {pow > 0 && <span className="hero-pow"><s><Icon id="power" /></s>{fmt(pow)}</span>}
+      <HpBar frac={h.hp / h.maxHp} kind="hero" />
+      <StatusBadges statuses={h.statuses} kind="hero" />
+      <div className="bar normal">
+        <span style={{ width: `${Math.round(100 * normalChargeFrac(h))}%` }} />
+      </div>
+      <LimitBar h={h} canFire={canFire} />
+    </div>
+  );
+}
+
+function EnemyChip({ e, focused, onFocus, art, scale = 1, gone, conceal, lv, onDecayEnd }) {
+  const dead = e.hp <= 0;
+  const boss = e.specialMs !== undefined;
+  return (
+    <div
+      className={`chip enemy-chip ${boss ? 'boss-chip' : ''} ${dead ? 'dead' : ''} ${gone ? 'gone' : ''} ${conceal ? 'concealed' : ''} ${focused ? 'focused' : ''}`}
+      data-battle-enemy={e.uid}
+      onClick={() => !dead && !conceal && onFocus(e.uid)}
+      onAnimationEnd={(ev) => { if (ev.animationName === 'enemyDecay') onDecayEnd(e.uid); }}
+    >
+      <span className="lv-badge"><s>{STRINGS.combat.lvAbbr}</s>{lv}</span>
+      {/* Rendered 1:1 with the trim tool's combat lineup (asset_tool.html applyChipImg): the sprite
+          HEIGHT is baseH × cooked combat.scale (54 enemy / 108 boss), width auto with NO clamp,
+          bottom-anchored on the baseline, then translated by its registration-point anchor. The size
+          lives in the img height (NOT a box scale) so it matches the tool exactly for every enemy/boss. */}
+      <div className="chip-art">
+        <Art a={art} className="chip-emoji" style={{ ...(anchorStyle(art) || {}), height: `calc(var(--cbh-${boss ? 'boss' : 'enemy'}, ${boss ? COMBAT_BASE_H_BOSS : COMBAT_BASE_H}px) * ${scale})` }} />
+      </div>
+      <HpBar frac={e.hp / e.maxHp} kind="enemy" />
+      <StatusBadges statuses={e.statuses} kind="enemy" />
+      {conceal && <span className="conceal-q" aria-hidden="true">?</span>}
+      {focused && <span className="focus-reticle" aria-hidden="true"><Icon id="focus" /></span>}
+    </div>
+  );
+}
+
+export default function Autobattler() {
+  const { state, actions } = useGame();
+  const { battle } = state;
+
+  const zone = zoneForLevel(battle.level); // biome dressing + this zone's boss sticker
+  const boss = isBossLevel(battle.level); // dramatic red boss backdrop
+  const bossArt = boss ? resolve(`enemy.${zone.bossId}`) : null;
+  const biomeImg = resolve(zone.keyArt).img; // area biome art → the combat backdrop
+
+  // Enemies that have finished their death-decay are pulled from the flex layout so
+  // the survivors redistribute evenly & symmetrically (justify-content:space-evenly).
+  // Boss accomplices are NEVER marked gone → they hold their slot so the boss stays
+  // centred (and can be raised back in place). Reset on each fresh wave.
+  const [gone, setGone] = useState(() => new Set());
+  const waveKey = battle.wave[0]?.uid;
+  useEffect(() => { setGone(new Set()); }, [waveKey]);
+  const onDecayEnd = (uid) => { if (!boss) setGone((g) => { const n = new Set(g); n.add(uid); return n; }); };
+
+  // FLIP: when a decayed enemy leaves the layout, the survivors jump to their new
+  // even/symmetric positions — animate that jump with a QUADRATIC EASE-OUT (fast to
+  // start, slow to settle). Measured via offsetLeft so it's immune to the arena
+  // shake and the chip's own transform.
+  const prevX = useRef(new Map());
+  // Only re-run the realign FLIP when the enemy LAYOUT can actually change (wave
+  // composition or an enemy leaving the flow) — not on every combat-tick re-render,
+  // which forced a querySelectorAll + per-chip offsetLeft layout read ~3-4×/s.
+  const enemyLayoutSig = battle.wave.map((e) => e.uid).join(',') + '#' + gone.size;
+  useLayoutEffect(() => {
+    const row = document.querySelector('.enemy-row');
+    const nowX = new Map();
+    if (row) {
+      row.querySelectorAll('.enemy-chip').forEach((node) => {
+        if (node.offsetParent === null) return; // .gone / display:none → out of flow
+        const uid = node.getAttribute('data-battle-enemy');
+        if (uid != null) nowX.set(uid, node.offsetLeft);
+      });
+      nowX.forEach((nx, uid) => {
+        const px = prevX.current.get(uid);
+        if (px == null || Math.abs(px - nx) < 0.5) return;
+        const node = row.querySelector(`.enemy-chip[data-battle-enemy="${uid}"]`);
+        if (!node) return;
+        node.style.transition = 'none';
+        node.style.transform = `translateX(${px - nx}px)`; // invert to the old spot
+        requestAnimationFrame(() => {
+          node.style.transition = `transform ${AB.realignMs}ms ${ANIM.curves.easeOutQuad}`;
+          node.style.transform = '';
+        });
+      });
+    }
+    prevX.current = nowX;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [enemyLayoutSig]);
+
+  const intro = battle.status === 'intro';
+  const gate = battle.status === 'gate';
+  // A limit break only FIRES while fighting (Battle.fireLimitBreak no-ops otherwise).
+  // The button must reflect that truth — during an intro / gate / chest / clearing a
+  // hero can be charged from board orders, but tapping does nothing until combat runs.
+  const fighting = battle.status === 'fighting';
+  // The boss + its accomplices stay hidden as silhouettes (with a ?) through the gate AND
+  // the boss reveal intro — only the boss reveal un-hides them.
+  const conceal = gate || (intro && boss);
+
+  // The gate/NEXT button shows at a boss gate OR while a recovered level is being fought
+  // — never over an intro cinematic.
+  const showButton = gate || (battle.recovering && battle.status === 'fighting');
+  const btnBoss = gate || nextIsBoss(battle.level);
+
+  return (
+    <section
+      className={`battle ${boss ? 'boss-mode' : ''} ${intro ? 'intro' : ''} ${gate ? 'gate' : ''}`}
+      style={{ '--biome-from': zone.biome.from, '--biome-to': zone.biome.to, '--biome-accent': zone.biome.accent, '--biome-img': biomeImg ? `url(${biomeImg})` : 'none' }}
+    >
+      {/* cinematic backdrop (pure presentation, behind the arena) */}
+      <div className="bg bg-sky" />
+      <div className="bg bg-rays" />
+      <div className="bg-horizon" />
+      <div className="bg fog a" />
+      <div className="bg fog b" />
+      <div className="bg grid" />
+      {/* area biome art — the SAME key-art the intro uses, now the standard combat
+          backdrop. Sits over the generic sky/grid but under the floors, fighters and
+          FX so everything composites on top. */}
+      <div className="bg biome-art" />
+      <div className="floor enemy" />
+      <div className="floor hero" />
+      <div className="embers">
+        {EMBERS.map((e, i) => (
+          <span
+            key={i}
+            className="ember"
+            style={{ left: `${e.l}%`, width: e.s, height: e.s, animationDelay: `${e.d}s`, animationDuration: `${e.dur}s` }}
+          />
+        ))}
+      </div>
+      <div className="bg vignette" />
+      <div className="boss-loom" />
+      <div className="bg-lightning" />
+      {/* per-zone biome wash — LAST backdrop layer (z:0), so it tints everything
+          above the cinematic bg but stays behind the fighters (rows are z:1-3). */}
+      <div className="bg biome-tint" />
+
+      <LevelTrack level={battle.level} />
+      <div className="battle-top">
+        <div className="battle-right">
+          {showButton && (
+            <button
+              type="button"
+              className={`challenge-btn ${btnBoss ? 'boss' : ''}`}
+              onClick={actions.challengeNext}
+            >
+              {btnBoss ? STRINGS.combat.boss : STRINGS.combat.next}
+            </button>
+          )}
+        </div>
+        <div className="zone-name">{STRINGS.zones[zone.nameKey]}</div>
+      </div>
+
+      <div className="arena">
+        <div className="row enemy-row">
+          {battle.wave.map((e) => {
+            const isBoss = e.specialMs !== undefined && bossArt;
+            const slug = isBoss ? zone.bossId : e.arch; // scale slug must match the art shown
+            return (
+            <EnemyChip
+              key={e.uid}
+              e={e}
+              focused={battle.focusUid === e.uid}
+              onFocus={actions.setFocusTarget}
+              art={isBoss ? bossArt : resolve(e.asset)}
+              scale={ENEMY_BY_ID[slug]?.combatScale ?? 1}
+              gone={gone.has(e.uid)}
+              conceal={conceal}
+              lv={battle.level}
+              onDecayEnd={onDecayEnd}
+            />
+            );
+          })}
+        </div>
+        {/* landed chests live HERE — in front of the enemy row, behind the hero row */}
+        <div className="chest-mid-layer" aria-hidden="true" />
+        <div className="row hero-row">
+          {battle.heroes.map((h) => {
+            const ch = state.heroes[h.id];
+            const pow = ch ? heroPower(ch.hero, ch, state.ordersCompleted, heroGearPower(state.gear, h.id)) : 0;
+            return <HeroChip key={h.id} h={h} pow={pow} onLimit={actions.tapLimit} fighting={fighting} />;
+          })}
+        </div>
+      </div>
+
+      {/* combat VFX overlays (animated by FxLayer). .battle-fx is an empty overlay
+          React never populates — safe to append imperative VFX nodes (damage numbers,
+          rings) into. */}
+      <div className="lb-cine" aria-hidden="true"><div className="flash" /><div className="beam" /></div>
+      <div className="combo" aria-hidden="true" />
+      <div className="battle-fx" aria-hidden="true" />
+      <div className="boss-warn" aria-hidden="true"><Icon id="warn" /> {STRINGS.combat.bossSpecial} <Icon id="warn" /></div>
+      {/* level / area / boss INTRO cinematic — the intro director drives this overlay */}
+      <div className="intro-layer" aria-hidden="true" />
+
+      {battle.status === 'lost' && <LoseScreen />}
+      {battle.status === 'won' && (
+        <div className="win-banner">
+          <span className="win-word">{STRINGS.combat.complete}</span>
+        </div>
+      )}
+      {/* AREA COMPLETE gate — the game is stopped (status 'areaComplete', no auto-timer) until the
+          player accepts; then the next area is entered. `zone` is still the just-cleared area (level
+          hasn't advanced yet). Any generator unlocks earned by clearing this area are announced here. */}
+      {battle.status === 'areaComplete' && (
+        <div className="area-complete" role="dialog" aria-label={STRINGS.combat.areaComplete}>
+          <div className="ac-rays" aria-hidden="true" />
+          <div className="ac-card">
+            <div className="ac-title">{STRINGS.combat.areaComplete}</div>
+            <div className="ac-zone">{zone.name}</div>
+            {state.pendingArea && state.pendingArea.reward ? (
+              <div className="ac-rewards">
+                <div className="ac-row"><Art a={resolve('ui.coin')} className="ac-ic" /><CountUp to={state.pendingArea.reward.coins} /></div>
+                <div className="ac-row"><Art a={resolve('ui.heroXp')} className="ac-ic" /><CountUp to={state.pendingArea.reward.heroXp} /></div>
+                <div className="ac-row"><Art a={resolve('ui.gearXp')} className="ac-ic" /><CountUp to={state.pendingArea.reward.gearXp} /></div>
+              </div>
+            ) : null}
+            {state.pendingArea && state.pendingArea.unlocked && state.pendingArea.unlocked.length ? (
+              <div className="ac-unlocks">
+                {state.pendingArea.unlocked.map((g) => {
+                  const a = generatorAsset(g); // awarded at level 1 → gen.<g>.1
+                  return (
+                    <div key={g} className="ac-unlock">
+                      <span className="ac-uart"><Art a={a} className="ac-uimg" /></span>
+                      <span className="ac-utext"><b className="ac-uname">{GENERATORS[g]?.name ?? g}</b><span className="ac-usub">{STRINGS.combat.unlocked}</span></span>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : null}
+            <button type="button" className="ac-accept" onClick={actions.acceptAreaComplete}>{STRINGS.combat.areaContinue}</button>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}

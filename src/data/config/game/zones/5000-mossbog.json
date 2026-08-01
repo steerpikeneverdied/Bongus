@@ -1,0 +1,38 @@
+{
+	"id": 5000,
+	"displayName": "mossbog",
+	"order": 0,
+	"enemyPoolConfigIds": [
+		3032,
+		3033,
+		3034,
+		3035,
+		3036,
+		3037,
+		3038,
+		3039,
+		3040,
+		3041
+	],
+	"bossConfigId": 3042,
+	"accompliceConfigId": 3032,
+	"crystalRarityKey": "common",
+	"orderRarity": {
+		"common": 60,
+		"uncommon": 28,
+		"rare": 10,
+		"epic": 2,
+		"legendary": 0
+	},
+	"itemConfigIds": [
+		4009,
+		4010,
+		4011
+	],
+	"rewardGenerators": [
+		{
+			"level": 0,
+			"generatorKey": "range"
+		}
+	]
+}

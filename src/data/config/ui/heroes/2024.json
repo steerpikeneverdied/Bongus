@@ -1,0 +1,16 @@
+{
+	"id": 2024,
+	"name": "Geomancer",
+	"iconAssetId": "hero.geomancer",
+	"emoji": "🔮",
+	"abilityNames": {
+		"basic": "Attack",
+		"normal": "Stone Shards",
+		"limit": "Seismic Rift"
+	},
+	"portrait": {
+		"scale": 1.55,
+		"x": 0.025,
+		"y": -0.286
+	}
+}

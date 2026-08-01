@@ -1,0 +1,16 @@
+{
+	"id": 2029,
+	"name": "Mage",
+	"iconAssetId": "hero.mage",
+	"emoji": "🔮",
+	"abilityNames": {
+		"basic": "Attack",
+		"normal": "Arcane Bolt",
+		"limit": "Meteor"
+	},
+	"portrait": {
+		"scale": 1.7,
+		"x": -0.008,
+		"y": -0.426
+	}
+}

@@ -1,0 +1,19 @@
+{
+	"id": 2018,
+	"name": "Cleric",
+	"iconAssetId": "hero.cleric",
+	"emoji": "✨",
+	"abilityNames": {
+		"basic": "Attack",
+		"normal": "Heal",
+		"limit": "Sanctuary"
+	},
+	"portrait": {
+		"scale": 1.55,
+		"x": 0.007,
+		"y": -0.328
+	},
+	"combat": {
+		"scale": 1
+	}
+}

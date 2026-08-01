@@ -1,0 +1,9 @@
+{
+	"id": 3049,
+	"name": "Wraith",
+	"iconAssetId": "enemy.wraith",
+	"emoji": "👾",
+	"combat": {
+		"scale": 1.5
+	}
+}

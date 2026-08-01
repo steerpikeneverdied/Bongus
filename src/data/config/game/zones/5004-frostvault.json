@@ -1,0 +1,38 @@
+{
+	"id": 5004,
+	"displayName": "frostvault",
+	"order": 4,
+	"enemyPoolConfigIds": [
+		3074,
+		3075,
+		3076,
+		3077,
+		3078,
+		3079,
+		3080,
+		3081,
+		3082,
+		3083
+	],
+	"bossConfigId": 3084,
+	"accompliceConfigId": 3074,
+	"crystalRarityKey": "epic",
+	"orderRarity": {
+		"common": 16,
+		"uncommon": 28,
+		"rare": 33,
+		"epic": 17,
+		"legendary": 6
+	},
+	"itemConfigIds": [
+		4021,
+		4022,
+		4023
+	],
+	"rewardGenerators": [
+		{
+			"level": 0,
+			"generatorKey": "magic"
+		}
+	]
+}

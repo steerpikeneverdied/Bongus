@@ -1,0 +1,19 @@
+{
+	"id": 2038,
+	"name": "Warrior",
+	"iconAssetId": "hero.warrior",
+	"emoji": "⚔️",
+	"abilityNames": {
+		"basic": "Attack",
+		"normal": "Cleave",
+		"limit": "Warbringer"
+	},
+	"portrait": {
+		"scale": 1.55,
+		"x": -0.117,
+		"y": -0.26
+	},
+	"combat": {
+		"scale": 1.05
+	}
+}

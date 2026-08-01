@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Combat Clean — AFK Collection (Welcome Back · iPhone 16)</title>
+<style>
+  :root{
+    --bg:#0e1016;--line:#2a3346;--ink:#eef2fb;--dim:#9aa7bd;--faint:#6b7891;--gold:#ffd45e;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  @font-face{font-family:'Uniform Bold';src:url('../../src/fonts/Uniform-Bold.ttf') format('truetype');font-display:swap}
+  @font-face{font-family:'Uniform Condensed Bold';src:url('../../src/fonts/Uniform-Condensed-Bold.ttf') format('truetype');font-display:swap}
+  @font-face{font-family:'Uniform Condensed Medium';src:url('../../src/fonts/Uniform-Condensed-Medium.ttf') format('truetype');font-display:swap}
+  html,body{margin:0;background:#08090d;color:var(--ink);display:flex;flex-direction:column;align-items:center;min-height:100vh;gap:12px;padding:18px 0 40px;font-size:14px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  .banner{color:var(--faint);font-size:12px;text-align:center;max-width:430px;line-height:1.5}.banner b{color:var(--gold)}
+  .ol{text-shadow:
+    0.09em 0 0 #000,0.078em 0.045em 0 #000,0.045em 0.078em 0 #000,0 0.09em 0 #000,
+    -0.045em 0.078em 0 #000,-0.078em 0.045em 0 #000,-0.09em 0 0 #000,-0.078em -0.045em 0 #000,
+    -0.045em -0.078em 0 #000,0 -0.09em 0 #000,0.045em -0.078em 0 #000,0.078em -0.045em 0 #000}
+  .ol-sm{text-shadow:0.06em 0 0 #000,0.03em 0.05em 0 #000,-0.03em 0.05em 0 #000,-0.06em 0 0 #000,-0.03em -0.05em 0 #000,0.03em -0.05em 0 #000,0 0.06em 0 #000,0 -0.06em 0 #000}
+
+  .device{aspect-ratio:393/852;height:min(852px,90vh);width:auto;background:#05070c;border:1px solid #222b3d;border-radius:44px;overflow:hidden;position:relative;box-shadow:0 24px 70px rgba(0,0,0,.6);font-family:'Uniform Condensed Bold',system-ui,sans-serif}
+
+  .afk{position:absolute;inset:0;overflow:hidden;isolation:isolate;background:#070a10}
+  .dim{position:absolute;inset:0;z-index:1;background:rgba(3,5,9,.6)}
+  /* POPUP — flexible height, ~20% top / 30% bottom margins on iPhone 16, shrinking as the screen
+     gets smaller: the leftover vertical space (screen − reserve) is split 40:60 (= 20:30), floored
+     at 10px so it stays a floating popup even on tiny screens. */
+  .pop{position:absolute;left:14px;right:14px;z-index:5;--reserve:426px;
+    top:max(10px,calc((100% - var(--reserve)) * 0.40));
+    bottom:max(10px,calc((100% - var(--reserve)) * 0.60));
+    display:grid;grid-template-rows:auto minmax(0,1fr) auto auto;overflow:hidden;isolation:isolate;
+    border-radius:26px;border:1px solid #2a3346;border-top-color:rgba(255,255,255,.18);
+    box-shadow:0 24px 60px rgba(0,0,0,.72),0 0 0 1px rgba(0,0,0,.45)}
+  .afk-bg{position:absolute;inset:0;z-index:0;background:#0c1410 center/cover no-repeat;background-image:url('../../assets/combatclean/zones/zone-mossbog.png');transform:scale(1.08)}
+  .afk-bg::after{content:'';position:absolute;inset:0;background:
+     radial-gradient(120% 70% at 50% 8%,rgba(6,10,14,.12),rgba(5,8,12,.66) 80%),
+     linear-gradient(180deg,rgba(6,9,13,.5) 0%,rgba(6,9,13,.04) 26%,rgba(6,9,13,.4) 60%,rgba(5,8,12,.94) 100%)}
+
+  /* top currency bar — the explosion arcs INTO these (data-stat targets, like the real HUD) */
+  .topbar{position:relative;z-index:6;display:flex;align-items:center;gap:6px;padding:12px 12px 8px}
+  .cur{display:flex;align-items:center;gap:5px;background:rgba(9,12,18,.62);border:1px solid rgba(255,255,255,.08);border-radius:999px;padding:3px 10px 3px 5px;backdrop-filter:blur(6px)}
+  .cur img{width:20px;height:20px;object-fit:contain;filter:drop-shadow(0 1px 2px #000)}
+  .cur b{font-size:13px;color:#fff}.cur.sp{margin-left:auto}
+
+  .head{position:relative;z-index:5;text-align:center;padding:8px 14px 2px}
+  .head .wb{font-family:'Uniform Condensed Medium',sans-serif;letter-spacing:2px;font-size:10.5px;color:#bfe9c8;text-transform:uppercase}
+  .head .zone{font-family:'Uniform Bold',sans-serif;font-size:22px;color:#eafff0;letter-spacing:.5px;line-height:1.05;margin-top:1px}
+  .head .away{display:inline-flex;align-items:center;gap:6px;margin-top:4px;font-family:'Uniform Condensed Medium',sans-serif;font-size:11px;color:#cdd8ea;background:rgba(9,12,18,.5);border:1px solid rgba(255,255,255,.09);border-radius:999px;padding:2px 10px}
+  .head .away b{color:#fff;font-family:'Uniform Condensed Bold',sans-serif}
+
+  /* ── battlefield ── */
+  .scene{position:relative;z-index:4;min-height:0;overflow:hidden}
+  .ground{position:absolute;left:0;right:0;bottom:0;height:34%;background:linear-gradient(180deg,transparent,rgba(4,10,7,.5) 55%,rgba(3,7,5,.82));z-index:1}
+
+  .killwrap{position:absolute;top:6px;left:0;right:0;z-index:7;text-align:center;pointer-events:none}
+  .killwrap .lbl{font-family:'Uniform Condensed Bold',sans-serif;letter-spacing:2px;font-size:12px;color:#ffd9d9;text-transform:uppercase}
+  .killrow{display:inline-flex;align-items:center;gap:8px;margin-top:-2px}
+  .killrow .sk{font-size:24px;filter:drop-shadow(0 2px 3px #000)}
+  .killnum{font-family:'Uniform Bold',sans-serif;font-size:46px;line-height:1;color:#fff;letter-spacing:1px}
+  .killnum.punch{animation:punch .16s ease}
+  @keyframes punch{0%{transform:scale(1)}45%{transform:scale(1.1)}100%{transform:scale(1)}}
+
+  /* enemies stream from the right and die before reaching the squad */
+  .lane{position:absolute;inset:0;z-index:3;pointer-events:none}
+  /* enemies: SAME scale as heroes (game COMBAT_BASE_H is shared, ~54 base); face right toward the squad */
+  .foe{position:absolute;width:76px;height:76px;object-fit:contain;filter:drop-shadow(0 5px 5px rgba(0,0,0,.55))}
+  .foe.hit{animation:foehit .12s ease}
+  @keyframes foehit{0%{filter:drop-shadow(0 5px 5px rgba(0,0,0,.55)) brightness(1)}50%{filter:brightness(3.4) drop-shadow(0 0 8px #fff)}100%{filter:brightness(1)}}
+  .foe.die{animation:foedie .44s ease-in forwards}
+  @keyframes foedie{0%{opacity:1;transform:scale(1)}55%{opacity:.85;transform:scale(.78) rotate(-8deg);filter:brightness(2.6) blur(1px)}100%{opacity:0;transform:translateY(4px) scale(.1) rotate(-22deg);filter:brightness(2) blur(3px)}}
+  .spark{position:absolute;width:7px;height:7px;border-radius:50%;background:radial-gradient(circle,#fff,#ffd45e 55%,transparent);z-index:8;pointer-events:none;will-change:transform,opacity}
+  /* defeated enemies collapse into a pile at the squad's feet (the "stack of the ones you killed") */
+  .corpse{position:absolute;width:70px;height:70px;object-fit:contain;pointer-events:none;filter:grayscale(.4) brightness(.62) drop-shadow(0 3px 3px rgba(0,0,0,.6))}
+  .pop{position:absolute;z-index:8;font-family:'Uniform Bold',sans-serif;font-size:15px;color:#ffe3a0;pointer-events:none;text-shadow:0 1px 2px #000}
+  .pop.sk{color:#fff;font-size:18px}
+  @keyframes rise{0%{opacity:0;transform:translateY(4px) scale(.7)}20%{opacity:1;transform:translateY(-2px) scale(1.1)}100%{opacity:0;transform:translateY(-26px) scale(1)}}
+
+  /* squad — FIXED positions, feet aligned to the ground line via per-hero anchor offsets.
+     Never re-positioned; only a constant translateY idle-bob (never toggled). */
+  /* squad on the RIGHT, facing LEFT toward the incoming horde; feet aligned via per-hero anchor offsets */
+  .hero{position:absolute;z-index:5;width:80px;height:80px;object-fit:contain;filter:drop-shadow(0 6px 6px rgba(0,0,0,.5));animation:bobL 2.1s ease-in-out infinite;transform-origin:bottom center}
+  .hero.k{right:112px;bottom:4px}          /* knight FRONT line, anchor.y 0.8745 */
+  .hero.r{right:62px;bottom:9px;width:72px;height:72px;animation-delay:.7s}  /* ranger anchor.y 0.9435 */
+  .hero.w{right:14px;bottom:10px;width:68px;height:68px;animation-delay:1.4s} /* wizard (back) anchor.y 0.9555 */
+  @keyframes bobL{0%,100%{transform:scaleX(-1) translateY(0)}50%{transform:scaleX(-1) translateY(-3px)}}
+  .muzzle{position:absolute;right:188px;bottom:44px;z-index:6;width:40px;height:6px;border-radius:4px;background:linear-gradient(90deg,#fff,rgba(255,220,120,.9),transparent);opacity:0;filter:blur(1px);transform-origin:right center}
+  .muzzle.fire{animation:muz .16s ease-out}
+  @keyframes muz{0%{opacity:0;transform:scaleX(.3)}30%{opacity:1}100%{opacity:0;transform:scaleX(1.2)}}
+
+  /* rewards — condensed SQUARE tiles, number underneath */
+  .rew{position:relative;z-index:6;margin:0 10px;padding:8px 10px 10px;background:rgba(10,14,20,.72);border:1px solid rgba(255,255,255,.09);border-top-color:rgba(255,255,255,.14);border-radius:14px;backdrop-filter:blur(8px);box-shadow:0 -6px 24px rgba(0,0,0,.4)}
+  .caprow{display:flex;align-items:center;gap:8px;font-family:'Uniform Condensed Medium',sans-serif;font-size:10.5px;color:var(--dim);margin-bottom:8px}
+  .caprow .cap{flex:1;height:8px;border-radius:6px;background:#0c1017;overflow:hidden;border:1px solid rgba(255,255,255,.06)}
+  .caprow .cap i{display:block;height:100%;width:0;border-radius:6px;background:linear-gradient(90deg,#5ad17a,#9be86b);box-shadow:0 0 10px rgba(120,230,110,.6)}
+  .caprow .cap.full i{background:linear-gradient(90deg,#ffb020,#ffd45e);box-shadow:0 0 12px rgba(255,200,80,.7)}
+  .caprow b{color:#fff;font-family:'Uniform Condensed Bold',sans-serif}
+  .loot{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;justify-items:center}
+  .item{display:flex;flex-direction:column;align-items:center;gap:4px;width:100%}
+  .sq{position:relative;width:100%;max-width:80px;aspect-ratio:1/1;border-radius:15px;display:grid;place-items:center;overflow:hidden;
+    background:linear-gradient(180deg,rgba(24,30,44,.95),rgba(12,16,24,.95));border:1px solid var(--line);border-top-color:rgba(255,255,255,.14)}
+  .sq::before{content:'';position:absolute;inset:0;background:radial-gradient(95% 65% at 50% 0%,var(--c,#3a465e),transparent 70%);opacity:.42}
+  .sq img{width:40px;height:40px;object-fit:contain;filter:drop-shadow(0 2px 3px #000);position:relative}
+  .sq .rate{position:absolute;top:4px;right:6px;font-family:'Uniform Condensed Medium',sans-serif;font-size:8px;color:#dfe7f4;opacity:.85}
+  .item .n{font-family:'Uniform Condensed Bold',sans-serif;font-size:16px;color:#fff;line-height:1}
+  .item .n.punch{animation:punch .16s ease}
+  .item .k{font-family:'Uniform Condensed Medium',sans-serif;font-size:8.5px;color:var(--dim);text-transform:uppercase;letter-spacing:.5px}
+
+  .cta{position:relative;z-index:6;display:flex;gap:10px;align-items:stretch;padding:9px 12px 12px}
+  .claim{flex:1;position:relative;border:none;border-radius:14px;cursor:pointer;color:#3a2600;font-family:'Uniform Bold',sans-serif;font-size:17px;letter-spacing:.5px;
+    background:linear-gradient(180deg,#ffe793,#f5b829);box-shadow:0 4px 0 #b9820f,0 8px 22px rgba(245,184,41,.45);
+    display:flex;align-items:center;justify-content:center;gap:9px;padding:11px 10px;min-height:50px;animation:cta 2.2s ease-in-out infinite}
+  .claim img{width:26px;height:26px;object-fit:contain;filter:drop-shadow(0 1px 2px rgba(0,0,0,.4))}
+  .claim:active{transform:translateY(2px);box-shadow:0 2px 0 #b9820f}
+  .claim.done{background:linear-gradient(180deg,#7fd39a,#3fae6a);color:#04220f;box-shadow:0 4px 0 #1f5f38;animation:none}
+  @keyframes cta{0%,100%{box-shadow:0 4px 0 #b9820f,0 8px 22px rgba(245,184,41,.4)}50%{box-shadow:0 4px 0 #b9820f,0 10px 30px rgba(255,214,94,.7)}}
+  .fast{flex:0 0 auto;width:76px;border:1px solid rgba(255,255,255,.14);border-radius:15px;cursor:pointer;background:rgba(13,18,28,.85);color:#dfe8f6;
+    font-family:'Uniform Condensed Bold',sans-serif;font-size:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;line-height:1.05}
+  .fast .x{font-family:'Uniform Bold',sans-serif;font-size:17px;color:#8fd0ff}.fast small{font-family:'Uniform Condensed Medium',sans-serif;font-size:8.5px;color:var(--dim)}
+
+  /* controls (mockup only) */
+  .controls{display:flex;flex-direction:column;gap:8px;align-items:center;background:#11141c;border:1px solid #222b3d;border-radius:12px;padding:12px 16px;min-width:min(420px,92vw)}
+  .controls .row{display:flex;align-items:center;gap:10px;width:100%}
+  .controls label{font-size:12px;color:var(--dim);min-width:70px}
+  .controls input[type=range]{flex:1;accent-color:#f5b829}
+  .controls .val{font-family:'Uniform Condensed Bold',sans-serif;color:#fff;min-width:74px;text-align:right}
+  .controls button{background:#1c2740;border:1px solid #33507e;color:#cfe0ff;border-radius:9px;padding:7px 14px;cursor:pointer;font-size:13px;font-family:'Uniform Condensed Bold',sans-serif}
+  .controls button:hover{background:#253354}
+  .note{font-size:11px;color:var(--faint);text-align:center;line-height:1.5}
+</style>
+</head>
+<body>
+  <div class="banner"><b>AFK COLLECTION</b> — squad grinds real bog enemies at speed while the cache fills; CLAIM fires the game's existing <b>currencyBurst</b> (burst → hang → arc into the HUD counter → tally-bounce). Numbers: &lt;1k plain · 1k+ = x.xxk · 1m+ = x.xxm.</div>
+
+  <div class="device">
+    <div class="afk" id="afk">
+      <div class="dim"></div>
+
+      <!-- persistent game HUD (stays lit above the dim) — the explosion arcs UP into these -->
+      <div class="topbar">
+        <div class="cur"><img src="../../assets/combatclean/ui/energy.png" alt=""><b>100</b></div>
+        <div class="cur sp" data-stat="coin"><img src="../../assets/combatclean/ui/coin.png" alt=""><b id="tbCoinV">210</b></div>
+        <div class="cur" data-stat="hero"><img src="../../assets/combatclean/ui/heroXp.png" alt=""><b id="tbHeroV">364</b></div>
+        <div class="cur" data-stat="gear"><img src="../../assets/combatclean/ui/gearXp.png" alt=""><b id="tbGearV">364</b></div>
+      </div>
+
+      <div class="pop" id="pop">
+      <div class="afk-bg"></div>
+
+      <div class="head">
+        <div class="wb">Welcome back — your squad held the line</div>
+        <div class="zone ol">MOSSBOG FENS</div>
+        <div class="away">⏳ Away for <b id="awayLbl">5h 20m</b></div>
+      </div>
+
+      <div class="scene" id="scene">
+        <div class="ground"></div>
+        <div class="lane" id="lane"></div>
+        <div class="killwrap">
+          <div class="lbl">Monsters defeated</div>
+          <div class="killrow"><span class="sk">☠️</span><span class="killnum ol" id="killNum">0</span></div>
+        </div>
+        <img class="hero k" src="../../assets/combatclean/heroes/knight.png" alt="">
+        <img class="hero r" src="../../assets/combatclean/heroes/ranger.png" alt="">
+        <img class="hero w" src="../../assets/combatclean/heroes/wizard.png" alt="">
+        <div class="muzzle" id="muzzle"></div>
+      </div>
+
+      <div class="rew">
+        <div class="caprow">
+          <span>Idle cache</span>
+          <span class="cap" id="capBar"><i></i></span>
+          <b id="capLbl">5h 20m / 8h</b>
+        </div>
+        <div class="loot">
+          <div class="item"><div class="sq" style="--c:#7a5a12"><span class="rate">+120/hr</span><img src="../../assets/combatclean/ui/coin.png" alt=""></div><div class="n ol-sm" id="coinV">0</div><div class="k">Coins</div></div>
+          <div class="item"><div class="sq" style="--c:#1c4a7a"><span class="rate">+90/hr</span><img src="../../assets/combatclean/ui/heroXp.png" alt=""></div><div class="n ol-sm" id="heroV">0</div><div class="k">Hero XP</div></div>
+          <div class="item"><div class="sq" style="--c:#1c5a34"><span class="rate">+90/hr</span><img src="../../assets/combatclean/ui/gearXp.png" alt=""></div><div class="n ol-sm" id="gearV">0</div><div class="k">Gear XP</div></div>
+        </div>
+      </div>
+
+      <div class="cta">
+        <button class="claim" id="claimBtn"><img src="../../assets/combatclean/ui/chest-rare.png" alt="">CLAIM</button>
+        <button class="fast" id="fastBtn"><span class="x">×2</span>FAST<small>collect</small></button>
+      </div>
+      </div><!-- /.pop -->
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="row"><label>Time away</label><input type="range" id="slider" min="0.25" max="12" step="0.25" value="5.33"><span class="val" id="sliderVal">5h 20m</span></div>
+    <div class="row" style="justify-content:center;gap:14px"><button id="replayBtn">▶ Replay fill</button><button id="resetBtn">↺ Reset top bar</button></div>
+    <div class="note">Rates = real AFK config (120 coin + 90/90 xp per hr, capped 8h). Explosion mirrors <code>currency-pickup.js</code> config. “Monsters defeated” = display metric <code>MONSTERS_PER_HR</code>.</div>
+  </div>
+
+<script>
+(() => {
+  const AFK = { coinsPerHr:120, heroXpPerHr:90, gearXpPerHr:90, maxHrs:8 };
+  const MONSTERS_PER_HR = 375;
+  const START = { coin:210, hero:364, gear:364 };
+  const REVEAL_MS = 2200;
+  const FOES = ['mud-golem','fen-lurcher','swamp-hag','bog-goblin','giant-leech','bog-slime','reed-lurker','bog-zombie','giant-toad']
+    .map(s => `../../assets/combatclean/enemies/${s}.png`);
+  // currency-explosion config — copied from src/data/config/game/_reveal.json (currency)
+  const CU = { pulseScale:1.25, pulseMs:260, iconsPerAmount:16, iconsMin:2, iconsMax:7, iconSize:26,
+    glowColor:'#ffd45e', burstSpeed:[60,120], burstUp:40, ctrlJitter:50, arcApex:[80,120],
+    burstMs:160, hangMs:90, arcMs:460, iconDelayMs:30, itemStaggerMs:150, removeMs:60 };
+
+  const $ = id => document.getElementById(id);
+  const rand=(a,b)=>a+Math.random()*(b-a);
+  const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
+  const easeOutCubic=t=>1-Math.pow(1-t,3);
+  const easeOutBack=t=>{const c1=1.70158,c3=c1+1;return 1+c3*Math.pow(t-1,3)+c1*Math.pow(t-1,2);};
+  const easeInQuad=t=>t*t;
+  const bez=(t,a,b,c)=>{const u=1-t;return u*u*a+2*u*t*b+t*t*c;};
+  // PROJECT NUMBER RULE (mirrors src/view/fmt.js fmtK)
+  const floor2=x=>(Math.floor(x*100)/100).toFixed(2);
+  const fmtNum=n=>{const v=Math.round(Number(n)||0),a=Math.abs(v),s=v<0?'-':'';
+    if(a>=1e6)return s+floor2(a/1e6)+'m'; if(a>=1e3)return s+floor2(a/1e3)+'k'; return String(v);};
+  const fmtT=h=>{const m=Math.round(h*60);return `${Math.floor(m/60)}h ${String(m%60).padStart(2,'0')}m`;};
+  const earn=h=>{const c=Math.min(h,AFK.maxHrs);return{monsters:Math.floor(MONSTERS_PER_HR*c),
+    coins:Math.floor(AFK.coinsPerHr*c),heroXp:Math.floor(AFK.heroXpPerHr*c),gearXp:Math.floor(AFK.gearXpPerHr*c),capped:h>=AFK.maxHrs};};
+
+  let awayHrs=5.333, pending=earn(awayHrs), bar={...START}, fastTimer=null;
+
+  // ── enemy conveyor ──
+  function spawnFoe(){
+    const lane=$('lane'); if(!lane) return; const W=lane.clientWidth;
+    const img=document.createElement('img'); img.className='foe';
+    img.src=FOES[Math.floor(Math.random()*FOES.length)];
+    img.style.bottom=(8+Math.random()*32)+'px'; img.style.left='-76px'; lane.appendChild(img);
+    const frontX=W-198, dist=frontX+76;   // march from off-LEFT into the squad's front line (right)
+    const travel=920+Math.random()*320;
+    img.animate([{transform:'translateX(0)'},{transform:`translateX(${dist}px)`}],{duration:travel,easing:'linear',fill:'forwards'});
+    // disintegrate ON CONTACT with the heroes (end of the march)
+    setTimeout(()=>{ fireMuzzle(); img.classList.add('hit');
+      const r=img.getBoundingClientRect(), l=lane.getBoundingClientRect();
+      const cx=r.left-l.left+38, cy=l.bottom-r.bottom+38, src=img.src;
+      disintegrate(cx,cy);
+      pop(cx, cy+28, Math.random()<.5?'☠':'−'+fmtNum(30+Math.floor(Math.random()*220)), Math.random()<.5);
+      setTimeout(()=>{ img.remove(); addCorpse(cx, src); },60);  // collapse into the kill-pile (stays)
+    }, travel*0.9);
+  }
+  function disintegrate(x,y){
+    const lane=$('lane'); if(!lane) return;
+    for(let i=0;i<7;i++){ const s=document.createElement('div'); s.className='spark';
+      s.style.left=x+'px'; s.style.bottom=y+'px'; lane.appendChild(s);
+      const ang=rand(-Math.PI*0.92,-Math.PI*0.08), d=16+Math.random()*30;
+      const dx=Math.cos(ang)*d, dy=Math.sin(ang)*d;   // up + outward
+      s.animate([{transform:'translate(0,0) scale(1)',opacity:1},{transform:`translate(${dx}px,${dy}px) scale(.2)`,opacity:0}],
+        {duration:340+Math.random()*180,easing:'ease-out',fill:'forwards'});
+      setTimeout(()=>s.remove(),560);
+    }
+  }
+  function fireMuzzle(){ const m=$('muzzle'); m.classList.remove('fire'); void m.offsetWidth; m.classList.add('fire'); }
+  function pop(x,y,txt,sk){ const lane=$('lane'); const p=document.createElement('div'); p.className='pop'+(sk?' sk':'');
+    p.textContent=txt; p.style.left=x+'px'; p.style.bottom=y+'px'; p.style.animation='rise .75s ease-out forwards'; lane.appendChild(p); setTimeout(()=>p.remove(),760); }
+  function stopFast(){ if(fastTimer){ clearInterval(fastTimer); fastTimer=null; } }
+  function startFast(ms){ stopFast(); fastTimer=setInterval(spawnFoe,90); setTimeout(stopFast,ms); }
+  // the killed enemies pile up into a stack at the squad's feet; NO infinite respawn.
+  const PILE_CAP=20; let pile=[];
+  function clearPile(){ pile.forEach(c=>c.remove()); pile=[]; }
+  function addCorpse(cx, src){
+    const lane=$('lane'); if(!lane) return;
+    const c=document.createElement('img'); c.className='corpse'; c.src=src;
+    // pile just LEFT of the front hero (where they fall), spread into a mound so it reads as a heap
+    c.style.left=(cx-70+rand(-52,26))+'px'; c.style.bottom=(2+Math.random()*22)+'px'; c.style.zIndex=String(3);
+    const rot=(58+Math.random()*54)*(Math.random()<.5?-1:1);   // toppled sideways
+    c.style.transform=`rotate(${rot}deg)`;
+    lane.appendChild(c); pile.push(c);
+    if(pile.length>PILE_CAP){ const old=pile.shift(); old.remove(); }
+    c.animate([{transform:`rotate(${rot}deg) translateY(-16px) scale(.7)`,opacity:0},{transform:`rotate(${rot}deg) translateY(0) scale(1)`,opacity:1}],
+      {duration:220,easing:'cubic-bezier(.2,1.3,.4,1)',fill:'forwards'});
+  }
+
+  // ── reveal: bar + counters rise together while the squad grinds fast ──
+  function reveal(){
+    pending=earn(awayHrs);
+    $('awayLbl').textContent=fmtT(awayHrs);
+    const capPct=Math.min(1,awayHrs/AFK.maxHrs);
+    const cb=$('capBar'); cb.classList.toggle('full',pending.capped);
+    $('capLbl').textContent=pending.capped?'FULL · 8h':`${fmtT(awayHrs)} / 8h`;
+    const b=$('claimBtn'); b.classList.remove('done'); b.disabled=false; b.innerHTML='<img src="../../assets/combatclean/ui/chest-rare.png" alt="">CLAIM';
+    // reset displayed rewards to 0, top bar to current bar
+    $('tbCoinV').textContent=fmtNum(bar.coin); $('tbHeroV').textContent=fmtNum(bar.hero); $('tbGearV').textContent=fmtNum(bar.gear);
+    clearPile(); startFast(REVEAL_MS);   // one burst → they pile up dead → nothing after
+    const t0=performance.now(), ci=cb.querySelector('i');
+    (function frame(now){
+      const p=Math.min(1,(now-t0)/REVEAL_MS), e=easeOutCubic(p);
+      ci.style.width=(capPct*e*100)+'%';
+      $('killNum').textContent=fmtNum(pending.monsters*e);
+      $('coinV').textContent=fmtNum(pending.coins*e);
+      $('heroV').textContent=fmtNum(pending.heroXp*e);
+      $('gearV').textContent=fmtNum(pending.gearXp*e);
+      if(p<1) requestAnimationFrame(frame);
+      else ['killNum','coinV','heroV','gearV'].forEach(id=>{ $(id).classList.add('punch'); setTimeout(()=>$(id).classList.remove('punch'),160); });
+    })(t0);
+  }
+
+  // ── currency explosion — the EXISTING format (currency-pickup.js currencyBurst) ──
+  let _overlay=null;
+  const overlay=()=>{ if(_overlay) return _overlay; _overlay=document.createElement('div');
+    Object.assign(_overlay.style,{position:'fixed',inset:0,pointerEvents:'none',zIndex:9999,overflow:'hidden'});
+    document.body.appendChild(_overlay); return _overlay; };
+  const disp={...bar}, target={...bar}, tileRem={};
+  const TOP={coin:'tbCoinV',hero:'tbHeroV',gear:'tbGearV'}, TILE={coin:'coinV',hero:'heroV',gear:'gearV'};
+  function tgtPoint(stat){ const el=document.querySelector(`[data-stat="${stat}"]`); if(!el) return null;
+    const r=el.getBoundingClientRect(); return {x:r.left+r.width/2,y:r.top+r.height/2,el}; }
+  function pulse(el){ el&&el.animate([{transform:'scale(1)'},{transform:`scale(${CU.pulseScale})`},{transform:'scale(1)'}],{duration:CU.pulseMs,easing:'ease-out'}); }
+  function burstOne(from, it){
+    const tgt=tgtPoint(it.stat); if(!tgt) return;
+    const n=clamp(Math.ceil(it.amount/CU.iconsPerAmount),CU.iconsMin,CU.iconsMax);
+    target[it.stat]=disp[it.stat]+it.amount; tileRem[it.stat]=it.amount; const share=it.amount/n;
+    for(let i=0;i<n;i++) icon(from,tgt,it,i,share,n);
+  }
+  function icon(from,tgt,it,i,share,total){
+    const el=document.createElement('img'); el.src=it.img; el.draggable=false;
+    Object.assign(el.style,{position:'absolute',left:'0',top:'0',width:CU.iconSize+'px',height:CU.iconSize+'px',
+      objectFit:'contain',willChange:'transform,opacity',transform:`translate(${from.x}px,${from.y}px)`,filter:`drop-shadow(0 0 6px ${CU.glowColor})`});
+    overlay().appendChild(el);
+    const ang=rand(0,Math.PI*2), sp=rand(...CU.burstSpeed);
+    const bx=from.x+Math.cos(ang)*sp, by=from.y+Math.sin(ang)*sp-CU.burstUp;
+    const cx=(bx+tgt.x)/2+rand(-CU.ctrlJitter,CU.ctrlJitter), cy=Math.min(by,tgt.y)-rand(...CU.arcApex);
+    const delay=i*CU.iconDelayMs, t0=performance.now(), last=i===total-1;
+    (function frame(now){
+      const t=now-t0-delay; if(t<0){requestAnimationFrame(frame);return;}
+      if(t<CU.burstMs){ const k=t/CU.burstMs; const x=from.x+(bx-from.x)*easeOutCubic(k), y=from.y+(by-from.y)*easeOutCubic(k);
+        el.style.transform=`translate(${x}px,${y}px) scale(${0.4+0.9*easeOutBack(Math.min(1,k))})`; requestAnimationFrame(frame); return; }
+      if(t<CU.burstMs+CU.hangMs){ el.style.transform=`translate(${bx}px,${by}px) scale(1.3)`; requestAnimationFrame(frame); return; }
+      const at=(t-CU.burstMs-CU.hangMs)/CU.arcMs;
+      if(at>=1){ el.style.transform=`translate(${tgt.x}px,${tgt.y}px) scale(.4)`; el.style.opacity='0'; pulse(tgt.el);
+        if(last){ disp[it.stat]=target[it.stat]; tileRem[it.stat]=0; } else { disp[it.stat]+=share; tileRem[it.stat]=Math.max(0,tileRem[it.stat]-share); }
+        bar[it.stat]=Math.round(disp[it.stat]); $(TOP[it.stat]).textContent=fmtNum(bar[it.stat]);           // top counter fills up
+        const te=$(TILE[it.stat]); te.textContent=fmtNum(tileRem[it.stat]); te.classList.add('punch'); setTimeout(()=>te.classList.remove('punch'),150);  // tile drains to 0
+        setTimeout(()=>el.remove(),CU.removeMs); return; }
+      const e=easeInQuad(at); const x=bez(e,bx,cx,tgt.x), y=bez(e,by,cy,tgt.y);
+      el.style.transform=`translate(${x}px,${y}px) scale(${1.3-0.9*e})`; requestAnimationFrame(frame);
+    })(t0);
+  }
+  function claim(){
+    const b=$('claimBtn'); if(b.disabled) return; b.disabled=true;
+    const rew=document.querySelector('.rew').getBoundingClientRect();
+    const from={x:rew.left+rew.width/2, y:rew.top+rew.height*0.35};
+    const items=[
+      {stat:'coin', amount:pending.coins, img:'../../assets/combatclean/ui/coin.png'},
+      {stat:'hero', amount:pending.heroXp, img:'../../assets/combatclean/ui/heroXp.png'},
+      {stat:'gear', amount:pending.gearXp, img:'../../assets/combatclean/ui/gearXp.png'},
+    ];
+    items.forEach((it,i)=> setTimeout(()=>burstOne(from,it), i*CU.itemStaggerMs));
+    setTimeout(()=>{ b.classList.add('done'); b.innerHTML='✓ COLLECTED'; }, 700);
+  }
+
+  $('slider').addEventListener('input',e=>{ awayHrs=parseFloat(e.target.value); $('sliderVal').textContent=fmtT(awayHrs); });
+  $('slider').addEventListener('change',reveal);
+  $('replayBtn').addEventListener('click',reveal);
+  $('resetBtn').addEventListener('click',()=>{ bar={...START}; Object.assign(disp,START); Object.assign(target,START);
+    $('tbCoinV').textContent=fmtNum(START.coin); $('tbHeroV').textContent=fmtNum(START.hero); $('tbGearV').textContent=fmtNum(START.gear); });
+  $('claimBtn').addEventListener('click',claim);
+  $('fastBtn').addEventListener('click',()=>{ awayHrs=AFK.maxHrs; $('slider').value=AFK.maxHrs; $('sliderVal').textContent='8h 00m'; reveal(); });
+
+  window.addEventListener('load',()=>{ $('tbCoinV').textContent=fmtNum(START.coin); $('tbHeroV').textContent=fmtNum(START.hero); $('tbGearV').textContent=fmtNum(START.gear); setTimeout(reveal,250); });
+})();
+</script>
+</body>
+</html>

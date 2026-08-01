@@ -1,0 +1,8 @@
+{
+	"id": 3058,
+	"name": "Rotting Ghoul",
+	"iconAssetId": "enemy.rotting-ghoul",
+	"combat": {
+		"scale": 1.3
+	}
+}

@@ -1,0 +1,19 @@
+{
+	"id": 2037,
+	"name": "Warlord",
+	"iconAssetId": "hero.warlord",
+	"emoji": "⚔️",
+	"abilityNames": {
+		"basic": "Attack",
+		"normal": "War Cry",
+		"limit": "Onslaught"
+	},
+	"portrait": {
+		"scale": 2.2,
+		"x": -0.149,
+		"y": -0.535
+	},
+	"combat": {
+		"scale": 1.2
+	}
+}

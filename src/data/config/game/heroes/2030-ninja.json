@@ -1,0 +1,29 @@
+{
+	"id": 2030,
+	"displayName": "ninja",
+	"rarityKey": "epic",
+	"weaponChainKey": "blade",
+	"baseAtk": 16,
+	"baseHp": 230,
+	"baseDef": 13,
+	"normal": {
+		"chargeMs": 5500,
+		"effect": {
+			"type": "burst",
+			"mult": 2.8
+		}
+	},
+	"limit": {
+		"orders": 5,
+		"effect": {
+			"type": "burst",
+			"mult": 7,
+			"statusKeys": [
+				"stealth"
+			],
+			"target": "self",
+			"durationMs": 5000
+		}
+	},
+	"classKey": "ninja"
+}

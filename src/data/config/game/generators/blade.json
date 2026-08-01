@@ -1,0 +1,70 @@
+{
+	"key": "blade",
+	"chainKey": "blade",
+	"weapon": "blade",
+	"energyCost": 1,
+	"dropsByLevel": [
+		[
+			{
+				"level": 0,
+				"weight": 80
+			},
+			{
+				"level": 1,
+				"weight": 20
+			}
+		],
+		[
+			{
+				"level": 0,
+				"weight": 55
+			},
+			{
+				"level": 1,
+				"weight": 35
+			},
+			{
+				"level": 2,
+				"weight": 10
+			}
+		],
+		[
+			{
+				"level": 1,
+				"weight": 55
+			},
+			{
+				"level": 2,
+				"weight": 40
+			},
+			{
+				"level": 3,
+				"weight": 5
+			}
+		],
+		[
+			{
+				"level": 2,
+				"weight": 52
+			},
+			{
+				"level": 3,
+				"weight": 43
+			},
+			{
+				"level": 4,
+				"weight": 5
+			}
+		],
+		[
+			{
+				"level": 3,
+				"weight": 38
+			},
+			{
+				"level": 4,
+				"weight": 32
+			}
+		]
+	]
+}

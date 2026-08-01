@@ -1,0 +1,19 @@
+{
+	"id": 2033,
+	"name": "Samurai",
+	"iconAssetId": "hero.samurai",
+	"emoji": "⚔️",
+	"abilityNames": {
+		"basic": "Attack",
+		"normal": "Iaido Slash",
+		"limit": "Bushido"
+	},
+	"portrait": {
+		"scale": 1.7,
+		"x": 0.033,
+		"y": -0.322
+	},
+	"combat": {
+		"scale": 1.05
+	}
+}

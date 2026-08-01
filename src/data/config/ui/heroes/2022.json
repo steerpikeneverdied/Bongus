@@ -1,0 +1,16 @@
+{
+	"id": 2022,
+	"name": "Dancer",
+	"iconAssetId": "hero.dancer",
+	"emoji": "⚔️",
+	"abilityNames": {
+		"basic": "Attack",
+		"normal": "Flourish",
+		"limit": "Final Waltz"
+	},
+	"portrait": {
+		"scale": 1.7,
+		"x": 0.016,
+		"y": -0.399
+	}
+}

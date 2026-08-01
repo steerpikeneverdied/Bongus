@@ -1,0 +1,25 @@
+{
+	"id": 2041,
+	"displayName": "golem",
+	"rarityKey": "epic",
+	"weaponChainKey": "blade",
+	"baseAtk": 13,
+	"baseHp": 325,
+	"baseDef": 18,
+	"normal": {
+		"chargeMs": 6000,
+		"effect": {
+			"type": "burst",
+			"mult": 2.2
+		}
+	},
+	"limit": {
+		"orders": 5,
+		"effect": {
+			"type": "burst",
+			"mult": 5.5
+		}
+	},
+	"classKey": "golem",
+	"flying": true
+}

@@ -1,0 +1,25 @@
+{
+	"id": 2025,
+	"displayName": "gladiator",
+	"rarityKey": "epic",
+	"weaponChainKey": "blade",
+	"baseAtk": 15,
+	"baseHp": 260,
+	"baseDef": 14,
+	"normal": {
+		"chargeMs": 6500,
+		"effect": {
+			"type": "aoe",
+			"mult": 1.5
+		}
+	},
+	"limit": {
+		"orders": 5,
+		"effect": {
+			"type": "aoe",
+			"mult": 3.5
+		}
+	},
+	"classKey": "gladiator",
+	"flying": true
+}

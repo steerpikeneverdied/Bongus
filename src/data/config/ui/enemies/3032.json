@@ -1,0 +1,9 @@
+{
+	"id": 3032,
+	"name": "Slime",
+	"iconAssetId": "enemy.slime",
+	"emoji": "👾",
+	"combat": {
+		"scale": 1.05
+	}
+}

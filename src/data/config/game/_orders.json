@@ -1,0 +1,40 @@
+{
+	"active": 5,
+	"arrivalMs": 7000,
+	"itemCount": {
+		"one": 0.3,
+		"two": 0.85,
+		"max": 3
+	},
+	"fillerMaxLevel": 3,
+	"costPerTierBase": 2,
+	"specialChance": 0.12,
+	"potionChance": 0.1,
+	"orderChains": [
+		"blade",
+		"range",
+		"magic"
+	],
+	"dominantTier": {
+		"common": [
+			1,
+			2
+		],
+		"uncommon": [
+			3,
+			4
+		],
+		"rare": [
+			4,
+			5
+		],
+		"epic": [
+			6,
+			6
+		],
+		"legendary": [
+			7,
+			7
+		]
+	}
+}
