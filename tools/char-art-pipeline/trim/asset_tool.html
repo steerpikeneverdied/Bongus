@@ -1,0 +1,1264 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Char-Art Trim Tool</title>
+<style>
+  :root { --bg:#1e1f22; --panel:#26282c; --line:#3a3d42; --accent:#4aa3ff; --dot:#ff3b57; }
+  * { box-sizing:border-box; }
+  html,body { margin:0; height:100%; background:var(--bg); color:#e7e9ec;
+              font:13px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+  body { display:flex; flex-direction:column; }
+
+  /* top tab bar */
+  #tabbar { display:flex; align-items:center; gap:6px; padding:8px 12px;
+            background:#1a1b1e; border-bottom:1px solid var(--line); flex:0 0 auto; }
+  #tabbar .tab { background:transparent; border:1px solid transparent; color:#9aa0a6;
+                 padding:7px 16px; border-radius:7px; cursor:pointer; font-size:13px; font-weight:600; }
+  #tabbar .tab:hover { background:#26282c; }
+  #tabbar .tab.on { background:#33383f; color:#e7e9ec; box-shadow:inset 0 -2px 0 var(--accent); }
+  #catTabs { display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
+  #tabbar .cat-tab { padding:6px 12px; }
+  /* second-level subcategory strip */
+  #subTabs { display:flex; gap:7px; flex-wrap:wrap; align-items:center; padding:7px 12px;
+             background:#202226; border-bottom:1px solid var(--line); flex:0 0 auto; }
+  .subtab { background:transparent; border:1px solid var(--line); color:#9aa0a6; padding:5px 13px; border-radius:14px;
+            cursor:pointer; font-size:12px; font-weight:600; }
+  .subtab:hover { background:#2a2d32; color:#cbd0d6; }
+  .subtab.on { background:var(--accent); border-color:var(--accent); color:#08131f; }
+  .subtab .sn { opacity:.6; margin-left:4px; font-weight:400; }
+  #tabbar .exp { margin-left:auto; background:#2f5137; border:1px solid #3c6b48; color:#bff0cf;
+                 font-weight:600; padding:7px 14px; border-radius:7px; cursor:pointer; font-size:13px; }
+  #tabbar .exp:hover { background:#356045; } #tabbar .exp:disabled { opacity:.5; cursor:default; }
+  #tabbar .brand { margin-left:12px; color:#5b6169; font-size:12px; }
+
+  .view { flex:1 1 auto; min-height:0; }
+  #trimView { display:flex; }
+  #genView { display:none; overflow:auto; }
+  #genView.on, #trimView.on { }
+
+  #list { width:280px; flex:0 0 280px; border-right:1px solid var(--line); overflow-y:auto; background:var(--panel); }
+  #list h2 { margin:0; padding:12px 14px; font-size:12px; letter-spacing:.05em; text-transform:uppercase; color:#9aa0a6; border-bottom:1px solid var(--line); }
+  .cat { padding:9px 14px 5px; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:#7f868d; background:#212327; border-bottom:1px solid #2f3237; position:sticky; top:0; cursor:pointer; user-select:none; }
+  .cat:hover { background:#26282c; color:#9aa0a6; }
+  .cat.open { color:#e7e9ec; }
+  .cat .tw { display:inline-block; width:12px; color:#5b6169; }
+  .cat .n { float:right; color:#5b6169; }
+  .cat .catregen { float:right; margin-left:8px; background:#33383f; border:1px solid var(--line); color:#cbd0d6;
+                   border-radius:5px; padding:0 7px; font-size:12px; line-height:18px; cursor:pointer; }
+  .cat .catregen:hover { background:#3d434c; color:#fff; }
+  .row .rowchk { flex:0 0 auto; margin:0 2px 0 0; accent-color:var(--accent); cursor:pointer; }
+  .row { display:flex; align-items:center; gap:10px; padding:8px 12px 8px 20px; cursor:pointer; border-bottom:1px solid #2f3237; }
+  .row:hover { background:#2c2f34; }
+  .row.sel { background:#33383f; box-shadow:inset 3px 0 0 var(--accent); }
+  .row img { width:38px; height:38px; object-fit:contain; background:#3a3d42; border-radius:4px; }
+  .row .name { flex:1; } .row .name.gen { color:#7dd3a0; }
+  .badge { min-width:22px; text-align:center; padding:2px 7px; border-radius:10px; font-size:11px; background:#3a3d42; color:#9aa0a6; }
+  .badge.has { background:var(--dot); color:#fff; }
+
+  #main { flex:1; display:flex; flex-direction:column; min-width:0; }
+  #bar { display:flex; align-items:center; gap:12px; padding:10px 14px; border-bottom:1px solid var(--line); background:var(--panel); flex-wrap:wrap; }
+  #bar .title { font-weight:600; } #bar .spacer { flex:1; }
+  button { background:#343841; color:#e7e9ec; border:1px solid var(--line); padding:6px 12px; border-radius:6px; cursor:pointer; font-size:12px; }
+  button:hover { background:#3d424c; } button:disabled { opacity:.5; cursor:default; }
+  button.primary { background:var(--accent); border-color:var(--accent); color:#08131f; font-weight:600; }
+  .seg { display:flex; border:1px solid var(--line); border-radius:6px; overflow:hidden; }
+  .seg button { border:0; border-radius:0; } .seg button.on { background:var(--accent); color:#08131f; font-weight:600; }
+  #zoomLbl { color:#9aa0a6; width:44px; }
+  .halo { color:#9aa0a6; } .halo input { width:52px; background:#343841; color:#e7e9ec; border:1px solid var(--line); border-radius:5px; padding:4px 6px; }
+  #hint { color:#9aa0a6; padding:6px 14px; border-bottom:1px solid var(--line); background:#212327; }
+  #stageWrap { flex:1; overflow:auto; display:flex; align-items:flex-start; justify-content:center; padding:24px; position:relative; }
+  #stage { position:relative; line-height:0; box-shadow:0 4px 24px rgba(0,0,0,.4); }
+  #stage img { display:block; background: repeating-conic-gradient(#2a2c30 0% 25%, #303339 0% 50%) 50%/24px 24px; }
+  #dots { position:absolute; inset:0; pointer-events:none; }
+  .dot { position:absolute; width:16px; height:16px; margin:-8px 0 0 -8px; border-radius:50%; background:var(--dot); border:2px solid #fff; box-shadow:0 1px 4px rgba(0,0,0,.5); cursor:pointer; pointer-events:auto; }
+  .dot span { position:absolute; top:-18px; left:50%; transform:translateX(-50%); font-size:10px; color:#fff; text-shadow:0 1px 2px #000; }
+  #stageMsg { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:#7f868d; font-size:14px; display:none; }
+  #bar #regBtn.on { background:#37d67a; border-color:#37d67a; color:#08131f; font-weight:600; }
+  #bar #delBtn { background:#5a3030; border-color:#6b3a3a; color:#ffc9c9; }
+  #bar #delBtn:hover { background:#6b3838; }
+  #genRegen { padding:9px 16px; margin-left:8px; }
+  .reg { position:absolute; width:16px; height:16px; margin:-8px 0 0 -8px; border-radius:50%;
+         border:2px solid #37d67a; box-shadow:0 0 0 1px rgba(0,0,0,.6); pointer-events:none; }
+  .reg::before,.reg::after { content:""; position:absolute; background:#37d67a; }
+  .reg::before { left:50%; top:-7px; width:2px; height:30px; margin-left:-1px; }
+  .reg::after  { top:50%; left:-7px; height:2px; width:30px; margin-top:-1px; }
+  .modal { position:fixed; inset:0; background:rgba(0,0,0,.5); display:flex; align-items:center; justify-content:center; z-index:50; }
+  .modal[hidden] { display:none; }
+  .modal-card { background:var(--panel); border:1px solid var(--line); border-radius:12px; min-width:520px; max-width:90vw; }
+  .modal-card .mh { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; border-bottom:1px solid var(--line); font-weight:600; }
+  .modal-card .mh button { background:transparent; border:0; color:#9aa0a6; font-size:16px; cursor:pointer; }
+  .tcols { display:flex; gap:16px; padding:16px; } .tcol { flex:1; }
+  .tcol h4 { margin:0 0 8px; color:#9aa0a6; font-size:12px; text-transform:uppercase; letter-spacing:.05em; }
+  .tlist { display:flex; flex-direction:column; gap:8px; margin-bottom:8px; }
+  .trow { display:flex; align-items:center; gap:8px; color:#9aa0a6; }
+  .trow input[type=color] { width:34px; height:28px; padding:0; border:1px solid var(--line); border-radius:5px; background:#343841; }
+  .trow input[type=number] { width:56px; background:#343841; color:#e7e9ec; border:1px solid var(--line); border-radius:5px; padding:5px 7px; }
+  .trow .trm { background:#3a3d42; border:1px solid var(--line); color:#cbd0d6; border-radius:5px; padding:4px 8px; cursor:pointer; }
+  .addOutline { background:#343841; color:#e7e9ec; border:1px dashed var(--line); border-radius:6px; padding:6px 10px; cursor:pointer; width:100%; }
+  .modal-card .mf { padding:0 16px 14px; color:#7f868d; font-size:11px; }
+  .vgrid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; padding:14px 16px; }
+  .vcell { position:relative; aspect-ratio:1/1; background:#0e0f12; border:2px solid #2a2d33; border-radius:10px; overflow:hidden; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+  .vcell:hover { border-color:#4db6ff; }
+  .vcell img { width:100%; height:100%; object-fit:contain; }
+  .vcell .vspin { color:#5a6069; font-size:22px; }
+  .vcell .vpick { position:absolute; inset:0; display:none; align-items:center; justify-content:center; background:rgba(77,182,255,.18); color:#eaf5ff; font-weight:700; font-size:13px; }
+  .vcell:hover .vpick { display:flex; }
+  .rarityhdr { padding:7px 10px 3px; margin-top:4px; font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:#8a9099; border-top:1px solid #23262b; position:sticky; top:0; background:var(--panel); z-index:1; }
+  .rarityhdr.r-common { color:#b8bcc2; }
+  .rarityhdr.r-uncommon { color:#5fd07a; }
+  .rarityhdr.r-rare { color:#4db6ff; }
+  .rarityhdr.r-epic { color:#b57cff; }
+  .rarityhdr.r-legendary { color:#f2b34d; }
+  .rarityhdr.r-other { color:#8a9099; }
+  #gameSize:not([hidden]) { display:flex; flex-direction:column; align-items:center; gap:8px; margin-left:28px; align-self:center; }
+  #gameSize .cmb-chip { position:relative; width:72px; height:54px; display:flex; align-items:center; justify-content:center;
+                        background: repeating-conic-gradient(#2a2c30 0% 25%, #303339 0% 50%) 50%/10px 10px; border-radius:4px; }
+  #gameSize .cmb-chip img { height:100%; width:auto; max-width:100%; filter:drop-shadow(0 2px 2px rgba(0,0,0,.5)); }
+  #gameSize .cmb-ground { position:absolute; left:0; right:0; bottom:0; height:1px; background:rgba(255,255,255,.28); pointer-events:none; }
+  #gameSize .gs-lbl { font-size:11px; color:#7f868d; white-space:nowrap; }
+  #tileEditor:not([hidden]) { display:flex; flex-direction:column; align-items:center; gap:14px; padding-top:8px; }
+  .mocktile { position:relative; width:300px; height:300px; border-radius:14px; overflow:hidden;
+              background:linear-gradient(160deg,#2b2f36,#1c1f24); box-shadow:0 6px 24px rgba(0,0,0,.5); }
+  .mocktile #tileArt { position:absolute; left:50%; bottom:2px; height:82%; width:auto; transform:translateX(-50%);
+                       cursor:grab; user-select:none; -webkit-user-drag:none; }
+  .mocktile #tileArt:active { cursor:grabbing; }
+  .mocktile .mt-frame { position:absolute; inset:0; border:1px solid rgba(255,255,255,.14); border-radius:14px; pointer-events:none; }
+  .mocktile .mt-frame::before,.mocktile .mt-frame::after { content:""; position:absolute; width:12px; height:12px; border:2px solid rgba(255,255,255,.35); }
+  .mocktile .mt-frame::before { top:5px; left:5px; border-right:0; border-bottom:0; border-top-left-radius:7px; }
+  .mocktile .mt-frame::after { bottom:5px; right:5px; border-left:0; border-top:0; border-bottom-right-radius:7px; }
+  .tilectrls { display:flex; align-items:center; gap:14px; color:#9aa0a6; }
+  .tilectrls input[type=range] { width:180px; }
+  .tilehint { color:#7f868d; font-size:12px; }
+  #tileGallery:not([hidden]) { width:100%; align-self:stretch; display:flex; flex-direction:column; }
+  #galHead { display:flex; align-items:center; gap:12px; padding:6px 4px 10px; color:#9aa0a6; font-size:12px; }
+  #galHead #galInfo { flex:1; }
+  #galGrid { display:grid; gap:12px; padding:0 4px 40px; grid-template-columns:repeat(auto-fill, minmax(128px, 1fr)); align-content:start; }
+  .gtile { display:flex; flex-direction:column; gap:5px; }
+  .gtile .mocktile.sm { width:100%; height:auto; aspect-ratio:1/1; box-shadow:0 3px 12px rgba(0,0,0,.45); }
+  .gtile .mocktile.sm img { position:absolute; left:50%; bottom:2px; height:82%; width:auto; transform:translateX(-50%);
+                            cursor:grab; user-select:none; -webkit-user-drag:none; touch-action:none; }
+  .gtile .mocktile.sm img:active { cursor:grabbing; }
+  .gtile.sel .mocktile.sm { outline:2px solid var(--accent); outline-offset:1px; }
+  .gtile:hover .mocktile.sm { outline:2px solid #4a5568; outline-offset:1px; }
+  .gtile .gtname { text-align:center; font-size:11px; color:#9aa0a6; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .gtile.sel .gtname { color:#e7e9ec; }
+
+  /* boss demarcation */
+  .bossbadge { display:inline-block; margin-left:6px; padding:1px 6px; border-radius:9px; font-size:9px; font-weight:700;
+               letter-spacing:.05em; background:#7a3b12; color:#ffd9a8; vertical-align:middle; }
+  .row.boss img { box-shadow:inset 0 0 0 2px #b5701f; }
+  #list h2 .catregen { float:right; background:#33383f; border:1px solid var(--line); color:#cbd0d6; border-radius:5px;
+                       padding:1px 8px; font-size:11px; cursor:pointer; font-weight:400; text-transform:none; letter-spacing:0; }
+  #list h2 .catregen:hover { background:#3d434c; color:#fff; }
+
+  /* combat lineup view */
+  #combatView:not([hidden]) { width:100%; align-self:stretch; padding:6px 2px 30px; }
+  #combatScene { position:relative; width:100%; min-height:300px; border-radius:12px; overflow-x:auto; overflow-y:hidden;
+                 display:flex; align-items:flex-end; padding:26px 20px 20px; box-shadow:inset 0 0 60px rgba(0,0,0,.55); }
+  #combatScene .cside { display:flex; align-items:flex-end; gap:2px; }
+  #combatScene .cgap { flex:1 1 40px; min-width:40px; }
+  #combatScene .cempty { color:rgba(255,255,255,.5); align-self:center; margin:60px auto; }
+  /* game-faithful chip: character body (reg point pinned to its baseline) → line + reg dot → HP bar → label */
+  .cchip { display:flex; flex-direction:column; align-items:center; flex:0 0 auto; }
+  .cbody { position:relative; width:72px; height:54px; display:flex; align-items:flex-end; justify-content:center; }
+  .cchip.cboss .cbody { width:132px; height:108px; }
+  .cbody img { width:auto; max-width:none; filter:drop-shadow(0 3px 3px rgba(0,0,0,.55)); }  /* height inline; NO clamp → uniform scale */
+  .cbase { position:relative; width:72px; border-top:1px solid rgba(255,255,255,.5); }        /* THE LINE = reg-point baseline */
+  .cchip.cboss .cbase { width:132px; }
+  .cregdot { position:absolute; left:50%; top:-4px; width:7px; height:7px; margin-left:-3.5px; border-radius:50%;
+             background:#37d67a; box-shadow:0 0 0 1.5px rgba(0,0,0,.7); }                       /* the registration point, on the line */
+  .chp { width:72px; height:6px; margin-top:3px; border-radius:3px; background:rgba(0,0,0,.55); overflow:hidden; }
+  .cchip.cboss .chp { width:132px; }
+  .chp-fill { display:block; height:100%; background:#ff3b46; border-radius:3px; }
+  .cchip.chero .chp-fill { background:#46d06a; }   /* heroes: green HP as in game */
+  .clbl { margin-top:3px; text-align:center; font-size:9px; color:rgba(255,255,255,.55);
+          max-width:92px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .cchip.cboss .clbl { color:#ffd9a8; font-weight:700; max-width:150px; }
+  .cchip.cedit .cbody img { cursor:grab; } .cchip.cedit .cbody img:active { cursor:grabbing; }
+  #combatBar { display:flex; align-items:center; gap:10px; padding:2px 6px 10px; color:#9aa0a6; font-size:12px; }
+  #combatBar .cttl { font-weight:600; color:#e7e9ec; }
+
+  /* single-enemy combat mockup (Tile→Combat for enemies) — same stack, magnified + a true-size copy */
+  #combatTileEditor:not([hidden]) { display:flex; flex-direction:column; align-items:center; gap:14px; padding-top:8px; }
+  .cmock { position:relative; width:340px; height:340px; border-radius:14px; overflow:hidden; box-shadow:0 6px 24px rgba(0,0,0,.5);
+           display:flex; align-items:flex-end; justify-content:center; padding:16px 0 22px; }
+  #cmChip .cbody { width:220px; height:120px; }
+  #cmChip .cbase, #cmChip .chp { width:220px; }
+  #cmChip .chp { height:10px; margin-top:4px; }
+  #cmChip .cbody img { cursor:grab; user-select:none; -webkit-user-drag:none; touch-action:none; filter:drop-shadow(0 4px 5px rgba(0,0,0,.6)); }
+  #cmChip .cregdot { width:9px; height:9px; margin-left:-4.5px; top:-5px; }
+  .ctprev { display:flex; flex-direction:column; align-items:center; gap:6px; }
+  #ctPreviewChip { background: repeating-conic-gradient(#2a2c30 0% 25%, #303339 0% 50%) 50%/10px 10px; border-radius:6px; padding:10px 12px 8px; }
+
+  /* merge tile (single) + merge board (all icons) */
+  #mergeTileEditor:not([hidden]) { display:flex; flex-direction:column; align-items:center; gap:14px; padding-top:8px; }
+  .mtile { position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center; border-radius:14px;
+           background:linear-gradient(160deg,#3a3f47,#23272d);
+           box-shadow:inset 0 2px 6px rgba(255,255,255,.06), inset 0 -4px 9px rgba(0,0,0,.45), 0 4px 16px rgba(0,0,0,.45); }
+  .mtile.lg { width:300px; height:300px; } .mtile.sm { width:128px; height:128px; border-radius:8px; }
+  .mtile img { width:86%; height:86%; object-fit:contain; }
+  #mTile img { cursor:grab; user-select:none; -webkit-user-drag:none; touch-action:none; } #mTile img:active { cursor:grabbing; }
+  #combatScene.mboard { display:grid; grid-template-columns:repeat(auto-fill,132px); gap:10px; align-content:start; justify-content:center;
+                        padding:16px; background:linear-gradient(160deg,#2a2f36,#191c21); overflow-y:auto; }
+  .mslot { width:132px; height:132px; position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center; border-radius:10px;
+           background:linear-gradient(160deg,#3a3f47,#23272d);
+           box-shadow:inset 0 2px 5px rgba(255,255,255,.05), inset 0 -3px 7px rgba(0,0,0,.4); }
+  .mslot img { width:auto; object-fit:contain; cursor:grab; user-select:none; -webkit-user-drag:none; touch-action:none; }
+  .mslot img:active { cursor:grabbing; }
+  .mslot.empty { opacity:.45; }
+
+  /* treatment presets */
+  .tpresets { display:flex; align-items:center; gap:8px; padding:12px 16px 4px; border-top:1px solid var(--line); }
+  .tpresets select { flex:1; background:#343841; color:#e7e9ec; border:1px solid var(--line); border-radius:6px; padding:6px 8px; }
+  .tpresets button { padding:6px 10px; }
+
+  /* generate tab */
+  #genWrap { max-width:760px; margin:0 auto; padding:28px 24px 60px; }
+  #genWrap h3 { margin:0 0 4px; font-size:16px; }
+  #genWrap p.sub { margin:0 0 20px; color:#7f868d; }
+  .field { margin-bottom:14px; } .field label { display:block; margin-bottom:5px; color:#9aa0a6; font-size:12px; }
+  .field input, .field textarea { width:100%; background:#26282c; color:#e7e9ec; border:1px solid var(--line);
+       border-radius:7px; padding:9px 11px; font:inherit; }
+  .field textarea { min-height:64px; resize:vertical; }
+  #slugPreview { color:#7dd3a0; font-size:12px; margin-left:6px; }
+  #genGo { padding:9px 20px; }
+  .jobs { margin-top:26px; display:flex; flex-direction:column; gap:14px; }
+  .job { border:1px solid var(--line); border-radius:10px; background:var(--panel); overflow:hidden; }
+  .job .jh { display:flex; align-items:center; gap:10px; padding:10px 14px; border-bottom:1px solid var(--line); }
+  .job .jh .s { flex:1; font-weight:600; }
+  .job .st { font-size:11px; padding:3px 9px; border-radius:10px; background:#3a3d42; color:#cbd0d6; }
+  .job .st.run { background:#3a4a63; color:#bcd6ff; } .job .st.ok { background:#2f5137; color:#bff0cf; } .job .st.err { background:#5a3030; color:#ffc9c9; }
+  .job pre { margin:0; padding:10px 14px; max-height:150px; overflow:auto; font:11px/1.45 ui-monospace,Menlo,monospace; color:#aab0b6; white-space:pre-wrap; }
+  .job .done { display:none; align-items:center; gap:14px; padding:12px 14px; border-top:1px solid var(--line); }
+  .job .done img { width:96px; height:96px; object-fit:contain; border-radius:6px;
+       background: repeating-conic-gradient(#2a2c30 0% 25%, #303339 0% 50%) 50%/14px 14px; }
+
+  #status { position:fixed; bottom:14px; right:16px; background:#111; color:#8f8; padding:8px 12px; border-radius:6px; opacity:0; transition:opacity .2s; max-width:60vw; }
+  #regenQueue { position:fixed; bottom:52px; right:16px; width:280px; display:flex; flex-direction:column; gap:6px; z-index:60; }
+  #regenQueue .rq { background:#15171b; border:1px solid #2a2d33; border-radius:8px; padding:7px 9px; box-shadow:0 4px 14px rgba(0,0,0,.4); font-size:12px; color:#cfd3d8; }
+  #regenQueue .rqh { display:flex; align-items:center; gap:8px; margin-bottom:5px; }
+  #regenQueue .rql { flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  #regenQueue .rqx { cursor:pointer; color:#8a9099; border:0; background:transparent; font-size:14px; line-height:1; padding:0 2px; }
+  #regenQueue .rqx:hover { color:#ff6b6b; }
+  #regenQueue .rqbar { height:6px; border-radius:3px; background:#2a2d33; overflow:hidden; }
+  #regenQueue .rqfill { height:100%; width:0; background:linear-gradient(90deg,#37d67a,#4db6ff); transition:width .3s; }
+  #regenQueue .rq.queued .rqfill { background:#5a6069; }
+  #regenQueue .rq.error  .rqfill { background:#ff6b6b; }
+  #regenQueue .rq.done   .rqfill { background:#37d67a; }
+  #regenQueue .rqs { font-size:10px; color:#8a9099; margin-top:3px; }
+  #status.show { opacity:1; }
+</style>
+</head>
+<body>
+  <div id="tabbar">
+    <span id="catTabs"></span>
+    <button class="tab" data-tab="gen">Generate</button>
+    <button id="exportBtn" class="exp">Export category</button>
+    <span class="brand">char-art trim tool</span>
+  </div>
+
+  <!-- second-level: subcategories of the selected group (e.g. enemy areas) -->
+  <div id="subTabs" style="display:none"></div>
+
+  <!-- TRIM VIEW -->
+  <div id="trimView" class="view on">
+    <div id="list"><h2>Assets</h2></div>
+    <div id="main">
+      <div id="bar">
+        <span class="title" id="curName">—</span>
+        <div class="seg" id="viewSeg">
+          <button data-v="source" class="on">Source</button>
+          <button data-v="trim">Trimmed</button>
+          <button data-v="256">256</button>
+          <button data-v="tile">Tile</button>
+          <button data-v="all">All tiles</button>
+          <button data-v="combat">Lineup</button>
+        </div>
+        <span class="spacer"></span>
+        <label id="zoomLbl">100%</label>
+        <input id="zoom" type="range" min="10" max="800" value="100" step="5">
+        <button id="fit">Fit</button>
+        <button id="treatBtn">Treatment</button>
+        <button id="regBtn" title="Registry/anchor point — click to set, applies to all">◎ Registry</button>
+        <button id="undo">Undo point</button>
+        <button id="clear">Clear points</button>
+        <button id="save">Save</button>
+        <button id="flipH" title="Mirror the source image left–right (at source)">⇋ Flip H</button>
+        <button id="flipV" title="Mirror the source image top–bottom (at source)">⇅ Flip V</button>
+        <button id="clipCur">Clip current</button>
+        <button class="primary" id="clipAll">Clip all</button>
+        <button id="delBtn" title="Delete this character + all its assets">Delete</button>
+        <button id="regenChk" disabled title="Regenerate the ticked entries in this category">Regen checked</button>
+        <button id="regenx6" title="Generate 6 variations of this tile and pick one">Regenerate ×6</button>
+      </div>
+      <div id="hint">In <b>Source</b> view, click any area whose <b>internal fill needs removing</b>
+        (e.g. a bow window). Click a point again to delete it. <b>0 points = default outer trim.</b>
+        Use <b>Trimmed</b> / <b>256</b> to view the generated die-cut + square exports.</div>
+      <div id="stageWrap">
+        <div id="stage"><img id="img" alt=""><div id="dots"></div></div>
+        <div id="gameSize" hidden>
+          <div class="cmb-chip"><img id="gsArt" alt=""><span class="cmb-ground"></span></div>
+          <div class="gs-lbl">in combat ≈ 54px tall</div>
+        </div>
+        <div id="stageMsg"></div>
+        <div id="tileEditor" hidden>
+          <div class="mocktile" id="mockTile"><img id="tileArt" alt=""><span class="mt-frame"></span></div>
+          <div class="tilectrls">
+            <label>Scale <input id="pScale" type="range" min="0.4" max="2.5" step="0.02" value="1"></label>
+            <span id="pRead">scale 1.00 · x 0.00 · y 0.00</span>
+            <button id="pReset">Reset</button>
+          </div>
+          <div class="tilehint">Drag the portrait to position · slider to zoom · saved per hero · exported to the hero tile</div>
+        </div>
+        <div id="combatTileEditor" hidden>
+          <div class="cmock" id="cmock">
+            <div class="cchip cedit" id="cmChip">
+              <div class="cbody"><img id="ctArt" alt=""></div>
+              <div class="cbase"><span class="cregdot"></span></div>
+              <div class="chp"><span class="chp-fill" style="width:72%"></span></div>
+            </div>
+          </div>
+          <div class="tilectrls">
+            <label>Scale <input id="cScale" type="range" min="0.3" max="3" step="0.02" value="1"></label>
+            <span id="cRead">scale 1.00 · x 0.00 · y 0.00</span>
+            <button id="cReset">Reset</button>
+          </div>
+          <div class="ctprev">
+            <div class="cchip" id="ctPreviewChip">
+              <div class="cbody"><img id="ctPreview" alt=""></div>
+              <div class="cbase"><span class="cregdot"></span></div>
+              <div class="chp"><span class="chp-fill" style="width:72%"></span></div>
+            </div>
+            <span class="gs-lbl">green dot = registration point · HP bar as in game · true size</span>
+          </div>
+          <div class="tilehint">Drag = move the <b>registration point</b> (shared across this enemy's assets) · slider / scroll = scale · saved + exported</div>
+        </div>
+        <div id="mergeTileEditor" hidden>
+          <div class="mtile lg" id="mTile"><img id="mtArt" alt=""></div>
+          <div class="ctprev"><div class="mtile sm" id="mtPrev"><img id="mtPrevArt" alt=""></div><span class="gs-lbl">on a merge tile · 128px game size</span></div>
+          <div class="tilehint">Drag = registration point · scroll = scale · shift+drag = rotate · auto-saved. Clipping emits both 256 and 128 for merge chains.</div>
+        </div>
+        <div id="tileGallery" hidden>
+          <div id="galHead"><span id="galInfo">drag a tile to move · scroll to scale · click to select</span><button id="galReset">Reset selected</button></div>
+          <div id="galGrid"></div>
+        </div>
+        <div id="combatView" hidden>
+          <div id="combatBar"><span class="cttl" id="combatTtl">Combat lineup</span>
+            <span>true in-combat size · green dot = registration point on the line · HP bar below · drag = move reg point, scroll = scale (auto-saved)</span></div>
+          <div id="combatScene"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GENERATE VIEW -->
+  <div id="genView" class="view">
+    <div id="genWrap">
+      <h3>Generate a hero</h3>
+      <p class="sub">Deploys a Claude instance to author the class in the locked chibi style, generates it
+        via the pipeline, and stages it into <b>heroes/</b> — it appears here (and in Trim) when ready.</p>
+      <div class="field">
+        <label>Class name <span id="slugPreview"></span></label>
+        <input id="genName" type="text" placeholder="e.g. spellblade, frost-witch, dragoon" autocomplete="off">
+      </div>
+      <div class="field">
+        <label>Description (optional — leave blank to let Claude write the subject)</label>
+        <textarea id="genSubject" placeholder="Only if you want to specify: gender, hair gradient, costume, weapon, pose. Style is locked."></textarea>
+      </div>
+      <div class="field">
+        <label>Critical elements — override the base prompt (e.g. lava skin, cornrow hair)</label>
+        <input id="genOverrides" type="text" placeholder="comma-separated; these take priority over the locked base style" autocomplete="off">
+      </div>
+      <button id="genGo" class="primary">Generate</button>
+      <button id="genRegen">Regenerate selected</button>
+      <div class="jobs" id="jobs"></div>
+    </div>
+  </div>
+
+  <div id="variantsModal" class="modal" hidden>
+    <div class="modal-card" style="width:min(92vw,880px)">
+      <div class="mh"><span id="vHead">Generating 6 variations…</span><button id="vClose">✕</button></div>
+      <div id="vGrid" class="vgrid"></div>
+      <div class="mf">Click a variation to keep it as this tile's source.</div>
+    </div>
+  </div>
+
+  <div id="treatModal" class="modal" hidden>
+    <div class="modal-card">
+      <div class="mh"><span>Treatment — outlines stroked after sizing (top = innermost)</span><button id="treatClose">✕</button></div>
+      <div class="tcols">
+        <div class="tcol"><h4>Large trim</h4><div id="tLarge" class="tlist"></div><button class="addOutline" data-t="large">+ outline</button></div>
+        <div class="tcol"><h4>256 export</h4><div id="tSmall" class="tlist"></div><button class="addOutline" data-t="small">+ outline</button></div>
+      </div>
+      <div class="tpresets">
+        <select id="presetSel"><option value="">— presets —</option></select>
+        <button id="presetLoad">Load</button>
+        <button id="presetSave">Save as…</button>
+        <button id="presetDel">Delete</button>
+      </div>
+      <div class="mf">Each outline = colour + width (px), stroked outward from the silhouette. Default = one 12px white outline (the classic halo). Large and 256 are independent; applied to the raw cut after sizing. <b>Presets</b> save a whole large+256 outline combo — Load one before clipping to process with it.</div>
+    </div>
+  </div>
+
+  <div id="status"></div>
+  <div id="regenQueue"></div>
+
+<script>
+const state = { cats:[], items:[], meta:{}, idx:0, zoom:1, natural:{w:0,h:0}, view:'source', ver:1, tab:'trim', group:'',
+  regMode:false, checked:new Set(), bosses:{}, presets:{},
+  treatment:{ large:[{color:'#ffffff',width:12}], small:[{color:'#ffffff',width:12}] } };
+const ENEMY_AREAS = new Set(['mossbog','gloomwood','boneyard','emberfall','frostvault','dragons-ascent']);
+const MERGE_CATS = new Set(['magic','blade','range','blade-gen','range-gen','magic-gen']);
+const MERGE_ORDER = ['blade','blade-gen','magic','magic-gen','range','range-gen'];   // chain followed by its generator
+const GEAR_CATS = new Set(['armor','weapons','accessories']);
+const GEAR_ORDER = ['armor','weapons','accessories'];
+const LOOT_CATS = new Set(['chests','sacks']);
+const LOOT_ORDER = ['chests','sacks'];
+const RARITY_ORDER = ['common','uncommon','rare','epic','legendary'];   // low→high; gear/loot lists grouped by this
+function rarityOf(slug){ const t=String(slug||'').replace(/\.png$/i,'').split('-').pop().toLowerCase(); return RARITY_ORDER.includes(t)?t:null; }
+function hasRarity(c){ return GEAR_CATS.has(c) || LOOT_CATS.has(c); }   // categories whose list is split by rarity
+function isRosterCat(c){ return ENEMY_AREAS.has(c) || MERGE_CATS.has(c) || GEAR_CATS.has(c) || LOOT_CATS.has(c); }   // roster-driven pipelines (⟳ + Regen)
+const isIconCat = (c) => String(c).startsWith('icons-');   // Icons section categories (icons-<subcat>)
+function assetType(c){ return c==='heroes' ? 'hero' : ((MERGE_CATS.has(c)||GEAR_CATS.has(c)||LOOT_CATS.has(c)||isIconCat(c)) ? 'merge' : 'enemy'); }   // icons die-cut like merge icons
+const BIOME = { mossbog:['#173a2a','#0a1a12'], gloomwood:['#223318','#0e150a'], boneyard:['#1c2436','#0b0f18'],
+  emberfall:['#3a1710','#1a0806'], frostvault:['#16283a','#08131f'], 'dragons-ascent':['#2a1a36','#110a1a'] };
+const COMBAT_BG = 'linear-gradient(rgb(255, 36, 255), rgb(11, 15, 255))';   // combat mockup backdrop
+function labelFor(slug){ return String(slug||'').replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase()); }
+function subLabel(cat){ if(!isIconCat(cat)) return labelFor(cat); const s=cat.slice(6); return ({ui:'UI',fx:'FX',afk:'AFK'})[s] || labelFor(s); }   // Icons subtabs drop the "icons-" prefix
+function isBoss(cat, name){ const s=state.bosses[cat]; return !!(s && s.has(String(name).replace(/\.png$/i,''))); }
+
+/* ---------- two-level grouping: top = Hero/Enemy/…, second = subcategories ---------- */
+const AREA_ORDER = ['mossbog','gloomwood','boneyard','emberfall','frostvault','dragons-ascent','enemies'];
+const ICON_ORDER = ['general','currency','ui','chest','nav','status','node','fx','banner','slot','ability','stat','chrome','board','combat','afk','gacha','minigame','dev'].map(s=>'icons-'+s);   // Icons subtab order
+function groupOf(cat){ if(cat==='heroes') return 'Hero'; if(ENEMY_AREAS.has(cat)||cat==='enemies') return 'Enemy';
+  if(MERGE_CATS.has(cat)) return 'Merge Icons'; if(GEAR_CATS.has(cat)) return 'Gear'; if(LOOT_CATS.has(cat)) return 'Loot'; if(isIconCat(cat)) return 'Icons'; return labelFor(cat); }
+function countOf(cat){ const c=state.cats.find(x=>x.name===cat); return c?c.images.length:0; }
+function orderBy(list, order){ return list.slice().sort((a,b)=>{ const ia=order.indexOf(a), ib=order.indexOf(b); return (ia<0?99:ia)-(ib<0?99:ib); }); }
+function groupsMap(){ const m={}; for(const c of state.cats){ const g=groupOf(c.name); (m[g] ||= []).push(c.name); }
+  if(m['Enemy']) m['Enemy'] = orderBy(m['Enemy'], AREA_ORDER);
+  if(m['Merge Icons']) m['Merge Icons'] = orderBy(m['Merge Icons'], MERGE_ORDER);
+  if(m['Gear']) m['Gear'] = orderBy(m['Gear'], GEAR_ORDER);
+  if(m['Loot']) m['Loot'] = orderBy(m['Loot'], LOOT_ORDER);
+  if(m['Icons']) m['Icons'] = orderBy(m['Icons'], ICON_ORDER);
+  return m; }
+function catsInGroup(g){ return groupsMap()[g] || []; }
+function groupOrder(){ const names=Object.keys(groupsMap()), pref=['Hero','Enemy','Merge Icons','Gear','Loot','Icons'];
+  return [...pref.filter(n=>names.includes(n)), ...names.filter(n=>!pref.includes(n)).sort()]; }
+
+/* ---------- shared list building ---------- */
+function buildFromList(list) {
+  state.cats = list.categories || [];
+  state.items = [];
+  state.bosses = {};
+  for (const c of state.cats) {
+    state.bosses[c.name] = new Set(c.bosses || []);
+    for (const n of c.images) state.items.push({ cat:c.name, name:n, key:`${c.name}/${n}` });
+  }
+  for (const it of state.items) if (!state.meta[it.key]) state.meta[it.key] = { pockets: [] };
+}
+async function boot() {
+  const list = await (await fetch('/api/list')).json();
+  buildFromList(list);
+  const meta = await (await fetch('/api/meta')).json();
+  state.loadedMeta = meta || {};   // keep the full loaded meta so metaPayload preserves top-level keys we don't manage (e.g. `shadow`)
+  state.meta = (meta && meta.images) ? meta.images : {};
+  for (const it of state.items) if (!state.meta[it.key]) state.meta[it.key] = { pockets: [] };
+  if (meta && meta.treatmentLarge && meta.treatmentLarge.length) state.treatment.large = meta.treatmentLarge;
+  if (meta && meta.treatmentSmall && meta.treatmentSmall.length) state.treatment.small = meta.treatmentSmall;
+  if (meta && meta.presets) state.presets = meta.presets;
+  for (const k in state.meta){ const c=state.meta[k]&&state.meta[k].combat; if(c){ delete c.x; delete c.y; } }  // position is the reg point now — drop legacy combat offsets
+  renderTreat();
+  renderPresets();
+  renderTabs();
+  renderList();
+  if (state.items.length){ const g=groupOrder()[0]; state.group=g; const first=catsInGroup(g)[0];
+    if(first) openCategory(first); else select(0); }
+}
+async function refreshList(preserveKey) {
+  const keep = preserveKey || (state.items[state.idx] && state.items[state.idx].key);
+  const list = await (await fetch('/api/list')).json();
+  buildFromList(list);
+  renderList();
+  const i = state.items.findIndex(it => it.key === keep);
+  if (i >= 0) select(i);
+  else if (state.items.length) select(Math.min(state.idx, state.items.length - 1));   // deleted current → pick a neighbour
+}
+
+/* ---------- top tabs = GROUPS (Hero / Enemy / …); second row = subcategories ---------- */
+function renderTabs(){
+  const box = document.getElementById('catTabs'); if(!box) return;
+  box.innerHTML='';
+  const groups = groupOrder();
+  if (state.tab==='trim' && (!state.group || !groups.includes(state.group))) state.group = groupOf(state.openCat||'');
+  for (const g of groups){
+    const b=document.createElement('button');
+    b.className='tab cat-tab'+(state.tab==='trim' && g===state.group ? ' on' : '');
+    b.textContent=g;
+    b.onclick=()=>selectGroup(g);
+    box.appendChild(b);
+  }
+  const gen=document.querySelector('#tabbar .tab[data-tab="gen"]');
+  if(gen) gen.classList.toggle('on', state.tab==='gen');
+  renderSubTabs();
+}
+function renderSubTabs(){
+  const bar=document.getElementById('subTabs'); if(!bar) return;
+  const cats = state.tab==='trim' ? catsInGroup(state.group) : [];
+  const show = cats.length>1;                 // heroes (single subset) → no second row
+  bar.style.display = show ? 'flex' : 'none';
+  bar.innerHTML='';
+  if(!show) return;
+  for(const c of cats){
+    const b=document.createElement('button');
+    b.className='subtab'+(c===state.openCat?' on':'');
+    b.innerHTML=`${subLabel(c)} <span class="sn">${countOf(c)}</span>`;
+    b.onclick=()=>selectCategoryTab(c);
+    bar.appendChild(b);
+  }
+}
+function selectGroup(g){
+  state.tab='trim'; state.group=g;
+  document.getElementById('trimView').style.display='flex';
+  document.getElementById('genView').style.display='none';
+  const cats=catsInGroup(g);
+  const target = cats.includes(state.openCat) ? state.openCat : cats[0];   // keep current if still in-group, else first subset
+  if(target) openCategory(target); else { renderTabs(); renderList(); }
+  setTimeout(fitZoom,30);
+}
+function selectCategoryTab(name){
+  state.tab='trim'; state.group=groupOf(name);
+  document.getElementById('trimView').style.display='flex';
+  document.getElementById('genView').style.display='none';
+  openCategory(name);                        // sets openCat + selects first + renders list/tabs
+  setTimeout(fitZoom,30);
+}
+
+function renderList() {
+  const el = document.getElementById('list');
+  if (!state.openCat && state.cats.length) state.openCat = (cur() && cur().cat) || state.cats[0].name;
+  el.querySelectorAll('.cat,.row,.rarityhdr').forEach(n => n.remove());
+  const h2 = el.querySelector('h2');
+  const c = state.cats.find(x => x.name === state.openCat);
+  if (!c) { if (h2) h2.textContent = 'Assets'; renderTabs(); return; }
+  if (h2) {                                                // header = the selected category + count (+ area regen)
+    h2.innerHTML = `${subLabel(c.name)} <span style="color:#5b6169;font-weight:400">${c.images.length}</span>`;
+    if (isRosterCat(c.name)) {
+      const rb = document.createElement('button'); rb.className='catregen'; rb.textContent='⟳ all'; rb.title='Regen this whole chain/area';
+      rb.onclick = (e) => { e.stopPropagation(); regenArea(c.name); };
+      h2.appendChild(rb);
+    }
+  }
+  const isRar = hasRarity(c.name);
+  let imgs = c.images.slice();
+  if (isRar) imgs.sort((a,b)=>{ const ra=RARITY_ORDER.indexOf(rarityOf(a)), rb=RARITY_ORDER.indexOf(rarityOf(b));
+    return (ra<0?99:ra)-(rb<0?99:rb) || a.localeCompare(b); });   // gear/loot list ordered by rarity, then name
+  let lastRar;
+  for (const n of imgs) {
+    if (isRar){ const r=rarityOf(n)||'other';                     // insert a rarity separator when it changes
+      if (r!==lastRar){ lastRar=r; const hd=document.createElement('div'); hd.className='rarityhdr r-'+r; hd.textContent=r.toUpperCase(); el.appendChild(hd); } }
+    const key = `${c.name}/${n}`, idx = state.items.findIndex(it => it.key === key);
+    const base = n.replace(/\.png$/i,''), boss = isBoss(c.name, n);
+    const np = (state.meta[key] || {pockets:[]}).pockets.length;
+    const row = document.createElement('div');
+    row.className = 'row' + (idx === state.idx ? ' sel' : '') + (boss ? ' boss' : '');
+    row.innerHTML = `<input type="checkbox" class="rowchk"><img src="/img/${c.name}/${encodeURIComponent(n)}?v=${state.ver}">
+      <span class="name">${base}${boss?' <span class="bossbadge">BOSS</span>':''}</span><span class="badge ${np?'has':''}">${np}</span>`;
+    const chk = row.querySelector('.rowchk'); chk.checked = state.checked.has(key);
+    chk.onclick = (e) => e.stopPropagation();              // don't select the row when ticking
+    chk.onchange = () => { chk.checked ? state.checked.add(key) : state.checked.delete(key); updateRegenChecked(); };
+    row.onclick = () => select(idx); el.appendChild(row);
+  }
+  updateRegenChecked();
+  renderTabs();
+}
+function openCategory(name){
+  state.openCat = name; state.checked.clear();                  // checks are per open category
+  const it = state.items.find(x => x.cat === name);
+  if (it) select(state.items.indexOf(it)); else renderList();   // select first of the opened category
+}
+function cur(){ return state.items[state.idx]; }
+function curPockets(){ return (state.meta[cur().key] ||= {pockets:[]}).pockets; }
+function stageURL(){ const it=cur(), base=it.name.replace(/\.png$/i,'');
+  if (state.view==='trim') return `/img/${it.cat}/${base}_trim.png?v=${state.ver}`;
+  if (state.view==='256')  return `/img/${it.cat}/${base}_256.png?v=${state.ver}`;
+  return `/img/${it.cat}/${encodeURIComponent(it.name)}?v=${state.ver}`; }
+function updateSegLabels(){                         // seg labels adapt to the asset type
+  const it=cur(); if(!it) return; const t=assetType(it.cat);
+  const tb=document.querySelector('#viewSeg button[data-v="tile"]');
+  if(tb) tb.textContent = t==='hero' ? 'Tile' : (t==='merge' ? 'Merge tile' : 'Combat');
+  const cb=document.querySelector('#viewSeg button[data-v="combat"]');
+  if(cb) cb.textContent = t==='merge' ? 'Board' : 'Lineup';
+  const ab=document.querySelector('#viewSeg button[data-v="all"]');
+  if(ab) ab.style.display = t==='hero' ? '' : 'none';   // hero-tile gallery = heroes only
+}
+function select(i){ state.idx=i; state.openCat=cur().cat; state.group=groupOf(cur().cat); document.getElementById('curName').textContent=cur().key;
+  updateSegLabels();
+  if(state.view==='tile') renderTile(); else if(state.view==='all') renderGallery();
+  else if(state.view==='combat') renderCombat(); else loadStage();
+  renderList(); }
+function loadStage(){
+  const img=document.getElementById('img'), msg=document.getElementById('stageMsg');
+  msg.style.display='none'; img.style.visibility='hidden';
+  img.onload=()=>{ state.natural={w:img.naturalWidth,h:img.naturalHeight}; img.style.visibility='visible';
+    if(state.view==='256') setZoom(1); else fitZoom(); };   // 256 shows at true 1:1 size; big assets fit
+  img.onerror=()=>{ img.style.visibility='hidden';
+    msg.textContent=state.view==='source'?'image missing':'not generated yet — click Clip'; msg.style.display='block';
+    document.getElementById('dots').innerHTML=''; };
+  img.src=stageURL();
+  updateGameSize();
+}
+function updateGameSize(){
+  const gs=document.getElementById('gameSize');
+  if(state.view!=='256'){ gs.hidden=true; return; }
+  const it=cur(), base=it.name.replace(/\.png$/i,''), gsArt=document.getElementById('gsArt');
+  const reg=(state.meta[it.key]||{}).reg;                          // combat positions by the ASSET ANCHOR (registry point)
+  const ax=reg?reg[0]:0.5, ay=reg?reg[1]:1;                        // anchorStyle default = bottom-centre
+  gsArt.onerror=()=>{ gsArt.style.visibility='hidden'; };
+  gsArt.onload =()=>{ gsArt.style.visibility='visible'; };
+  gsArt.style.transform=`translate(${((0.5-ax)*100).toFixed(2)}%, ${((1-ay)*100).toFixed(2)}%)`;  // = anchorStyle()
+  gsArt.src=`/img/${it.cat}/${base}_256.png?v=${state.ver}`;
+  gs.hidden=false;
+}
+function setView(v){ state.view=v;
+  document.querySelectorAll('#viewSeg button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
+  const isTile = v==='tile', isAll = v==='all', isCombat = v==='combat';
+  document.getElementById('stage').style.display = (isTile||isAll||isCombat)?'none':'';
+  if(!isTile) document.getElementById('stageMsg').style.display='none';
+  if(!isTile){ document.getElementById('tileEditor').hidden = true; document.getElementById('combatTileEditor').hidden = true; document.getElementById('mergeTileEditor').hidden = true; }
+  document.getElementById('tileGallery').hidden = !isAll;
+  document.getElementById('combatView').hidden = !isCombat;
+  if(isTile||isAll||isCombat) document.getElementById('gameSize').hidden = true;   // in-game-size preview is 256-view only
+  if(isTile) renderTile(); else if(isAll) renderGallery(); else if(isCombat) renderCombat(); else loadStage(); }
+
+/* ---------- combat framing data ---------- */
+// POSITION is the REGISTRATION POINT (reg) — dragging moves it. SCALE is the only extra combat datum.
+function combatOf(key){ const rec=(state.meta[key] ||= {pockets:[]}); rec.combat ||= {scale:1}; return rec.combat; }   // mutating — use on EDIT only
+function combatRead(key){ return (state.meta[key] && state.meta[key].combat) || {scale:1}; }                          // non-mutating — use for RENDER
+function regOf(key){ const r=(state.meta[key]||{}).reg; return r ? [r[0],r[1]] : [0.5,1]; }
+function scheduleSave(){ clearTimeout(scheduleSave._t); scheduleSave._t=setTimeout(()=>save(true),600); }  // debounced auto-persist
+// place `img` by its REGISTRATION POINT (pinned to the baseline-centre) + per-enemy SCALE. No position offset.
+function applyChipImg(img,key,faceRight,baseH){
+  const cm=combatRead(key), [ax,ay]=regOf(key);
+  img.style.height=(baseH*(cm.scale??1))+'px';
+  img.style.transform=`translate(${((0.5-ax)*100).toFixed(2)}%, ${((1-ay)*100).toFixed(2)}%)`+(faceRight?' scaleX(-1)':'');
+}
+// DRAG = move the registration point (the character shifts so a different point sits on the baseline).
+function wireChipEdit(chip,img,key,faceRight,baseH,after){
+  let d=null;
+  img.addEventListener('pointerdown',e=>{ const [ax,ay]=regOf(key); d={sx:e.clientX,sy:e.clientY,ax,ay}; try{img.setPointerCapture(e.pointerId);}catch(_){}; e.preventDefault(); });
+  img.addEventListener('pointermove',e=>{ if(!d) return; const w=img.offsetWidth, h=img.offsetHeight; if(w<2||h<2) return;
+    const dir=faceRight?-1:1;                                                   // flipped art → horizontal is mirrored
+    let ax=d.ax-dir*(e.clientX-d.sx)/w, ay=d.ay-(e.clientY-d.sy)/h;
+    ax=Math.max(0,Math.min(1,ax)); ay=Math.max(0,Math.min(1,ay));
+    (state.meta[key] ||= {pockets:[]}).reg=[+ax.toFixed(4),+ay.toFixed(4)];      // MOVE → registration point
+    applyChipImg(img,key,faceRight,baseH); if(after) after(); });
+  const end=()=>{ if(d){ d=null; scheduleSave(); } }; img.addEventListener('pointerup',end); img.addEventListener('pointercancel',end);
+  chip.addEventListener('wheel',e=>{ e.preventDefault(); const cm=combatOf(key);
+    cm.scale=+Math.max(0.3,Math.min(3,(cm.scale??1)-Math.sign(e.deltaY)*0.05)).toFixed(2);
+    applyChipImg(img,key,faceRight,baseH); if(after) after(); scheduleSave(); },{passive:false});
+}
+
+/* ---------- combat lineup viewer ---------- */
+// build a game-faithful chip stack: character body (reg point on baseline) + line/reg-dot + HP bar + label
+function makeChipStack(boss, editable, label){
+  const chip=document.createElement('div'); chip.className='cchip'+(boss?' cboss':'')+(editable?' cedit':'');
+  chip.innerHTML=`<div class="cbody"><img alt=""></div><div class="cbase"><span class="cregdot"></span></div>`+
+    `<div class="chp"><span class="chp-fill" style="width:72%"></span></div>`+
+    (label!=null?`<span class="clbl">${label}</span>`:'');
+  return { chip, img: chip.querySelector('img') };
+}
+function combatChip(cat, name, faceRight, boss, editable){
+  const base=name.replace(/\.png$/i,''), key=cat+'/'+name;
+  const baseH=boss?108:54;
+  const {chip,img}=makeChipStack(boss,editable,base);
+  if(cat==='heroes') chip.classList.add('chero');       // green HP bar for the hero context chips
+  img.onerror=()=>{ if(!img.dataset.fb){ img.dataset.fb='1'; img.src=`/img/${cat}/${encodeURIComponent(name)}?v=${state.ver}`; } else img.style.visibility='hidden'; };
+  img.src=`/img/${cat}/${encodeURIComponent(base)}_256.png?v=${state.ver}`;   // game art; falls back to source
+  if(editable){ applyChipImg(img,key,faceRight,baseH); wireChipEdit(chip,img,key,faceRight,baseH); }
+  else { const [ax,ay]=regOf(key); img.style.height=baseH+'px';
+    img.style.transform=`translate(${((0.5-ax)*100).toFixed(2)}%, ${((1-ay)*100).toFixed(2)}%)`+(faceRight?' scaleX(-1)':''); }
+  return chip;
+}
+/* merge placement: the reg point maps to the tile CENTRE + a stored scale (combat.scale).
+   MOVE changes the registration point (shared with the Registry tool — they override each other). */
+function mergeReg(key){ const r=(state.meta[key]||{}).reg; return r?[r[0],r[1]]:[0.5,0.5]; }   // merge default = centre
+function _angTo(e,el){ const r=el.getBoundingClientRect(); return Math.atan2(e.clientY-(r.top+r.height/2), e.clientX-(r.left+r.width/2))*180/Math.PI; }
+function applyMergeImg(img,key,baseH){
+  const cm=combatRead(key), rg=mergeReg(key), ax=rg[0], ay=rg[1], rot=cm.rot||0;
+  img.style.height=(baseH*(cm.scale??1))+'px'; img.style.width='auto'; img.style.maxWidth='none';
+  img.style.transform=`translate(${((0.5-ax)*100).toFixed(2)}%, ${((0.5-ay)*100).toFixed(2)}%) rotate(${rot}deg)`;
+}
+function wireMergeEdit(tile,img,key,baseH,after){
+  let d=null;
+  img.addEventListener('pointerdown',e=>{ const rg=mergeReg(key);
+    d={rot:e.shiftKey, sx:e.clientX, sy:e.clientY, ax:rg[0], ay:rg[1], a0:_angTo(e,tile), r0:(combatRead(key).rot||0)};
+    try{img.setPointerCapture(e.pointerId);}catch(_){}; e.preventDefault(); e.stopPropagation(); });
+  img.addEventListener('pointermove',e=>{ if(!d) return;
+    if(d.rot){ combatOf(key).rot=Math.round(d.r0 + (_angTo(e,tile)-d.a0)); }                // SHIFT+drag = rotate
+    else { const w=img.offsetWidth,h=img.offsetHeight; if(w<2||h<2) return;                 // drag = reg point
+      let ax=Math.max(0,Math.min(1,d.ax-(e.clientX-d.sx)/w)), ay=Math.max(0,Math.min(1,d.ay-(e.clientY-d.sy)/h));
+      (state.meta[key] ||= {pockets:[]}).reg=[+ax.toFixed(4),+ay.toFixed(4)]; }
+    applyMergeImg(img,key,baseH); if(after)after(); });
+  const end=()=>{ if(d){ d=null; scheduleSave(); } }; img.addEventListener('pointerup',end); img.addEventListener('pointercancel',end);
+  tile.addEventListener('wheel',e=>{ e.preventDefault(); const cm=combatOf(key);                       // scroll = scale
+    cm.scale=+Math.max(0.3,Math.min(3,(cm.scale??1)-Math.sign(e.deltaY)*0.05)).toFixed(2); applyMergeImg(img,key,baseH); if(after)after(); scheduleSave(); },{passive:false});
+}
+function renderMergeBoard(){                    // merge cats: the Lineup view becomes an EDITABLE merge BOARD
+  const scene=document.getElementById('combatScene'); const cat=state.openCat;
+  document.getElementById('combatTtl').textContent='Merge board — '+labelFor(cat||'')+' — drag = reg point · scroll = scale · shift+drag = rotate (auto-saved)';
+  scene.classList.add('mboard'); scene.style.background=''; scene.innerHTML='';
+  const items=state.items.filter(x=>x.cat===cat);
+  const total=Math.max(items.length, 12);
+  for(let i=0;i<total;i++){
+    const slot=document.createElement('div'); slot.className='mslot'+(i<items.length?'':' empty');
+    if(i<items.length){ const it=items[i], key=it.key, base=it.name.replace(/\.png$/i,''), img=document.createElement('img');
+      img.onerror=()=>{ if(!img.dataset.fb){ img.dataset.fb='1'; img.src=`/img/${cat}/${encodeURIComponent(it.name)}?v=${state.ver}`; } else img.style.visibility='hidden'; };
+      img.onload=()=>applyMergeImg(img,key,108);
+      img.src=`/img/${cat}/${encodeURIComponent(base)}_256.png?v=${state.ver}`;
+      slot.appendChild(img); applyMergeImg(img,key,108); wireMergeEdit(slot,img,key,108); }
+    scene.appendChild(slot);
+  }
+}
+function applyMergeTileView(){ const it=cur(); if(!it) return;
+  applyMergeImg(document.getElementById('mtArt'), it.key, 250);
+  applyMergeImg(document.getElementById('mtPrevArt'), it.key, 108); }
+function renderMergeTile(){                     // merge cats: the Tile view becomes ONE editable merge tile
+  const it=cur(), base=it.name.replace(/\.png$/i,''), msg=document.getElementById('stageMsg');
+  const src=`/img/${it.cat}/${encodeURIComponent(base)}_256.png?v=${state.ver}`, fb=`/img/${it.cat}/${encodeURIComponent(it.name)}?v=${state.ver}`;
+  for(const id of ['mtArt','mtPrevArt']){ const im=document.getElementById(id); im.dataset.fb='';
+    im.onload=()=>{ im.style.visibility='visible'; msg.style.display='none'; applyMergeTileView(); };
+    im.onerror=()=>{ if(!im.dataset.fb){ im.dataset.fb='1'; im.src=fb; } else { im.style.visibility='hidden'; msg.textContent='no 256 yet — Clip this icon first'; msg.style.display='block'; } };
+    im.src=src; }
+  applyMergeTileView();
+}
+function renderCombat(){
+  if(assetType(state.openCat)==='merge') return renderMergeBoard();   // merge → board, not the combat lineup
+  const scene=document.getElementById('combatScene'); scene.classList.remove('mboard'); scene.innerHTML='';
+  const cat=state.openCat;
+  document.getElementById('combatTtl').textContent='Combat lineup — '+labelFor(cat||'');
+  scene.style.background=COMBAT_BG;
+  // player side: a few heroes on the left, flipped to face right (toward the enemies) — static context
+  const heroes=state.items.filter(x=>x.cat==='heroes').slice(0,3);
+  if(heroes.length){ const hs=document.createElement('div'); hs.className='cside';
+    heroes.forEach(h=>hs.appendChild(combatChip('heroes',h.name,true,false,false))); scene.appendChild(hs);
+    const gap=document.createElement('div'); gap.className='cgap'; scene.appendChild(gap); }
+  // enemy side: the open category's roster, facing left; bosses 2x — DRAG to move, SCROLL to scale (auto-saved)
+  const enemies=state.items.filter(x=>x.cat===cat);
+  if(!enemies.length){ const e=document.createElement('div'); e.className='cempty'; e.textContent='no assets in this category'; scene.appendChild(e); return; }
+  const es=document.createElement('div'); es.className='cside';
+  enemies.forEach(en=>es.appendChild(combatChip(cat,en.name,false,isBoss(cat,en.name),true))); scene.appendChild(es);
+}
+
+function portraitOf(key){ const rec=(state.meta[key] ||= {pockets:[]}); rec.portrait ||= {scale:1,x:0,y:0}; return rec.portrait; }
+function applyImgPortrait(img,p){ img.style.height=(82*(p.scale??1))+'%'; img.style.left=`calc(50% + ${(p.x??0)*100}%)`; img.style.bottom=`calc(2px + ${(p.y??0)*100}%)`; }
+function galInfoFor(key){ const p=portraitOf(key), nm=key.split('/').pop().replace(/\.png$/,'');
+  document.getElementById('galInfo').textContent=`${nm}: scale ${(p.scale??1).toFixed(2)} · x ${(p.x??0).toFixed(2)} · y ${(p.y??0).toFixed(2)}   —   drag = move · scroll = scale · click = select`; }
+function renderGallery(){
+  const grid=document.getElementById('galGrid'); grid.innerHTML='';
+  for(const it of state.items){
+    if(it.cat!=='heroes') continue;                 // tiles are heroes
+    const base=it.name.replace(/\.png$/i,'');
+    const cell=document.createElement('div'); cell.className='gtile'+(it.key===cur().key?' sel':'');
+    cell.innerHTML=`<div class="mocktile sm"><img alt=""><span class="mt-frame"></span></div><span class="gtname">${base}</span>`;
+    const img=cell.querySelector('img'), mt=cell.querySelector('.mocktile');
+    applyImgPortrait(img, portraitOf(it.key));
+    img.onerror=()=>{ img.style.visibility='hidden'; };
+    img.src=`/img/heroes/${encodeURIComponent(base)}_256.png?v=${state.ver}`;
+    let d=null, moved=false;
+    img.addEventListener('pointerdown', e=>{ d={sx:e.clientX,sy:e.clientY,p:{...portraitOf(it.key)},w:mt.clientWidth||130,h:mt.clientHeight||130}; moved=false; try{img.setPointerCapture(e.pointerId);}catch(_){}; e.preventDefault(); });
+    img.addEventListener('pointermove', e=>{ if(!d) return; const dx=e.clientX-d.sx, dy=e.clientY-d.sy; if(Math.abs(dx)+Math.abs(dy)>3) moved=true;
+      const p=portraitOf(it.key); p.x=+((d.p.x??0)+dx/d.w).toFixed(3); p.y=+((d.p.y??0)-dy/d.h).toFixed(3); applyImgPortrait(img,p); galInfoFor(it.key); });
+    img.addEventListener('pointerup', ()=>{ const wasMoved=moved; d=null; if(!wasMoved){ const i=state.items.findIndex(x=>x.key===it.key); if(i>=0) select(i); } });
+    img.addEventListener('pointercancel', ()=>{ d=null; });
+    cell.addEventListener('wheel', e=>{ e.preventDefault(); const p=portraitOf(it.key);
+      p.scale=+Math.max(0.4,Math.min(2.5,(p.scale??1)-Math.sign(e.deltaY)*0.05)).toFixed(2); applyImgPortrait(img,p); galInfoFor(it.key); }, {passive:false});
+    grid.appendChild(cell);
+  }
+  galInfoFor(cur().key);
+}
+document.getElementById('galReset').onclick=()=>{ (state.meta[cur().key] ||= {pockets:[]}).portrait={scale:1,x:0,y:0}; renderGallery(); };
+
+/* ---------- per-asset framing: heroes → portrait tile, enemies → combat mockup ---------- */
+function renderTile(){
+  const t = cur() ? assetType(cur().cat) : 'hero';
+  document.getElementById('tileEditor').hidden = t!=='hero';
+  document.getElementById('combatTileEditor').hidden = t!=='enemy';
+  document.getElementById('mergeTileEditor').hidden = t!=='merge';
+  if(t==='hero') renderPortraitTile(); else if(t==='enemy') renderCombatTile(); else renderMergeTile();
+}
+/* ---------- portrait tile framing (heroes) ---------- */
+function curPortrait(){ const rec=(state.meta[cur().key] ||= {pockets:[]}); rec.portrait ||= {scale:1,x:0,y:0}; return rec.portrait; }
+function renderPortraitTile(){
+  const it=cur(), base=it.name.replace(/\.png$/i,'');
+  const art=document.getElementById('tileArt'), msg=document.getElementById('stageMsg');
+  art.onerror=()=>{ art.style.visibility='hidden'; msg.textContent='no 256 yet — Clip this hero first'; msg.style.display='block'; };
+  art.onload =()=>{ art.style.visibility='visible'; msg.style.display='none'; applyPortrait(); };
+  art.src=`/img/${it.cat}/${base}_256.png?v=${state.ver}`;
+  document.getElementById('pScale').value = (curPortrait().scale ?? 1);
+  applyPortrait();
+}
+/* ---------- single-enemy combat mockup (enemies) ---------- */
+function combatRefs(){ const it=cur(); return { it, key:it.key, boss:isBoss(it.cat,it.name) }; }
+function applyCombatTile(){
+  const it=cur(); if(!it) return; const r=combatRefs(), cm=combatRead(r.key), [ax,ay]=regOf(r.key);
+  document.getElementById('ctPreviewChip').classList.toggle('cboss', r.boss);
+  applyChipImg(document.getElementById('ctArt'), r.key, false, 120);            // magnified edit chip
+  applyChipImg(document.getElementById('ctPreview'), r.key, false, r.boss?108:54);   // true-size preview
+  document.getElementById('cRead').textContent=`reg ${ax.toFixed(2)}, ${ay.toFixed(2)} · scale ${(cm.scale??1).toFixed(2)}`;
+  document.getElementById('cScale').value=(cm.scale??1);
+}
+function renderCombatTile(){
+  const it=cur(), base=it.name.replace(/\.png$/i,''), r=combatRefs();
+  document.getElementById('cmock').style.background=COMBAT_BG;
+  const art=document.getElementById('ctArt'), prev=document.getElementById('ctPreview'), msg=document.getElementById('stageMsg');
+  const src=`/img/${it.cat}/${encodeURIComponent(base)}_256.png?v=${state.ver}`;
+  const fb =`/img/${it.cat}/${encodeURIComponent(it.name)}?v=${state.ver}`;
+  for(const im of [art,prev]){
+    im.dataset.fb=''; im.onload=()=>{ im.style.visibility='visible'; msg.style.display='none'; };
+    im.onerror=()=>{ if(!im.dataset.fb){ im.dataset.fb='1'; im.src=fb; } else { im.style.visibility='hidden'; msg.textContent='no 256 yet — Clip this enemy first'; msg.style.display='block'; } };
+    im.src=src;
+  }
+  applyCombatTile();
+}
+function applyPortrait(){
+  const p=curPortrait(), art=document.getElementById('tileArt');
+  const s=p.scale??1, x=p.x??0, y=p.y??0;
+  art.style.height=(82*s)+'%';
+  art.style.left=`calc(50% + ${x*100}%)`;
+  art.style.bottom=`calc(2px + ${y*100}%)`;
+  document.getElementById('pRead').textContent=`scale ${s.toFixed(2)} · x ${x.toFixed(2)} · y ${y.toFixed(2)}`;
+}
+document.getElementById('pScale').oninput=e=>{ curPortrait().scale=+parseFloat(e.target.value).toFixed(2); applyPortrait(); };
+document.getElementById('pReset').onclick=()=>{ state.meta[cur().key].portrait={scale:1,x:0,y:0}; document.getElementById('pScale').value=1; applyPortrait(); };
+(function(){ let drag=null; const art=document.getElementById('tileArt'), mt=document.getElementById('mockTile');
+  art.addEventListener('pointerdown',e=>{ drag={sx:e.clientX,sy:e.clientY,p:{...curPortrait()},w:mt.clientWidth||300,h:mt.clientHeight||300};
+    try{ art.setPointerCapture(e.pointerId); }catch(_){}; e.preventDefault(); });
+  art.addEventListener('pointermove',e=>{ if(!drag) return; const p=curPortrait();
+    p.x=+((drag.p.x??0)+(e.clientX-drag.sx)/drag.w).toFixed(3);
+    p.y=+((drag.p.y??0)-(e.clientY-drag.sy)/drag.h).toFixed(3);   // drag up = raise
+    applyPortrait(); });
+  const end=()=>{ drag=null; }; art.addEventListener('pointerup',end); art.addEventListener('pointercancel',end);
+})();
+/* combat-tile (single enemy): DRAG = move the registration point · scroll/slider = scale · auto-saved */
+(function(){ let d=null; const art=document.getElementById('ctArt'), chip=document.getElementById('cmChip');
+  art.addEventListener('pointerdown',e=>{ if(!cur()) return; const [ax,ay]=regOf(cur().key); d={sx:e.clientX,sy:e.clientY,ax,ay};
+    try{ art.setPointerCapture(e.pointerId); }catch(_){}; e.preventDefault(); });
+  art.addEventListener('pointermove',e=>{ if(!d) return; const w=art.offsetWidth, h=art.offsetHeight; if(w<2||h<2) return;
+    let ax=Math.max(0,Math.min(1,d.ax-(e.clientX-d.sx)/w)), ay=Math.max(0,Math.min(1,d.ay-(e.clientY-d.sy)/h));
+    (state.meta[cur().key] ||= {pockets:[]}).reg=[+ax.toFixed(4),+ay.toFixed(4)]; applyCombatTile(); });
+  const end=()=>{ if(d){ d=null; scheduleSave(); } }; art.addEventListener('pointerup',end); art.addEventListener('pointercancel',end);
+  chip.addEventListener('wheel',e=>{ e.preventDefault(); const cm=combatOf(cur().key);
+    cm.scale=+Math.max(0.3,Math.min(3,(cm.scale??1)-Math.sign(e.deltaY)*0.05)).toFixed(2); applyCombatTile(); scheduleSave(); },{passive:false});
+})();
+document.getElementById('cScale').oninput=e=>{ combatOf(cur().key).scale=+parseFloat(e.target.value).toFixed(2); applyCombatTile(); scheduleSave(); };
+document.getElementById('cReset').onclick=()=>{ const rec=(state.meta[cur().key] ||= {pockets:[]}); rec.reg=[0.5,1]; rec.combat={scale:1}; applyCombatTile(); scheduleSave(); };
+/* single merge tile: DRAG = move the registration point · scroll = scale · auto-saved (same reg the Registry tool writes) */
+(function(){ let d=null; const art=document.getElementById('mtArt'), tile=document.getElementById('mTile');
+  art.addEventListener('pointerdown',e=>{ if(!cur()) return; const rg=mergeReg(cur().key);
+    d={rot:e.shiftKey, sx:e.clientX, sy:e.clientY, ax:rg[0], ay:rg[1], a0:_angTo(e,tile), r0:(combatRead(cur().key).rot||0)};
+    try{art.setPointerCapture(e.pointerId);}catch(_){}; e.preventDefault(); });
+  art.addEventListener('pointermove',e=>{ if(!d) return;
+    if(d.rot){ combatOf(cur().key).rot=Math.round(d.r0 + (_angTo(e,tile)-d.a0)); }           // SHIFT+drag = rotate
+    else { const w=art.offsetWidth,h=art.offsetHeight; if(w<2||h<2) return;
+      let ax=Math.max(0,Math.min(1,d.ax-(e.clientX-d.sx)/w)), ay=Math.max(0,Math.min(1,d.ay-(e.clientY-d.sy)/h));
+      (state.meta[cur().key] ||= {pockets:[]}).reg=[+ax.toFixed(4),+ay.toFixed(4)]; }
+    applyMergeTileView(); });
+  const end=()=>{ if(d){ d=null; scheduleSave(); } }; art.addEventListener('pointerup',end); art.addEventListener('pointercancel',end);
+  tile.addEventListener('wheel',e=>{ e.preventDefault(); const cm=combatOf(cur().key);
+    cm.scale=+Math.max(0.3,Math.min(3,(cm.scale??1)-Math.sign(e.deltaY)*0.05)).toFixed(2); applyMergeTileView(); scheduleSave(); },{passive:false});
+})();
+function setZoom(z){ state.zoom=Math.max(0.1,Math.min(z,8)); const pct=Math.round(state.zoom*100);
+  document.getElementById('zoom').value=pct; document.getElementById('zoomLbl').textContent=pct+'%'; applyZoom(); }
+function fitZoom(){ if(!state.natural.w) return; const wrap=document.getElementById('stageWrap'), pad=48;
+  if (wrap.clientWidth<=0) return;
+  setZoom(Math.min((wrap.clientWidth-pad)/state.natural.w,(wrap.clientHeight-pad)/state.natural.h)); }
+function applyZoom(){ const img=document.getElementById('img');
+  img.style.width=(state.natural.w*state.zoom)+'px'; img.style.height=(state.natural.h*state.zoom)+'px'; drawDots(); drawReg(); }
+function drawReg(){ const dots=document.getElementById('dots');
+  dots.querySelectorAll('.reg').forEach(n=>n.remove());   // single marker — clicking again MOVES it
+  const rec=state.meta[cur().key];
+  if(!rec||!rec.reg) return;
+  const d=document.createElement('div'); d.className='reg';
+  d.style.left=(rec.reg[0]*state.natural.w*state.zoom)+'px';
+  d.style.top =(rec.reg[1]*state.natural.h*state.zoom)+'px';
+  dots.appendChild(d); }
+function drawDots(){ const dots=document.getElementById('dots'); dots.innerHTML='';
+  if (state.view==='source') curPockets().forEach((p,k)=>{ const d=document.createElement('div'); d.className='dot';
+    d.style.left=(p[0]*state.zoom)+'px'; d.style.top=(p[1]*state.zoom)+'px'; d.innerHTML=`<span>${k+1}</span>`;
+    d.onclick=(e)=>{e.stopPropagation(); curPockets().splice(k,1); drawDots(); renderList();}; dots.appendChild(d); });
+  drawReg();   // the registry marker is redrawn on EVERY overlay refresh — a pocket click never clears it
+}
+
+document.getElementById('img').addEventListener('click',(e)=>{
+  const r=e.target.getBoundingClientRect();
+  const x=(e.clientX-r.left)/state.zoom, y=(e.clientY-r.top)/state.zoom;
+  if (x<0||y<0||x>state.natural.w||y>state.natural.h) return;
+  if (state.regMode){                                   // set THIS hero's registration point (normalized)
+    const nx=+(x/state.natural.w).toFixed(4), ny=+(y/state.natural.h).toFixed(4);
+    (state.meta[cur().key] ||= {pockets:[]}).reg=[nx,ny];   // per-hero; shared across its own assets
+    drawReg(); updateGameSize(); renderList(); toast('registry '+nx.toFixed(2)+', '+ny.toFixed(2)+' — '+cur().name); return;
+  }
+  if (state.view!=='source') return;
+  curPockets().push([Math.round(x),Math.round(y)]); drawDots(); renderList(); });
+document.querySelectorAll('#viewSeg button').forEach(b=>b.onclick=()=>setView(b.dataset.v));
+document.getElementById('zoom').addEventListener('input',e=>{ state.zoom=e.target.value/100;
+  document.getElementById('zoomLbl').textContent=e.target.value+'%'; applyZoom(); });
+document.getElementById('fit').onclick=fitZoom;
+document.getElementById('stage').addEventListener('wheel', e=>{   // mouse-wheel zoom (source/trimmed/256)
+  e.preventDefault(); setZoom(state.zoom * (e.deltaY<0 ? 1.12 : 1/1.12)); }, {passive:false});
+document.getElementById('undo').onclick=()=>{ curPockets().pop(); drawDots(); renderList(); };
+document.getElementById('clear').onclick=()=>{ const rec=(state.meta[cur().key] ||= {pockets:[]}); rec.pockets=[]; drawDots(); renderList(); };  // clears ONLY pockets — keeps reg + portrait
+document.getElementById('save').onclick=()=>save();
+document.getElementById('clipCur').onclick=()=>clip('current');
+document.getElementById('clipAll').onclick=()=>clip('all');
+async function flip(axis){
+  if(!cur()){ toast('Nothing selected'); return; }
+  const it=cur();
+  const btns=document.querySelectorAll('#bar button'); btns.forEach(b=>b.disabled=true);
+  toast('Flipping '+it.name+' '+(axis==='h'?'↔':'↕')+' …');
+  try{
+    const res=await fetch('/api/flip',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({cat:it.cat,name:it.name,axis})});
+    const j=await res.json();
+    toast(j.ok?('✓ flipped '+((j.flipped&&j.flipped.length)||1)+' file(s)'):('✗ '+(j.error||'failed')));
+    if(j.ok){ state.ver++; setView(state.view); }
+  }catch(e){ toast('✗ '+e); } finally{ btns.forEach(b=>b.disabled=false); } }
+document.getElementById('flipH').onclick=()=>flip('h');
+document.getElementById('flipV').onclick=()=>flip('v');
+document.getElementById('delBtn').onclick=async ()=>{
+  if(!state.items.length) return;
+  const it=cur(), slug=it.name.replace(/\.png$/i,'');
+  if(!confirm(`Delete "${slug}" and ALL its assets?\n\nRemoves the source, _trim, _256, its metadata and its roster row.\nThis does NOT remove it from the game config (use the game's own removal for that).`)) return;
+  try{
+    const res=await fetch('/api/delete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cat:it.cat,name:it.name})});
+    const j=await res.json();
+    if(j.ok){ delete state.meta[it.key]; toast('Deleted '+slug+' ('+(j.deleted||[]).length+' items)'); await refreshList(); }
+    else toast('✗ delete failed'+(j.error?': '+j.error:''));
+  }catch(e){ toast('✗ delete error: '+e); }
+};
+let _rt; window.addEventListener('resize',()=>{clearTimeout(_rt); _rt=setTimeout(fitZoom,120);});
+
+// Spread the full loaded meta first so top-level keys this UI doesn't manage (e.g. `shadow`) survive a
+// save/clip round-trip; then override the keys the UI DOES own. (Previously these unmanaged keys were dropped.)
+function metaPayload(){ return { ...(state.loadedMeta||{}), generated_by:'asset_tool',
+  treatmentLarge:state.treatment.large, treatmentSmall:state.treatment.small, presets:state.presets, images:state.meta }; }
+async function save(silent){ const res=await fetch('/api/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(metaPayload())});
+  const j=await res.json(); if(!silent) toast(res.ok?('Saved → '+j.path):'Save failed'); return res.ok; }
+async function clip(scope){
+  if(scope==='current' && !cur()) { toast('Nothing selected'); return; }
+  const only = scope==='current' ? cur().key : null;
+  const category = scope==='all' ? state.openCat : null;   // "clip all" = ONLY the open category
+  const btns=document.querySelectorAll('#bar button'); btns.forEach(b=>b.disabled=true);
+  toast(scope==='all' ? ('Clipping all of '+category+'…') : ('Clipping '+cur().name+'…'));
+  try{ const res=await fetch('/api/clip',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({scope,only,category,meta:metaPayload()})});
+    const j=await res.json(); toast(j.ok?('✓ '+(j.output||'done')):('✗ '+(j.error||j.stderr||'failed')));
+    if(j.ok){ state.ver++; setView('trim'); }
+  }catch(e){ toast('✗ '+e); } finally{ btns.forEach(b=>b.disabled=false); } }
+
+/* ---------- tabs (categories are the top tabs; this toggles Trim vs Generate) ---------- */
+function switchTab(t){
+  state.tab = t;
+  document.getElementById('trimView').style.display = t==='gen' ? 'none' : 'flex';
+  document.getElementById('genView').style.display  = t==='gen' ? 'block' : 'none';
+  renderTabs();
+  if (t!=='gen') setTimeout(fitZoom, 30);
+}
+document.querySelector('#tabbar .tab[data-tab="gen"]').onclick=()=>switchTab('gen');
+
+/* ---------- registry point ---------- */
+document.getElementById('regBtn').onclick=()=>{ state.regMode=!state.regMode;
+  document.getElementById('regBtn').classList.toggle('on',state.regMode);
+  toast(state.regMode?'Registry mode ON — click to set THIS hero’s anchor (shared across its assets)':'Registry mode off'); };
+
+/* ---------- treatment editor ---------- */
+function renderTreat(){
+  for (const which of ['large','small']){
+    const box=document.getElementById(which==='large'?'tLarge':'tSmall'); if(!box) continue;
+    box.innerHTML='';
+    state.treatment[which].forEach((o,idx)=>{
+      const row=document.createElement('div'); row.className='trow';
+      row.innerHTML=`<input type="color" value="${o.color}"><input type="number" min="0" max="80" step="1" value="${o.width}"><span>px</span><button class="trm">✕</button>`;
+      const ins=row.querySelectorAll('input');
+      ins[0].oninput=()=>{ o.color=ins[0].value; scheduleSave(); };
+      ins[1].oninput=()=>{ o.width=Math.max(0,parseInt(ins[1].value||'0',10)); scheduleSave(); };
+      row.querySelector('.trm').onclick=()=>{ state.treatment[which].splice(idx,1); renderTreat(); scheduleSave(); };
+      box.appendChild(row);
+    });
+  }
+}
+document.querySelectorAll('.addOutline').forEach(b=>b.onclick=()=>{ state.treatment[b.dataset.t].push({color:'#000000',width:3}); renderTreat(); scheduleSave(); });
+document.getElementById('treatBtn').onclick=()=>{ document.getElementById('treatModal').hidden=false; };
+document.getElementById('treatClose').onclick=()=>{ document.getElementById('treatModal').hidden=true; };
+document.getElementById('treatModal').addEventListener('click',e=>{ if(e.target.id==='treatModal') e.currentTarget.hidden=true; });
+
+/* ---------- treatment presets (named large+256 outline combos) ---------- */
+function cloneOutlines(t){ return (t||[]).map(o=>({color:o.color,width:o.width})); }
+function renderPresets(){
+  const sel=document.getElementById('presetSel'); if(!sel) return;
+  const keep=sel.value;
+  sel.innerHTML='<option value="">— presets —</option>';
+  for(const nm of Object.keys(state.presets).sort()){ const o=document.createElement('option'); o.value=nm; o.textContent=nm; sel.appendChild(o); }
+  if(keep && state.presets[keep]) sel.value=keep;
+}
+document.getElementById('presetSave').onclick=async ()=>{
+  const nm=(prompt('Preset name:')||'').trim(); if(!nm) return;
+  state.presets[nm]={ large:cloneOutlines(state.treatment.large), small:cloneOutlines(state.treatment.small) };
+  renderPresets(); document.getElementById('presetSel').value=nm; await save(true); toast('Saved preset “'+nm+'”');
+};
+document.getElementById('presetLoad').onclick=()=>{
+  const nm=document.getElementById('presetSel').value, p=state.presets[nm];
+  if(!p){ toast('Pick a preset first'); return; }
+  state.treatment.large=cloneOutlines(p.large); state.treatment.small=cloneOutlines(p.small);
+  renderTreat(); scheduleSave(); toast('Loaded “'+nm+'” — Clip to process with it');
+};
+document.getElementById('presetDel').onclick=async ()=>{
+  const nm=document.getElementById('presetSel').value; if(!nm||!state.presets[nm]) return;
+  if(!confirm('Delete preset “'+nm+'”?')) return;
+  delete state.presets[nm]; renderPresets(); await save(true); toast('Deleted preset “'+nm+'”');
+};
+
+/* ---------- export to game ---------- */
+document.getElementById('exportBtn').onclick = exportToGame;
+async function exportToGame(){
+  const cat=state.openCat;
+  if(!cat){ toast('Open a category first'); return; }
+  if(!confirm(`Export the "${cat}" category to the game?\n\nCopies art + registers assets, refreshes existing entries, creates config + UI for new slugs (placeholder stats, tagged for tuning), and runs the build. Takes ~1–2 min.`)) return;
+  const btn=document.getElementById('exportBtn'), old=btn.textContent;
+  btn.disabled=true; btn.textContent='Exporting…'; toast('Exporting '+cat+'… building (~1–2 min)');
+  try{
+    const res=await fetch('/api/export',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({ meta: metaPayload(), category: cat })});   // active category only; save-by-default
+    const j=await res.json();
+    if(!j.started){ toast('✗ export failed to start'+(j.error?': '+j.error:'')); btn.disabled=false; btn.textContent=old; return; }
+    pollExport(btn, old);                                     // build runs in the background; poll for the result
+  }catch(e){ toast('✗ export error: '+e); btn.disabled=false; btn.textContent=old; }
+}
+async function pollExport(btn, old){
+  try{
+    const j=await (await fetch('/api/export-status')).json();
+    if(j.done){
+      const r=j.result;
+      if(j.returncode===0 && r){ toast(`✓ export ok — refreshed ${r.refreshed.length}, created ${r.created.length}`+
+        `${r.anchored?', '+r.anchored+' anchors':''}${r.portraited?', '+r.portraited+' portraits':''}`+
+        `${r.combated?', '+r.combated+' combat-frames':''}`+
+        `${r.errors&&r.errors.length?', '+r.errors.length+' errors':''}`); state.ver++; }
+      else { toast('✗ export failed'+(r&&r.errors&&r.errors.length?': '+r.errors[0].error:' (see console)')); }
+      console.log('[export]\n'+(j.log||''));
+      btn.disabled=false; btn.textContent=old; return;
+    }
+  }catch(e){ /* transient — keep polling */ }
+  setTimeout(()=>pollExport(btn, old), 3000);
+}
+
+/* ---------- generate ---------- */
+function slugify(s){ return (s||'').trim().toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,''); }
+const nameEl=document.getElementById('genName'), slugPrev=document.getElementById('slugPreview');
+nameEl.addEventListener('input',()=>{ const s=slugify(nameEl.value); slugPrev.textContent = s?('→ heroes/'+s+'.png'):''; });
+document.getElementById('genGo').onclick=startGen;
+nameEl.addEventListener('keydown',e=>{ if(e.key==='Enter') startGen(); });
+
+function genOverridesVal(){ return document.getElementById('genOverrides').value.trim(); }
+async function startGen(){
+  const slug=slugify(nameEl.value);
+  if(!slug){ toast('Enter a class name'); return; }
+  const subject=document.getElementById('genSubject').value.trim();
+  const res=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({slug,subject,overrides:genOverridesVal()})});
+  const j=await res.json();
+  if(!j.ok){ toast('✗ '+(j.error||'failed to start')); return; }
+  nameEl.value=''; slugPrev.textContent=''; document.getElementById('genSubject').value='';
+  makeJobCard(slug); pollGen(slug);
+  toast('Generating '+slug+'…');
+}
+document.getElementById('genRegen').onclick=regenSelected;
+async function regenSelected(){
+  if(!state.items.length){ toast('Nothing selected'); return; }
+  const it=cur(), slug=it.name.replace(/\.png$/i,''), ov=genOverridesVal();
+  if(isRosterCat(it.cat)){                                  // ENEMY / MERGE-ICON → their roster pipeline (distinct flow)
+    if(!confirm(`Regenerate "${slug}" (${it.cat})? Overwrites its source art (FORCE).`+(ov?`\nOverrides: ${ov}`:''))) return;
+    startRegen(it.cat, [slug], ov); return;
+  }
+  // HERO → hero pipeline
+  if(!confirm(`Regenerate hero "${slug}"? Overwrites its source art (FORCE).`+(ov?`\nCritical overrides: ${ov}`:''))) return;
+  const res=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({slug, overrides:ov})});   // no subject → keeps existing roster subject (or Claude authors)
+  const j=await res.json();
+  if(!j.ok){ toast('✗ '+(j.error||'failed to start')); return; }
+  switchTab('gen'); makeJobCard(slug); pollGen(slug); toast('Regenerating hero '+slug+'…');
+}
+
+/* ---------- area / checked regen (enemy pipeline) ---------- */
+function updateRegenChecked(){ const b=document.getElementById('regenChk'); if(!b) return;
+  const n=state.checked.size; b.textContent='Regen checked'+(n?` (${n})`:''); b.disabled=!n; }
+async function regenArea(area){
+  if(!confirm(`Regenerate the WHOLE "${area}" roster? Overwrites source art (FORCE).`)) return;
+  startRegen(area, null, '');
+}
+async function regenChecked(){
+  const slugs=[...state.checked].map(k=>k.split('/').pop().replace(/\.png$/,''));
+  if(!slugs.length){ toast('Check some entries first'); return; }
+  const cat=state.openCat;
+  if(!confirm(`Regenerate ${slugs.length} checked in "${cat}"? Overwrites source art (FORCE).`)) return;
+  startRegen(cat, slugs, '');
+}
+async function startRegen(category, slugs, overrides){
+  try{
+    const res=await fetch('/api/regen',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({category, slugs, overrides:overrides||''})});
+    const j=await res.json();
+    if(!j.ok){ toast('✗ '+(j.error||'regen failed to start')); return; }
+    toast('Queued '+(j.label||category));
+    startQueuePoll();
+  }catch(e){ toast('✗ regen error: '+e); }
+}
+/* ---------- regen QUEUE: progress bars in the bottom-right, queue more, cancel with ✕ ---------- */
+let _qPoll=null, _qSeen=new Set();
+function startQueuePoll(){ if(!_qPoll) pollQueue(); }
+async function pollQueue(){
+  _qPoll=null;
+  let jobs=[];
+  try{ jobs=((await (await fetch('/api/regen-queue')).json()).jobs)||[]; }catch(e){}
+  renderQueue(jobs);
+  const ids=new Set(jobs.map(j=>j.id));
+  let finished=false; for(const id of _qSeen){ if(!ids.has(id)) finished=true; }
+  _qSeen=ids;
+  if(finished){ state.ver++; state.checked.clear(); await refreshList(); }   // a job cleared → show fresh art
+  if(jobs.length){ _qPoll=setTimeout(pollQueue, 800); }
+}
+function renderQueue(jobs){
+  const box=document.getElementById('regenQueue'); if(!box) return;
+  box.innerHTML='';
+  for(const j of jobs){
+    const pct=Math.round((j.progress||0)*100);
+    const row=document.createElement('div'); row.className='rq '+j.status;
+    const stat = j.status==='queued' ? 'queued'
+               : j.status==='done'   ? 'done ✓'
+               : j.status==='error'  ? 'error ✗'
+               : `${j.done}/${j.total} · ${pct}%`;
+    row.innerHTML=`<div class="rqh"><span class="rql">${j.label}</span><button class="rqx" title="Cancel / dismiss">✕</button></div>
+      <div class="rqbar"><div class="rqfill" style="width:${pct}%"></div></div>
+      <div class="rqs">${stat}</div>`;
+    row.querySelector('.rqx').onclick=()=>cancelRegen(j.id);
+    box.appendChild(row);
+  }
+}
+async function cancelRegen(id){
+  try{ await fetch('/api/regen-cancel',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})}); }catch(e){}
+  pollQueue();
+}
+startQueuePoll();   // pick up any jobs already running (e.g. after a page reload)
+
+/* ---------- Regenerate ×6: generate 6 variations, pick a favourite from a popup ---------- */
+let _vSession=0;
+document.getElementById('regenx6').onclick=regenX6;
+async function regenX6(){
+  if(!cur()){ toast('Nothing selected'); return; }
+  const it=cur(), slug=it.name.replace(/\.png$/i,'');
+  if(!isRosterCat(it.cat)){ toast('×6 works on merge / enemy tiles'); return; }
+  const N=6;
+  try{
+    const j=await (await fetch('/api/regen-variants',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({category:it.cat, slug, n:N, overrides:''})})).json();
+    if(!j.ok){ toast('✗ '+(j.error||'failed to start')); return; }
+  }catch(e){ toast('✗ '+e); return; }
+  openVariants(it.cat, slug, N);
+}
+function openVariants(cat, slug, n){
+  _vSession=(_vSession+1);
+  const grid=document.getElementById('vGrid'); grid.innerHTML='';
+  for(let i=1;i<=n;i++){ const c=document.createElement('div'); c.className='vcell'; c.id='vcell-'+i;
+    c.innerHTML='<div class="vspin">generating…</div>'; grid.appendChild(c); }
+  document.getElementById('vHead').textContent='Generating '+n+' variations…';
+  document.getElementById('variantsModal').hidden=false;
+  pollVariants(cat, slug, n, _vSession);
+}
+async function pollVariants(cat, slug, n, session){
+  if(session!==_vSession) return;                         // a newer run superseded this poll
+  let s=null; try{ s=await (await fetch('/api/variants-status')).json(); }catch(e){}
+  if(s){
+    const cells=s.cells||{};
+    for(let i=1;i<=n;i++){
+      const cell=document.getElementById('vcell-'+i); if(!cell) continue;
+      const st=cells[String(i)]||'running';
+      if(st==='done'){
+        if(!cell.dataset.loaded){ cell.dataset.loaded='1';
+          cell.innerHTML=`<img src="/variant/${slug}/${i}.png?s=${session}"><div class="vpick">Keep #${i}</div>`;
+          cell.onclick=()=>pickVariant(cat, slug, i); }
+      } else if(st==='failed'){
+        if(cell.dataset.state!=='failed'){ cell.dataset.state='failed'; cell.innerHTML='<div class="vspin">✗ none — reroll</div>'; cell.onclick=null; }
+      } // else running → leave the spinner
+    }
+    const okc=(s.ready||[]).length;
+    document.getElementById('vHead').textContent = s.status==='running'
+        ? `Generating… ${s.done}/${s.total} done` : `Pick your favourite — ${okc} ready`;
+    if(s.status==='running'){ setTimeout(()=>pollVariants(cat,slug,n,session), 700); return; }
+  } else { setTimeout(()=>pollVariants(cat,slug,n,session), 700); return; }
+}
+async function pickVariant(cat, slug, index){
+  try{
+    const j=await (await fetch('/api/variants-pick',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({category:cat, slug, index})})).json();
+    if(j.ok){ document.getElementById('variantsModal').hidden=true; _vSession++; state.ver++; setView('source'); toast('✓ kept variation #'+index); }
+    else toast('✗ '+(j.error||'pick failed'));
+  }catch(e){ toast('✗ '+e); }
+}
+document.getElementById('vClose').onclick=()=>{ document.getElementById('variantsModal').hidden=true; _vSession++;
+  fetch('/api/variants-cancel',{method:'POST'}).catch(()=>{}); };
+document.getElementById('regenChk').onclick=regenChecked;
+function makeJobCard(slug){
+  let card=document.getElementById('job-'+slug);
+  if(card){ card.remove(); }
+  card=document.createElement('div'); card.className='job'; card.id='job-'+slug;
+  card.innerHTML=`<div class="jh"><span class="s">${slug}</span><span class="st run">running</span></div>
+    <pre>starting…</pre>
+    <div class="done"><img alt=""><div><div style="color:#bff0cf;font-weight:600;margin-bottom:6px">Ready</div>
+      <button class="open primary">Open in Trim</button></div></div>`;
+  document.getElementById('jobs').prepend(card);
+  card.querySelector('.open').onclick=()=>openInTrim(slug);
+  return card;
+}
+async function pollGen(slug){
+  let card=document.getElementById('job-'+slug) || makeJobCard(slug);
+  const st=card.querySelector('.st'), pre=card.querySelector('pre'), done=card.querySelector('.done');
+  try{
+    const j=await (await fetch('/api/gen-status?slug='+encodeURIComponent(slug))).json();
+    if(j.log) pre.textContent=j.log; pre.scrollTop=pre.scrollHeight;
+    if(j.done){                                    // the generate PROCESS finished
+      if(j.returncode===0 && j.outputExists){
+        st.textContent='done'; st.className='st ok';
+        card.querySelector('.done img').src='/img/heroes/'+slug+'.png?v='+Date.now();
+        done.style.display='flex';
+        state.ver++;                               // bust cache so a REGEN's new art actually shows
+        await refreshList('heroes/'+slug+'.png');  // so it's there in Trim immediately
+        toast('✓ '+slug+' ready');
+      } else {
+        st.textContent='failed'; st.className='st err';
+        toast('✗ '+slug+' failed (see log)');
+      }
+      return;
+    }
+  }catch(e){ pre.textContent += '\n[status error] '+e; }
+  setTimeout(()=>pollGen(slug), 3000);
+}
+function openInTrim(slug){
+  switchTab('trim');
+  const i=state.items.findIndex(it=>it.key==='heroes/'+slug+'.png');
+  if(i>=0){ select(i); setView('source'); } else refreshList('heroes/'+slug+'.png').then(()=>setView('source'));
+}
+
+function toast(m){ const s=document.getElementById('status'); s.textContent=m; s.classList.add('show');
+  clearTimeout(toast._t); toast._t=setTimeout(()=>s.classList.remove('show'),2800); }
+
+window.addEventListener('keydown',e=>{
+  if (document.getElementById('genView').style.display==='block') return; // don't hijack typing in gen tab
+  if (e.target && /INPUT|TEXTAREA/.test(e.target.tagName)) return;
+  if (e.key==='ArrowDown'||e.key==='ArrowRight'){ if(state.idx<state.items.length-1) select(state.idx+1); }
+  if (e.key==='ArrowUp'||e.key==='ArrowLeft'){ if(state.idx>0) select(state.idx-1); }
+  if (e.key==='1') setView('source'); if (e.key==='2') setView('trim'); if (e.key==='3') setView('256');
+});
+boot();
+</script>
+</body>
+</html>

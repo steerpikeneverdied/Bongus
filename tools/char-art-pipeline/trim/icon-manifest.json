@@ -1,0 +1,791 @@
+[
+  {
+    "slug": "coins",
+    "emoji": "🪙",
+    "label": "coins",
+    "category": "currency",
+    "subject": "thick mystical bronze coins, 3/4 view",
+    "assetKeys": [
+      "ui.coin"
+    ],
+    "exportArtKey": "icons/coins"
+  },
+  {
+    "slug": "gems",
+    "emoji": "💎",
+    "label": "gems",
+    "category": "currency",
+    "subject": "a cut blue diamond gemstone, 3/4 view, premium currency",
+    "assetKeys": [
+      "ui.gem"
+    ],
+    "exportArtKey": "icons/gems"
+  },
+  {
+    "slug": "energy",
+    "emoji": "⚡",
+    "label": "energy",
+    "category": "currency",
+    "subject": "a green lightning bolt",
+    "assetKeys": [
+      "ui.energy"
+    ],
+    "exportArtKey": "icons/energy"
+  },
+  {
+    "slug": "hero-xp",
+    "emoji": "📘",
+    "label": "hero-xp",
+    "category": "currency",
+    "subject": "a small purple almost-cuboid tome with white pages, the letters 'XP' on the cover",
+    "assetKeys": [
+      "ui.heroXp"
+    ],
+    "exportArtKey": "icons/hero-xp"
+  },
+  {
+    "slug": "gear-xp",
+    "emoji": "🔧",
+    "label": "gear-xp",
+    "category": "currency",
+    "subject": "a metal hex nut",
+    "assetKeys": [
+      "ui.gearXp"
+    ],
+    "exportArtKey": "icons/gear-xp"
+  },
+  {
+    "slug": "ascension-crystal",
+    "emoji": "💎",
+    "label": "ascension-crystal",
+    "category": "currency",
+    "subject": "a cluster of glowing crystal shards",
+    "assetKeys": [
+      "ui.crystal"
+    ],
+    "exportArtKey": "icons/ascension-crystal"
+  },
+  {
+    "slug": "reward",
+    "emoji": "🎁",
+    "label": "reward",
+    "category": "ui",
+    "subject": "an ornate white gift present with a ribbon",
+    "assetKeys": [
+      "ui.reward",
+      "node.treasure"
+    ],
+    "exportArtKey": "icons/reward"
+  },
+  {
+    "slug": "pity",
+    "emoji": "🛡",
+    "label": "pity",
+    "category": "ui",
+    "subject": "an ornate yellow gift present with a ribbon",
+    "assetKeys": [
+      "ui.pity"
+    ],
+    "exportArtKey": "icons/pity"
+  },
+  {
+    "slug": "reroll",
+    "emoji": "🎲",
+    "label": "reroll",
+    "category": "ui",
+    "subject": "a pair of recycle arrows forming a loop, green-to-teal gradient",
+    "assetKeys": [
+      "ui.reroll"
+    ],
+    "exportArtKey": "icons/reroll"
+  },
+  {
+    "slug": "order",
+    "emoji": "📜",
+    "label": "order",
+    "category": "ui",
+    "subject": "a rolled parchment order scroll",
+    "assetKeys": [
+      "ui.order"
+    ],
+    "exportArtKey": "icons/order"
+  },
+  {
+    "slug": "star",
+    "emoji": "⭐",
+    "label": "star",
+    "category": "ui",
+    "subject": "a gold five-point star",
+    "assetKeys": [
+      "ui.star"
+    ],
+    "exportArtKey": "icons/star"
+  },
+  {
+    "slug": "timer",
+    "emoji": "⏳",
+    "label": "timer",
+    "category": "ui",
+    "subject": "an hourglass",
+    "assetKeys": [
+      "ui.timer"
+    ],
+    "exportArtKey": "icons/timer"
+  },
+  {
+    "slug": "locked-unknown",
+    "emoji": "❓",
+    "label": "locked-unknown",
+    "category": "ui",
+    "subject": "a question mark badge for a locked/unknown entry",
+    "assetKeys": [
+      "ui.locked"
+    ],
+    "exportArtKey": "icons/locked-unknown"
+  },
+  {
+    "slug": "combat-power",
+    "emoji": "💪",
+    "label": "combat-power",
+    "category": "ui",
+    "subject": "a 3/4 view armoured mailed fist — the universal COMBAT POWER icon",
+    "assetKeys": [
+      "ui.power",
+      "icon.power"
+    ],
+    "exportArtKey": "icons/combat-power"
+  },
+  {
+    "slug": "limit-potion",
+    "emoji": "🧪",
+    "label": "limit-potion",
+    "category": "ui",
+    "subject": "a round flask with a cork stopper and purple/gold fluid inside",
+    "assetKeys": [
+      "icon.potion"
+    ],
+    "exportArtKey": "icons/limit-potion"
+  },
+  {
+    "slug": "merge",
+    "emoji": "🧩",
+    "label": "merge",
+    "category": "ui",
+    "subject": "a single chromatic iridescent glass jigsaw puzzle piece",
+    "assetKeys": [
+      "ui.fuseFodder",
+      "ui.nav.merge"
+    ],
+    "exportArtKey": "icons/merge"
+  },
+  {
+    "slug": "chest-common",
+    "emoji": "🧰",
+    "label": "chest-common",
+    "category": "chest",
+    "subject": "a wooden treasure chest, common tier (plain wood + iron bands)",
+    "assetKeys": [
+      "ui.chest",
+      "ui.chest.common"
+    ],
+    "exportArtKey": "icons/chest-common"
+  },
+  {
+    "slug": "chest-uncommon",
+    "emoji": "🧰",
+    "label": "chest-uncommon",
+    "category": "chest",
+    "subject": "a treasure chest, uncommon tier (green accents)",
+    "assetKeys": [
+      "ui.chest.uncommon"
+    ],
+    "exportArtKey": "icons/chest-uncommon"
+  },
+  {
+    "slug": "chest-rare",
+    "emoji": "🎁",
+    "label": "chest-rare",
+    "category": "chest",
+    "subject": "a treasure chest, rare tier (blue accents)",
+    "assetKeys": [
+      "ui.chest.rare"
+    ],
+    "exportArtKey": "icons/chest-rare"
+  },
+  {
+    "slug": "chest-epic",
+    "emoji": "💰",
+    "label": "chest-epic",
+    "category": "chest",
+    "subject": "a treasure chest, epic tier (purple accents)",
+    "assetKeys": [
+      "ui.chest.epic"
+    ],
+    "exportArtKey": "icons/chest-epic"
+  },
+  {
+    "slug": "chest-legendary",
+    "emoji": "💎",
+    "label": "chest-legendary",
+    "category": "chest",
+    "subject": "an ornate treasure chest, legendary tier (gold accents)",
+    "assetKeys": [
+      "ui.chest.legendary"
+    ],
+    "exportArtKey": "icons/chest-legendary"
+  },
+  {
+    "slug": "rarity-prism",
+    "emoji": "★",
+    "label": "rarity-prism",
+    "category": "gacha",
+    "subject": "a faceted crystal prism — the generic RARITY indicator, colour-tinted per rarity at runtime",
+    "assetKeys": [
+      "icon.rarity.star",
+      "icon.rarity.diamond"
+    ],
+    "exportArtKey": "icons/rarity-prism"
+  },
+  {
+    "slug": "gacha-capsule",
+    "emoji": "🎰",
+    "label": "gacha-capsule",
+    "category": "gacha",
+    "subject": "a gachapon capsule (round two-tone toy capsule)",
+    "assetKeys": [
+      "ui.summonMachine",
+      "ui.nav.gacha"
+    ],
+    "exportArtKey": "icons/gacha-capsule"
+  },
+  {
+    "slug": "nav-heroes",
+    "emoji": "🦸",
+    "label": "nav-heroes",
+    "category": "nav",
+    "subject": "three hero head portraits grouped together in a bunch",
+    "assetKeys": [
+      "ui.nav.heroes"
+    ],
+    "exportArtKey": "icons/nav-heroes"
+  },
+  {
+    "slug": "nav-map",
+    "emoji": "🗺️",
+    "label": "nav-map",
+    "category": "nav",
+    "subject": "a folded treasure map",
+    "assetKeys": [
+      "ui.nav.map"
+    ],
+    "exportArtKey": "icons/nav-map"
+  },
+  {
+    "slug": "attack",
+    "emoji": "⚔️",
+    "label": "attack",
+    "category": "combat",
+    "subject": "two crossed steel swords (generic attack/combat)",
+    "assetKeys": [
+      "status.atkUp",
+      "status.atkDown",
+      "node.combat",
+      "icon.attack",
+      "fx.blade"
+    ],
+    "exportArtKey": "icons/attack"
+  },
+  {
+    "slug": "defense",
+    "emoji": "🛡️",
+    "label": "defense",
+    "category": "combat",
+    "subject": "a knight's heater shield",
+    "assetKeys": [
+      "status.defUp",
+      "status.defDown",
+      "icon.stat.def"
+    ],
+    "exportArtKey": "icons/defense"
+  },
+  {
+    "slug": "boss-skull",
+    "emoji": "⚔️",
+    "label": "boss-skull",
+    "category": "combat",
+    "subject": "a horned skull",
+    "assetKeys": [
+      "icon.boss",
+      "node.boss"
+    ],
+    "exportArtKey": "icons/boss-skull"
+  },
+  {
+    "slug": "weapon",
+    "emoji": "⚔️",
+    "label": "weapon",
+    "category": "slot",
+    "subject": "a single upright sword (weapon gear slot)",
+    "assetKeys": [
+      "gear.weapon"
+    ],
+    "exportArtKey": "icons/weapon"
+  },
+  {
+    "slug": "armor",
+    "emoji": "🛡️",
+    "label": "armor",
+    "category": "slot",
+    "subject": "a small chibi chest-plate armor piece",
+    "assetKeys": [
+      "gear.armor",
+      "ui.nav.gear"
+    ],
+    "exportArtKey": "icons/armor"
+  },
+  {
+    "slug": "accessory",
+    "emoji": "💍",
+    "label": "accessory",
+    "category": "slot",
+    "subject": "a jewelled ring",
+    "assetKeys": [
+      "gear.accessory"
+    ],
+    "exportArtKey": "icons/accessory"
+  },
+  {
+    "slug": "speed-up",
+    "emoji": "⚡",
+    "label": "speed-up",
+    "category": "status",
+    "subject": "a walking blue boot (speed up)",
+    "assetKeys": [
+      "status.spdUp"
+    ],
+    "exportArtKey": "icons/speed-up"
+  },
+  {
+    "slug": "status-slow",
+    "emoji": "🐌",
+    "label": "status-slow",
+    "category": "status",
+    "subject": "a snail shell (slow)",
+    "assetKeys": [
+      "status.spdDown"
+    ],
+    "exportArtKey": "icons/status-slow"
+  },
+  {
+    "slug": "status-regen",
+    "emoji": "➕",
+    "label": "status-regen",
+    "category": "status",
+    "subject": "three green medical crosses increasing in size (regen)",
+    "assetKeys": [
+      "status.regen"
+    ],
+    "exportArtKey": "icons/status-regen"
+  },
+  {
+    "slug": "status-stealth",
+    "emoji": "🌫️",
+    "label": "status-stealth",
+    "category": "status",
+    "subject": "an evil eye (stealth)",
+    "assetKeys": [
+      "status.stealth"
+    ],
+    "exportArtKey": "icons/status-stealth"
+  },
+  {
+    "slug": "node-elite",
+    "emoji": "👹",
+    "label": "node-elite",
+    "category": "node",
+    "subject": "a skull without horns (elite node)",
+    "assetKeys": [
+      "node.elite"
+    ],
+    "exportArtKey": "icons/node-elite"
+  },
+  {
+    "slug": "node-rest",
+    "emoji": "⛺",
+    "label": "node-rest",
+    "category": "node",
+    "subject": "a campfire (rest node)",
+    "assetKeys": [
+      "node.rest"
+    ],
+    "exportArtKey": "icons/node-rest"
+  },
+  {
+    "slug": "ranged",
+    "emoji": "🏹",
+    "label": "ranged",
+    "category": "fx",
+    "subject": "a chibi kunai throwing knife",
+    "assetKeys": [
+      "fx.range"
+    ],
+    "exportArtKey": "icons/ranged"
+  },
+  {
+    "slug": "vfx-magic",
+    "emoji": "🔮",
+    "label": "vfx-magic",
+    "category": "fx",
+    "subject": "a wizard hat",
+    "assetKeys": [
+      "fx.magic"
+    ],
+    "exportArtKey": "icons/vfx-magic"
+  },
+  {
+    "slug": "banner-mythic",
+    "emoji": "🪐",
+    "label": "banner-mythic",
+    "category": "banner",
+    "subject": "a velour red-and-purple heraldic pennant",
+    "assetKeys": [
+      "banner.mythic"
+    ],
+    "exportArtKey": "icons/banner-mythic"
+  },
+  {
+    "slug": "banner-mega",
+    "emoji": "🧙",
+    "label": "banner-mega",
+    "category": "banner",
+    "subject": "a velour green-and-blue heraldic pennant",
+    "assetKeys": [
+      "banner.mega"
+    ],
+    "exportArtKey": "icons/banner-mega"
+  },
+  {
+    "slug": "banner-exclusive",
+    "emoji": "🐸",
+    "label": "banner-exclusive",
+    "category": "banner",
+    "subject": "placeholder — the featured hero portrait (contextual)",
+    "assetKeys": [
+      "banner.exclusive"
+    ],
+    "exportArtKey": "icons/banner-exclusive",
+    "dynamic": true
+  },
+  {
+    "slug": "ability-basic",
+    "emoji": "👊",
+    "label": "ability-basic",
+    "category": "ability",
+    "subject": "an archer's target board (basic attack / focus target)",
+    "assetKeys": [
+      "icon.ability.basic",
+      "icon.focus"
+    ],
+    "exportArtKey": "icons/ability-basic"
+  },
+  {
+    "slug": "skill",
+    "emoji": "✨",
+    "label": "skill",
+    "category": "ability",
+    "subject": "a single four-point star (skill)",
+    "assetKeys": [
+      "icon.ability.skill"
+    ],
+    "exportArtKey": "icons/skill"
+  },
+  {
+    "slug": "ability-ultimate",
+    "emoji": "💥",
+    "label": "ability-ultimate",
+    "category": "ability",
+    "subject": "a comet with a tight spiral white head and a spectrum fire trail",
+    "assetKeys": [
+      "icon.ability.limit"
+    ],
+    "exportArtKey": "icons/ability-ultimate"
+  },
+  {
+    "slug": "stat-health",
+    "emoji": "❤️",
+    "label": "stat-health",
+    "category": "stat",
+    "subject": "a red heart",
+    "assetKeys": [
+      "icon.stat.hp"
+    ],
+    "exportArtKey": "icons/stat-health"
+  },
+  {
+    "slug": "stat-attack",
+    "emoji": "🗡️",
+    "label": "stat-attack",
+    "category": "stat",
+    "subject": "a dagger",
+    "assetKeys": [
+      "icon.stat.atk"
+    ],
+    "exportArtKey": "icons/stat-attack"
+  },
+  {
+    "slug": "close",
+    "emoji": "✕",
+    "label": "close",
+    "category": "chrome",
+    "subject": "a bold X close cross",
+    "assetKeys": [
+      "icon.close"
+    ],
+    "exportArtKey": "icons/close"
+  },
+  {
+    "slug": "confirm",
+    "emoji": "✓",
+    "label": "confirm",
+    "category": "chrome",
+    "subject": "a bold checkmark",
+    "assetKeys": [
+      "icon.check"
+    ],
+    "exportArtKey": "icons/confirm"
+  },
+  {
+    "slug": "locked",
+    "emoji": "🔒",
+    "label": "locked",
+    "category": "chrome",
+    "subject": "a padlock",
+    "assetKeys": [
+      "icon.lock"
+    ],
+    "exportArtKey": "icons/locked"
+  },
+  {
+    "slug": "empty-slot",
+    "emoji": "➖",
+    "label": "empty-slot",
+    "category": "chrome",
+    "subject": "a minus dash for an empty slot",
+    "assetKeys": [
+      "icon.empty"
+    ],
+    "exportArtKey": "icons/empty-slot"
+  },
+  {
+    "slug": "warning",
+    "emoji": "⚠️",
+    "label": "warning",
+    "category": "chrome",
+    "subject": "a warning triangle",
+    "assetKeys": [
+      "icon.warn"
+    ],
+    "exportArtKey": "icons/warning"
+  },
+  {
+    "slug": "level-up",
+    "emoji": "⬆️",
+    "label": "level-up",
+    "category": "chrome",
+    "subject": "a single green up arrow",
+    "assetKeys": [
+      "icon.levelUp"
+    ],
+    "exportArtKey": "icons/level-up"
+  },
+  {
+    "slug": "level-up-max",
+    "emoji": "⏫",
+    "label": "level-up-max",
+    "category": "chrome",
+    "subject": "two stacked green up arrows",
+    "assetKeys": [
+      "icon.levelUpMax"
+    ],
+    "exportArtKey": "icons/level-up-max"
+  },
+  {
+    "slug": "ascend",
+    "emoji": "✦",
+    "label": "ascend",
+    "category": "chrome",
+    "subject": "a star with a green chevron arrow above it",
+    "assetKeys": [
+      "icon.ascend",
+      "icon.sacrifice"
+    ],
+    "exportArtKey": "icons/ascend"
+  },
+  {
+    "slug": "reequip",
+    "emoji": "♻️",
+    "label": "reequip",
+    "category": "chrome",
+    "subject": "a pair of recycle arrows forming a loop, purple-and-green",
+    "assetKeys": [
+      "icon.reequip"
+    ],
+    "exportArtKey": "icons/reequip"
+  },
+  {
+    "slug": "equip-best",
+    "emoji": "⚡",
+    "label": "equip-best",
+    "category": "chrome",
+    "subject": "a golden chest-plate armor icon with a small green up-arrow on top",
+    "assetKeys": [
+      "icon.equipBest"
+    ],
+    "exportArtKey": "icons/equip-best"
+  },
+  {
+    "slug": "gear-owner",
+    "emoji": "👤",
+    "label": "gear-owner",
+    "category": "chrome",
+    "subject": "placeholder — the owning hero's portrait (contextual)",
+    "assetKeys": [
+      "icon.owner"
+    ],
+    "exportArtKey": "icons/gear-owner",
+    "dynamic": true
+  },
+  {
+    "slug": "generator",
+    "emoji": "⚙️",
+    "label": "generator",
+    "category": "board",
+    "subject": "leave existing generator art (already handled by the merge-icon pipeline)",
+    "assetKeys": [
+      "icon.generator"
+    ],
+    "exportArtKey": "icons/generator",
+    "keep": true
+  },
+  {
+    "slug": "generator-badge",
+    "emoji": "⚡",
+    "label": "generator-badge",
+    "category": "board",
+    "subject": "a yellow lightning bolt",
+    "assetKeys": [
+      "icon.generatorBadge"
+    ],
+    "exportArtKey": "icons/generator-badge"
+  },
+  {
+    "slug": "locked-tile",
+    "emoji": "🕸️",
+    "label": "locked-tile",
+    "category": "board",
+    "subject": "a spider web / cobweb (locked merge tile)",
+    "assetKeys": [
+      "icon.cobweb"
+    ],
+    "exportArtKey": "icons/locked-tile"
+  },
+  {
+    "slug": "best-merge",
+    "emoji": "✨",
+    "label": "best-merge",
+    "category": "board",
+    "subject": "a gold exclamation mark",
+    "assetKeys": [
+      "icon.bestMerge"
+    ],
+    "exportArtKey": "icons/best-merge"
+  },
+  {
+    "slug": "defeated",
+    "emoji": "☠️",
+    "label": "defeated",
+    "category": "afk",
+    "subject": "a skull (defeated)",
+    "assetKeys": [
+      "icon.skull"
+    ],
+    "exportArtKey": "icons/defeated"
+  },
+  {
+    "slug": "afk",
+    "emoji": "💤",
+    "label": "afk",
+    "category": "afk",
+    "subject": "sleeping zzz letters",
+    "assetKeys": [
+      "icon.afk"
+    ],
+    "exportArtKey": "icons/afk"
+  },
+  {
+    "slug": "squad",
+    "emoji": "🏹",
+    "label": "squad",
+    "category": "minigame",
+    "subject": "three grouped avatar silhouettes — simple circle head + shoulders, three together",
+    "assetKeys": [
+      "icon.minigame.squad"
+    ],
+    "exportArtKey": "icons/squad"
+  },
+  {
+    "slug": "minigame-bomb",
+    "emoji": "💣",
+    "label": "minigame-bomb",
+    "category": "minigame",
+    "subject": "a round lit bomb",
+    "assetKeys": [
+      "icon.minigame.bomb"
+    ],
+    "exportArtKey": "icons/minigame-bomb"
+  },
+  {
+    "slug": "minigame-coins",
+    "emoji": "⛁",
+    "label": "minigame-coins",
+    "category": "minigame",
+    "subject": "a stack of gold coins",
+    "assetKeys": [
+      "icon.minigame.coins"
+    ],
+    "exportArtKey": "icons/minigame-coins"
+  },
+  {
+    "slug": "dev-background-mode",
+    "emoji": "☾",
+    "label": "dev-background-mode",
+    "category": "dev",
+    "subject": "a crescent moon (background mode)",
+    "assetKeys": [
+      "icon.headless"
+    ],
+    "exportArtKey": "icons/dev-background-mode"
+  },
+  {
+    "slug": "dev-test-minigame",
+    "emoji": "🎮",
+    "label": "dev-test-minigame",
+    "category": "dev",
+    "subject": "a game controller",
+    "assetKeys": [
+      "icon.dev.minigame"
+    ],
+    "exportArtKey": "icons/dev-test-minigame"
+  },
+  {
+    "slug": "dev-copy-perf",
+    "emoji": "📋",
+    "label": "dev-copy-perf",
+    "category": "dev",
+    "subject": "a clipboard",
+    "assetKeys": [
+      "icon.dev.perf"
+    ],
+    "exportArtKey": "icons/dev-copy-perf"
+  }
+]
