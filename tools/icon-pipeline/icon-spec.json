@@ -1,0 +1,92 @@
+{
+  "version": 1,
+  "note": "Resolved final icon set from the operator's icon-rename.json (splits applied, shared icons merged, chests = actual chest per rarity, prism = generic rarity concept). Drives build-icon-manifest.mjs → seeds + rosters + export. `prompt` is the gen subject; `assetKeys` are the registry keys the icon serves; `dynamic` = placeholder now, real per-context art later; `keep` = don't (re)generate, leave existing art.",
+  "icons": [
+    { "name": "coins", "category": "currency", "assetKeys": ["ui.coin"], "prompt": "thick mystical bronze coins, 3/4 view" },
+    { "name": "gems", "category": "currency", "assetKeys": ["ui.gem"], "prompt": "a cut blue diamond gemstone, 3/4 view, premium currency" },
+    { "name": "energy", "category": "currency", "assetKeys": ["ui.energy"], "prompt": "a green lightning bolt" },
+    { "name": "hero-xp", "category": "currency", "assetKeys": ["ui.heroXp"], "prompt": "a small purple almost-cuboid tome with white pages, the letters 'XP' on the cover" },
+    { "name": "gear-xp", "category": "currency", "assetKeys": ["ui.gearXp"], "prompt": "a metal hex nut" },
+    { "name": "ascension-crystal", "category": "currency", "assetKeys": ["ui.crystal"], "prompt": "a cluster of glowing crystal shards" },
+
+    { "name": "reward", "category": "ui", "assetKeys": ["ui.reward", "node.treasure"], "prompt": "an ornate white gift present with a ribbon" },
+    { "name": "pity", "category": "ui", "assetKeys": ["ui.pity"], "prompt": "an ornate yellow gift present with a ribbon" },
+    { "name": "reroll", "category": "ui", "assetKeys": ["ui.reroll"], "prompt": "a pair of recycle arrows forming a loop, green-to-teal gradient" },
+    { "name": "order", "category": "ui", "assetKeys": ["ui.order"], "prompt": "a rolled parchment order scroll" },
+    { "name": "star", "category": "ui", "assetKeys": ["ui.star"], "prompt": "a gold five-point star" },
+    { "name": "timer", "category": "ui", "assetKeys": ["ui.timer"], "prompt": "an hourglass" },
+    { "name": "locked-unknown", "category": "ui", "assetKeys": ["ui.locked"], "prompt": "a question mark badge for a locked/unknown entry" },
+    { "name": "combat-power", "category": "ui", "assetKeys": ["ui.power", "icon.power"], "prompt": "a 3/4 view armoured mailed fist — the universal COMBAT POWER icon" },
+    { "name": "limit-potion", "category": "ui", "assetKeys": ["icon.potion"], "prompt": "a round flask with a cork stopper and purple/gold fluid inside" },
+    { "name": "merge", "category": "ui", "assetKeys": ["ui.fuseFodder", "ui.nav.merge"], "prompt": "a single chromatic iridescent glass jigsaw puzzle piece" },
+
+    { "name": "chest-common", "category": "chest", "assetKeys": ["ui.chest", "ui.chest.common"], "prompt": "a wooden treasure chest, common tier (plain wood + iron bands)" },
+    { "name": "chest-uncommon", "category": "chest", "assetKeys": ["ui.chest.uncommon"], "prompt": "a treasure chest, uncommon tier (green accents)" },
+    { "name": "chest-rare", "category": "chest", "assetKeys": ["ui.chest.rare"], "prompt": "a treasure chest, rare tier (blue accents)" },
+    { "name": "chest-epic", "category": "chest", "assetKeys": ["ui.chest.epic"], "prompt": "a treasure chest, epic tier (purple accents)" },
+    { "name": "chest-legendary", "category": "chest", "assetKeys": ["ui.chest.legendary"], "prompt": "an ornate treasure chest, legendary tier (gold accents)" },
+
+    { "name": "rarity-prism", "category": "gacha", "assetKeys": ["icon.rarity.star", "icon.rarity.diamond"], "prompt": "a faceted crystal prism — the generic RARITY indicator, colour-tinted per rarity at runtime" },
+    { "name": "gacha-capsule", "category": "gacha", "assetKeys": ["ui.summonMachine", "ui.nav.gacha"], "prompt": "a gachapon capsule (round two-tone toy capsule)" },
+
+    { "name": "nav-heroes", "category": "nav", "assetKeys": ["ui.nav.heroes"], "prompt": "three hero head portraits grouped together in a bunch" },
+    { "name": "nav-map", "category": "nav", "assetKeys": ["ui.nav.map"], "prompt": "a folded treasure map" },
+
+    { "name": "attack", "category": "combat", "assetKeys": ["status.atkUp", "status.atkDown", "node.combat", "icon.attack", "fx.blade"], "prompt": "two crossed steel swords (generic attack/combat)", "dynamicNote": "fx.blade will later show the actually-equipped weapon" },
+    { "name": "defense", "category": "combat", "assetKeys": ["status.defUp", "status.defDown", "icon.stat.def"], "prompt": "a knight's heater shield" },
+    { "name": "boss-skull", "category": "combat", "assetKeys": ["icon.boss", "node.boss"], "prompt": "a horned skull" },
+    { "name": "weapon", "category": "slot", "assetKeys": ["gear.weapon"], "prompt": "a single upright sword (weapon gear slot)" },
+    { "name": "armor", "category": "slot", "assetKeys": ["gear.armor", "ui.nav.gear"], "prompt": "a small chibi chest-plate armor piece" },
+    { "name": "accessory", "category": "slot", "assetKeys": ["gear.accessory"], "prompt": "a jewelled ring" },
+
+    { "name": "speed-up", "category": "status", "assetKeys": ["status.spdUp"], "prompt": "a walking blue boot (speed up)" },
+    { "name": "status-slow", "category": "status", "assetKeys": ["status.spdDown"], "prompt": "a snail shell (slow)" },
+    { "name": "status-regen", "category": "status", "assetKeys": ["status.regen"], "prompt": "three green medical crosses increasing in size (regen)" },
+    { "name": "status-stealth", "category": "status", "assetKeys": ["status.stealth"], "prompt": "an evil eye (stealth)" },
+
+    { "name": "node-elite", "category": "node", "assetKeys": ["node.elite"], "prompt": "a skull without horns (elite node)" },
+    { "name": "node-rest", "category": "node", "assetKeys": ["node.rest"], "prompt": "a campfire (rest node)" },
+
+    { "name": "ranged", "category": "fx", "assetKeys": ["fx.range"], "prompt": "a chibi kunai throwing knife" },
+    { "name": "vfx-magic", "category": "fx", "assetKeys": ["fx.magic"], "prompt": "a wizard hat" },
+
+    { "name": "banner-mythic", "category": "banner", "assetKeys": ["banner.mythic"], "prompt": "a velour red-and-purple heraldic pennant" },
+    { "name": "banner-mega", "category": "banner", "assetKeys": ["banner.mega"], "prompt": "a velour green-and-blue heraldic pennant" },
+    { "name": "banner-exclusive", "category": "banner", "assetKeys": ["banner.exclusive"], "prompt": "placeholder — the featured hero portrait (contextual)", "dynamic": true },
+
+    { "name": "ability-basic", "category": "ability", "assetKeys": ["icon.ability.basic", "icon.focus"], "prompt": "an archer's target board (basic attack / focus target)" },
+    { "name": "skill", "category": "ability", "assetKeys": ["icon.ability.skill"], "prompt": "a single four-point star (skill)" },
+    { "name": "ability-ultimate", "category": "ability", "assetKeys": ["icon.ability.limit"], "prompt": "a comet with a tight spiral white head and a spectrum fire trail" },
+
+    { "name": "stat-health", "category": "stat", "assetKeys": ["icon.stat.hp"], "prompt": "a red heart" },
+    { "name": "stat-attack", "category": "stat", "assetKeys": ["icon.stat.atk"], "prompt": "a dagger" },
+
+    { "name": "close", "category": "chrome", "assetKeys": ["icon.close"], "prompt": "a bold X close cross" },
+    { "name": "confirm", "category": "chrome", "assetKeys": ["icon.check"], "prompt": "a bold checkmark" },
+    { "name": "locked", "category": "chrome", "assetKeys": ["icon.lock"], "prompt": "a padlock" },
+    { "name": "empty-slot", "category": "chrome", "assetKeys": ["icon.empty"], "prompt": "a minus dash for an empty slot" },
+    { "name": "warning", "category": "chrome", "assetKeys": ["icon.warn"], "prompt": "a warning triangle" },
+    { "name": "level-up", "category": "chrome", "assetKeys": ["icon.levelUp"], "prompt": "a single green up arrow" },
+    { "name": "level-up-max", "category": "chrome", "assetKeys": ["icon.levelUpMax"], "prompt": "two stacked green up arrows" },
+    { "name": "ascend", "category": "chrome", "assetKeys": ["icon.ascend", "icon.sacrifice"], "prompt": "a star with a green chevron arrow above it" },
+    { "name": "reequip", "category": "chrome", "assetKeys": ["icon.reequip"], "prompt": "a pair of recycle arrows forming a loop, purple-and-green" },
+    { "name": "equip-best", "category": "chrome", "assetKeys": ["icon.equipBest"], "prompt": "a golden chest-plate armor icon with a small green up-arrow on top" },
+    { "name": "gear-owner", "category": "chrome", "assetKeys": ["icon.owner"], "prompt": "placeholder — the owning hero's portrait (contextual)", "dynamic": true },
+
+    { "name": "generator", "category": "board", "assetKeys": ["icon.generator"], "prompt": "leave existing generator art (already handled by the merge-icon pipeline)", "keep": true },
+    { "name": "generator-badge", "category": "board", "assetKeys": ["icon.generatorBadge"], "prompt": "a yellow lightning bolt" },
+    { "name": "locked-tile", "category": "board", "assetKeys": ["icon.cobweb"], "prompt": "a spider web / cobweb (locked merge tile)" },
+    { "name": "best-merge", "category": "board", "assetKeys": ["icon.bestMerge"], "prompt": "a gold exclamation mark" },
+
+    { "name": "defeated", "category": "afk", "assetKeys": ["icon.skull"], "prompt": "a skull (defeated)" },
+    { "name": "afk", "category": "afk", "assetKeys": ["icon.afk"], "prompt": "sleeping zzz letters" },
+
+    { "name": "squad", "category": "minigame", "assetKeys": ["icon.minigame.squad"], "prompt": "three grouped avatar silhouettes — simple circle head + shoulders, three together" },
+    { "name": "minigame-bomb", "category": "minigame", "assetKeys": ["icon.minigame.bomb"], "prompt": "a round lit bomb" },
+    { "name": "minigame-coins", "category": "minigame", "assetKeys": ["icon.minigame.coins"], "prompt": "a stack of gold coins" },
+
+    { "name": "dev-background-mode", "category": "dev", "assetKeys": ["icon.headless"], "prompt": "a crescent moon (background mode)" },
+    { "name": "dev-test-minigame", "category": "dev", "assetKeys": ["icon.dev.minigame"], "prompt": "a game controller" },
+    { "name": "dev-copy-perf", "category": "dev", "assetKeys": ["icon.dev.perf"], "prompt": "a clipboard" }
+  ]
+}

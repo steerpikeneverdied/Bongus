@@ -1,0 +1,721 @@
+{
+  "version": 1,
+  "icons": [
+    {
+      "slug": "bolt",
+      "emoji": "⚡",
+      "purpose": "energy",
+      "category": "general",
+      "assetKeys": [
+        "status.spdUp",
+        "ui.energy",
+        "icon.equipBest",
+        "icon.generatorBadge"
+      ],
+      "desired": "Green lightning for energy. walking blue boot for speed up. Equip best should be a golden armor icon with a green up arrow icon on top. Generator should be a yellow lightning bolt.",
+      "splitIntoSeparate": true
+    },
+    {
+      "slug": "bow",
+      "emoji": "🏹",
+      "purpose": "ranged-attack",
+      "category": "general",
+      "assetKeys": [
+        "fx.range",
+        "icon.minigame.squad"
+      ],
+      "desired": "Range (fx.range) should be a chibi kunai. Minigame squad-count (icon.minigame.squad) should be 3 grouped avatar silhouettes — simple circle head + shoulders, three together.",
+      "splitIntoSeparate": true
+    },
+    {
+      "slug": "gem",
+      "emoji": "💎",
+      "purpose": "gems",
+      "category": "general",
+      "assetKeys": [
+        "ui.gem",
+        "ui.chest.legendary",
+        "ui.crystal"
+      ],
+      "desired": "3/4 view diamond for premium currency. rarity tiers should be colored prisms, same prism different color by rarity. Ascension materials should be crystal shards.",
+      "splitIntoSeparate": true
+    },
+    {
+      "slug": "gift",
+      "emoji": "🎁",
+      "purpose": "reward",
+      "category": "general",
+      "assetKeys": [
+        "ui.reward",
+        "ui.chest.rare",
+        "node.treasure"
+      ],
+      "desired": "More ornate white present for generic reward. Chest tier rare uses the prism stated before. Ornate present can be used for map treasure also.",
+      "splitIntoSeparate": true
+    },
+    {
+      "slug": "puzzle",
+      "emoji": "🧩",
+      "purpose": "merge",
+      "category": "general",
+      "assetKeys": [
+        "ui.fuseFodder",
+        "ui.nav.merge"
+      ],
+      "desired": "Needs to be chromatic iridescent glass puzzle piece",
+      "splitIntoSeparate": false
+    },
+    {
+      "slug": "shield",
+      "emoji": "🛡️",
+      "purpose": "defense",
+      "category": "general",
+      "assetKeys": [
+        "gear.armor",
+        "status.defUp",
+        "status.defDown",
+        "ui.pity",
+        "icon.stat.def"
+      ],
+      "desired": "shield for def up and down. Armor should be a tiny piece of chest armor. Gacha pity should be an ornate yellow present. same shield as def up and down for hero stat.",
+      "splitIntoSeparate": true
+    },
+    {
+      "slug": "slot-machine",
+      "emoji": "🎰",
+      "purpose": "gacha",
+      "category": "general",
+      "assetKeys": [
+        "ui.summonMachine",
+        "ui.nav.gacha"
+      ],
+      "desired": "MAke this a gachapon capsule",
+      "splitIntoSeparate": false
+    },
+    {
+      "slug": "sparkle",
+      "emoji": "✨",
+      "purpose": "skill",
+      "category": "general",
+      "assetKeys": [
+        "icon.ability.skill",
+        "icon.bestMerge"
+      ],
+      "desired": "maybe just one star instead of three for ability.\nBest merge toast should be a gold exclamation icon.",
+      "splitIntoSeparate": true
+    },
+    {
+      "slug": "sword",
+      "emoji": "⚔️",
+      "purpose": "attack",
+      "category": "general",
+      "assetKeys": [
+        "gear.weapon",
+        "status.atkUp",
+        "status.atkDown",
+        "fx.blade",
+        "node.combat",
+        "icon.attack",
+        "icon.boss"
+      ],
+      "desired": "weapon should be a sword. Combat atk up or down is fine with crossed swords. Weapon vfx glyph should be replaced eventually by whatever's actualy in the chest. crossed swords also fine for map node combat. atk power also. Boss banner should be a horned skull.",
+      "splitIntoSeparate": true
+    },
+    {
+      "slug": "wrench",
+      "emoji": "🔧",
+      "purpose": "gear-xp",
+      "category": "general",
+      "assetKeys": [
+        "ui.gearXp",
+        "ui.nav.gear"
+      ],
+      "desired": "Gear xp should be a metal hex nut. Bottom nav bar gear should be the armor icon (the chibi chest armor)",
+      "splitIntoSeparate": true
+    },
+    {
+      "slug": "book",
+      "emoji": "📘",
+      "purpose": "hero-xp",
+      "category": "currency",
+      "assetKeys": [
+        "ui.heroXp"
+      ],
+      "desired": "Hero XP should be a small purple almost cuboid tome with white pages that says XP on",
+      "splitIntoSeparate": false
+    },
+    {
+      "slug": "coin",
+      "emoji": "🪙",
+      "purpose": "coins",
+      "category": "currency",
+      "assetKeys": [
+        "ui.coin"
+      ],
+      "desired": "Coins should be thick mystical bronze coins",
+      "splitIntoSeparate": false
+    },
+    {
+      "slug": "dice",
+      "emoji": "🎲",
+      "purpose": "reroll",
+      "category": "ui",
+      "assetKeys": [
+        "ui.reroll"
+      ],
+      "desired": "should be a 'recycle' arrow pair in green with a green/teal gradient",
+      "splitIntoSeparate": false
+    },
+    {
+      "slug": "hourglass",
+      "emoji": "⏳",
+      "purpose": "timer",
+      "category": "ui",
+      "assetKeys": [
+        "ui.timer"
+      ],
+      "desired": "",
+      "splitIntoSeparate": false
+    },
+    {
+      "slug": "muscle",
+      "emoji": "💪",
+      "purpose": "gear-power",
+      "category": "ui",
+      "assetKeys": [
+        "ui.power"
+      ],
+      "desired": "use a universal COMBAT POWER icon",
+      "splitIntoSeparate": false
+    },
+    {
+      "slug": "potion",
+      "emoji": "🧪",
+      "purpose": "limit-potion",
+      "category": "ui",
+      "assetKeys": [
+        "icon.potion"
+      ],
+      "desired": "round flask with cork stopper and purple/gold fluid inside",
+      "splitIntoSeparate": false
+    },
+    {
+      "slug": "question",
+      "emoji": "❓",
+      "purpose": "locked-unknown",
+      "category": "ui",
+      "assetKeys": [
+        "ui.locked"
+      ],
+      "desired": "",
+      "splitIntoSeparate": false
+    },
+    {
+      "slug": "scroll",
+      "emoji": "📜",
+      "purpose": "order",
+      "category": "ui",
+      "assetKeys": [
+        "ui.order"
+      ],
+      "desired": "",
+      "splitIntoSeparate": false
+    },
+    {
+      "slug": "star",
+      "emoji": "⭐",
+      "purpose": "star",
+      "category": "ui",
+      "assetKeys": [
+        "ui.star"
+      ],
+      "desired": "",
+      "splitIntoSeparate": false
+    },
+    {
+      "slug": "box",
+      "emoji": "📦",
+      "purpose": "common-chest",
+      "category": "chest",
+      "assetKeys": [
+        "ui.chest.common"
+      ],
+      "desired": "Use the actual chest icon of this rarity",
+      "splitIntoSeparate": false
+    },
+    {
+      "slug": "moneybag",
+      "emoji": "💰",
+      "purpose": "epic-chest",
+      "category": "chest",
+      "assetKeys": [
+        "ui.chest.epic"
+      ],
+      "desired": "Use the actual chest icon of this rarity",
+      "splitIntoSeparate": false
+    },
+    {
+      "slug": "toolbox",
+      "emoji": "🧰",
+      "purpose": "chest",
+      "category": "chest",
+      "assetKeys": [
+        "ui.chest",
+        "ui.chest.uncommon"
+      ],
+      "desired": "Use the actual chest icon of this rarity",
+      "splitIntoSeparate": false
+    },
+    {
+      "slug": "hero",
+      "emoji": "🦸",
+      "purpose": "nav-heroes",
+      "category": "nav",
+      "assetKeys": [
+        "ui.nav.heroes"
+      ],
+      "desired": "Three hero head portraits together in a bunch",
+      "splitIntoSeparate": false
+    },
+    {
+      "slug": "map",
+      "emoji": "🗺️",
+      "purpose": "nav-map",
+      "category": "nav",
+      "assetKeys": [
+        "ui.nav.map"
+      ],
+      "desired": "",
+      "splitIntoSeparate": false
+    },
+    {
+      "slug": "fog",
+      "emoji": "🌫️",
+      "purpose": "status-stealth",
+      "category": "status",
+      "assetKeys": [
+        "status.stealth"
+      ],
+      "desired": "evil eye",
+      "splitIntoSeparate": false
+    },
+    {
+      "slug": "plus",
+      "emoji": "➕",
+      "purpose": "status-regen",
+      "category": "status",
+      "assetKeys": [
+        "status.regen"
+      ],
+      "desired": "three green crosses increasing in size like the star emoji",
+      "splitIntoSeparate": false
+    },
+    {
+      "slug": "snail",
+      "emoji": "🐌",
+      "purpose": "status-slow",
+      "category": "status",
+      "assetKeys": [
+        "status.spdDown"
+      ],
+      "desired": "snail shell",
+      "splitIntoSeparate": false
+    },
+    {
+      "slug": "dragon",
+      "emoji": "🐲",
+      "purpose": "node-boss",
+      "category": "node",
+      "assetKeys": [
+        "node.boss"
+      ],
+      "desired": "Skull with horns",
+      "splitIntoSeparate": false
+    },
+    {
+      "slug": "ogre",
+      "emoji": "👹",
+      "purpose": "node-elite",
+      "category": "node",
+      "assetKeys": [
+        "node.elite"
+      ],
+      "desired": "Skull without horns",
+      "splitIntoSeparate": false
+    },
+    {
+      "slug": "tent",
+      "emoji": "⛺",
+      "purpose": "node-rest",
+      "category": "node",
+      "assetKeys": [
+        "node.rest"
+      ],
+      "desired": "campfire",
+      "splitIntoSeparate": false
+    },
+    {
+      "slug": "orb",
+      "emoji": "🔮",
+      "purpose": "vfx-magic",
+      "category": "fx",
+      "assetKeys": [
+        "fx.magic"
+      ],
+      "desired": "wizard hat",
+      "splitIntoSeparate": false
+    },
+    {
+      "slug": "frog",
+      "emoji": "🐸",
+      "purpose": "banner-exclusive",
+      "category": "banner",
+      "assetKeys": [
+        "banner.exclusive"
+      ],
+      "desired": "Hero portrait, contextual",
+      "splitIntoSeparate": false
+    },
+    {
+      "slug": "planet",
+      "emoji": "🪐",
+      "purpose": "banner-mythic",
+      "category": "banner",
+      "assetKeys": [
+        "banner.mythic"
+      ],
+      "desired": "Velour red and purple pennant",
+      "splitIntoSeparate": false
+    },
+    {
+      "slug": "wizard",
+      "emoji": "🧙",
+      "purpose": "banner-mega",
+      "category": "banner",
+      "assetKeys": [
+        "banner.mega"
+      ],
+      "desired": "velour green and blue pennant",
+      "splitIntoSeparate": false
+    },
+    {
+      "slug": "ring",
+      "emoji": "💍",
+      "purpose": "slot-accessory",
+      "category": "slot",
+      "assetKeys": [
+        "gear.accessory"
+      ],
+      "desired": "",
+      "splitIntoSeparate": false
+    },
+    {
+      "slug": "boom",
+      "emoji": "💥",
+      "purpose": "ability-ultimate",
+      "category": "ability",
+      "assetKeys": [
+        "icon.ability.limit"
+      ],
+      "desired": "Comet trail tight spiral white head spectrum fire trail",
+      "splitIntoSeparate": false
+    },
+    {
+      "slug": "fist",
+      "emoji": "👊",
+      "purpose": "ability-basic",
+      "category": "ability",
+      "assetKeys": [
+        "icon.ability.basic"
+      ],
+      "desired": "archer target board",
+      "splitIntoSeparate": false
+    },
+    {
+      "slug": "dagger",
+      "emoji": "🗡️",
+      "purpose": "stat-attack",
+      "category": "stat",
+      "assetKeys": [
+        "icon.stat.atk"
+      ],
+      "desired": "as before",
+      "splitIntoSeparate": false
+    },
+    {
+      "slug": "heart",
+      "emoji": "❤️",
+      "purpose": "stat-health",
+      "category": "stat",
+      "assetKeys": [
+        "icon.stat.hp"
+      ],
+      "desired": "",
+      "splitIntoSeparate": false
+    },
+    {
+      "slug": "ascend",
+      "emoji": "✦",
+      "purpose": "ascend",
+      "category": "chrome",
+      "assetKeys": [
+        "icon.ascend"
+      ],
+      "desired": "Star with green chevron above",
+      "splitIntoSeparate": false
+    },
+    {
+      "slug": "check",
+      "emoji": "✓",
+      "purpose": "confirm",
+      "category": "chrome",
+      "assetKeys": [
+        "icon.check"
+      ],
+      "desired": "",
+      "splitIntoSeparate": false
+    },
+    {
+      "slug": "close",
+      "emoji": "✕",
+      "purpose": "close",
+      "category": "chrome",
+      "assetKeys": [
+        "icon.close"
+      ],
+      "desired": "",
+      "splitIntoSeparate": false
+    },
+    {
+      "slug": "lock",
+      "emoji": "🔒",
+      "purpose": "locked",
+      "category": "chrome",
+      "assetKeys": [
+        "icon.lock"
+      ],
+      "desired": "",
+      "splitIntoSeparate": false
+    },
+    {
+      "slug": "minus",
+      "emoji": "➖",
+      "purpose": "empty-slot",
+      "category": "chrome",
+      "assetKeys": [
+        "icon.empty"
+      ],
+      "desired": "",
+      "splitIntoSeparate": false
+    },
+    {
+      "slug": "person",
+      "emoji": "👤",
+      "purpose": "gear-owner",
+      "category": "chrome",
+      "assetKeys": [
+        "icon.owner"
+      ],
+      "desired": "contextual, should be the hero portrait",
+      "splitIntoSeparate": false
+    },
+    {
+      "slug": "raised-fist",
+      "emoji": "✊",
+      "purpose": "power",
+      "category": "chrome",
+      "assetKeys": [
+        "icon.power"
+      ],
+      "desired": "use a universal COMBAT POWER icon. 3/4 mailed fist",
+      "splitIntoSeparate": false
+    },
+    {
+      "slug": "recycle",
+      "emoji": "♻️",
+      "purpose": "reequip",
+      "category": "chrome",
+      "assetKeys": [
+        "icon.reequip"
+      ],
+      "desired": "same icon as the reroll but purple green",
+      "splitIntoSeparate": false
+    },
+    {
+      "slug": "sacrifice",
+      "emoji": "🔁",
+      "purpose": "sacrifice-copy",
+      "category": "chrome",
+      "assetKeys": [
+        "icon.sacrifice"
+      ],
+      "desired": "same as ascension icon",
+      "splitIntoSeparate": false
+    },
+    {
+      "slug": "target",
+      "emoji": "🎯",
+      "purpose": "focus-target",
+      "category": "chrome",
+      "assetKeys": [
+        "icon.focus"
+      ],
+      "desired": "same as basic attack",
+      "splitIntoSeparate": false
+    },
+    {
+      "slug": "up",
+      "emoji": "⬆️",
+      "purpose": "level-up",
+      "category": "chrome",
+      "assetKeys": [
+        "icon.levelUp"
+      ],
+      "desired": "Green arrow",
+      "splitIntoSeparate": false
+    },
+    {
+      "slug": "up-double",
+      "emoji": "⏫",
+      "purpose": "level-up-max",
+      "category": "chrome",
+      "assetKeys": [
+        "icon.levelUpMax"
+      ],
+      "desired": "stacked green arrows",
+      "splitIntoSeparate": false
+    },
+    {
+      "slug": "warning",
+      "emoji": "⚠️",
+      "purpose": "warning",
+      "category": "chrome",
+      "assetKeys": [
+        "icon.warn"
+      ],
+      "desired": "",
+      "splitIntoSeparate": false
+    },
+    {
+      "slug": "cog",
+      "emoji": "⚙️",
+      "purpose": "generator",
+      "category": "board",
+      "assetKeys": [
+        "icon.generator"
+      ],
+      "desired": "already spoken for",
+      "splitIntoSeparate": false
+    },
+    {
+      "slug": "web",
+      "emoji": "🕸️",
+      "purpose": "locked-tile",
+      "category": "board",
+      "assetKeys": [
+        "icon.cobweb"
+      ],
+      "desired": "",
+      "splitIntoSeparate": false
+    },
+    {
+      "slug": "skull",
+      "emoji": "☠️",
+      "purpose": "defeated",
+      "category": "afk",
+      "assetKeys": [
+        "icon.skull"
+      ],
+      "desired": "",
+      "splitIntoSeparate": false
+    },
+    {
+      "slug": "zzz",
+      "emoji": "💤",
+      "purpose": "afk",
+      "category": "afk",
+      "assetKeys": [
+        "icon.afk"
+      ],
+      "desired": "",
+      "splitIntoSeparate": false
+    },
+    {
+      "slug": "diamond",
+      "emoji": "◆",
+      "purpose": "rarity-low",
+      "category": "gacha",
+      "assetKeys": [
+        "icon.rarity.diamond"
+      ],
+      "desired": "",
+      "splitIntoSeparate": false
+    },
+    {
+      "slug": "star-solid",
+      "emoji": "★",
+      "purpose": "rarity-high",
+      "category": "gacha",
+      "assetKeys": [
+        "icon.rarity.star"
+      ],
+      "desired": "",
+      "splitIntoSeparate": false
+    },
+    {
+      "slug": "bomb",
+      "emoji": "💣",
+      "purpose": "minigame-bomb",
+      "category": "minigame",
+      "assetKeys": [
+        "icon.minigame.bomb"
+      ],
+      "desired": "",
+      "splitIntoSeparate": false
+    },
+    {
+      "slug": "coin-stack",
+      "emoji": "⛁",
+      "purpose": "minigame-coins",
+      "category": "minigame",
+      "assetKeys": [
+        "icon.minigame.coins"
+      ],
+      "desired": "",
+      "splitIntoSeparate": false
+    },
+    {
+      "slug": "clipboard",
+      "emoji": "📋",
+      "purpose": "dev-copy-perf",
+      "category": "dev",
+      "assetKeys": [
+        "icon.dev.perf"
+      ],
+      "desired": "",
+      "splitIntoSeparate": false
+    },
+    {
+      "slug": "gamepad",
+      "emoji": "🎮",
+      "purpose": "dev-test-minigame",
+      "category": "dev",
+      "assetKeys": [
+        "icon.dev.minigame"
+      ],
+      "desired": "",
+      "splitIntoSeparate": false
+    },
+    {
+      "slug": "moon",
+      "emoji": "☾",
+      "purpose": "dev-background-mode",
+      "category": "dev",
+      "assetKeys": [
+        "icon.headless"
+      ],
+      "desired": "",
+      "splitIntoSeparate": false
+    }
+  ]
+}
