@@ -1,0 +1,1713 @@
+{
+	"version": 1,
+	"assets": {
+		"gear.weapon": {
+			"type": "image",
+			"file": "gear/weapon.png"
+		},
+		"gear.armor": {
+			"type": "image",
+			"file": "gear/armor.png"
+		},
+		"gear.accessory": {
+			"type": "image",
+			"file": "gear/accessory.png"
+		},
+		"hero.knight": {
+			"type": "image",
+			"file": "heroes/knight.png",
+			"anchor": {
+				"x": 0.5686,
+				"y": 0.8745
+			}
+		},
+		"hero.paladin": {
+			"type": "image",
+			"file": "heroes/paladin.png",
+			"anchor": {
+				"x": 0.5381,
+				"y": 0.9562
+			}
+		},
+		"hero.templar": {
+			"type": "image",
+			"file": "heroes/templar.png",
+			"anchor": {
+				"x": 0.5981,
+				"y": 0.9585
+			}
+		},
+		"hero.barbarian": {
+			"type": "image",
+			"file": "heroes/barbarian.png",
+			"anchor": {
+				"x": 0.4949,
+				"y": 0.95
+			}
+		},
+		"hero.berserker": {
+			"type": "image",
+			"file": "heroes/berserker.png",
+			"anchor": {
+				"x": 0.5144,
+				"y": 0.963
+			}
+		},
+		"hero.dwarf-warrior": {
+			"type": "image",
+			"file": "heroes/dwarf-warrior.png",
+			"anchor": {
+				"x": 0.4985,
+				"y": 0.924
+			}
+		},
+		"hero.valkyrie": {
+			"type": "image",
+			"file": "heroes/valkyrie.png",
+			"anchor": {
+				"x": 0.5415,
+				"y": 0.9765
+			}
+		},
+		"hero.monk": {
+			"type": "image",
+			"file": "heroes/monk.png",
+			"anchor": {
+				"x": 0.5112,
+				"y": 0.951
+			}
+		},
+		"hero.ranger": {
+			"type": "image",
+			"file": "heroes/ranger.png",
+			"anchor": {
+				"x": 0.4793,
+				"y": 0.9435
+			}
+		},
+		"hero.elf-archer": {
+			"type": "image",
+			"file": "heroes/elf-archer.png",
+			"anchor": {
+				"x": 0.5435,
+				"y": 0.9735
+			}
+		},
+		"hero.assassin": {
+			"type": "image",
+			"file": "heroes/assassin.png",
+			"anchor": {
+				"x": 0.5335,
+				"y": 0.972
+			}
+		},
+		"hero.rogue": {
+			"type": "image",
+			"file": "heroes/rogue.png",
+			"anchor": {
+				"x": 0.5543,
+				"y": 0.936
+			}
+		},
+		"hero.dragoon": {
+			"type": "image",
+			"file": "heroes/dragoon.png",
+			"anchor": {
+				"x": 0.6085,
+				"y": 0.9765
+			}
+		},
+		"hero.wizard": {
+			"type": "image",
+			"file": "heroes/wizard.png",
+			"anchor": {
+				"x": 0.5206,
+				"y": 0.9559
+			}
+		},
+		"hero.sorceress": {
+			"type": "image",
+			"file": "heroes/sorceress.png",
+			"anchor": {
+				"x": 0.524,
+				"y": 0.9615
+			}
+		},
+		"hero.warlock": {
+			"type": "image",
+			"file": "heroes/warlock.png",
+			"anchor": {
+				"x": 0.5,
+				"y": 0.9495
+			}
+		},
+		"hero.necromancer": {
+			"type": "image",
+			"file": "heroes/necromancer.png",
+			"anchor": {
+				"x": 0.5431,
+				"y": 0.978
+			}
+		},
+		"hero.druid": {
+			"type": "image",
+			"file": "heroes/druid.png",
+			"anchor": {
+				"x": 0.567,
+				"y": 0.978
+			}
+		},
+		"hero.cleric": {
+			"type": "image",
+			"file": "heroes/cleric.png",
+			"anchor": {
+				"x": 0.5958,
+				"y": 0.984
+			}
+		},
+		"hero.bard": {
+			"type": "image",
+			"file": "heroes/bard.png",
+			"anchor": {
+				"x": 0.4936,
+				"y": 0.966
+			}
+		},
+		"ui.energy": {
+			"type": "image",
+			"file": "ui/energy.png"
+		},
+		"status.atkUp": {
+			"type": "image",
+			"file": "status/atkUp.png"
+		},
+		"status.atkDown": {
+			"type": "image",
+			"file": "status/atkDown.png"
+		},
+		"status.defUp": {
+			"type": "image",
+			"file": "status/defUp.png"
+		},
+		"status.defDown": {
+			"type": "image",
+			"file": "status/defDown.png"
+		},
+		"status.spdUp": {
+			"type": "image",
+			"file": "status/spdUp.png"
+		},
+		"status.spdDown": {
+			"type": "image",
+			"file": "status/spdDown.png"
+		},
+		"status.regen": {
+			"type": "image",
+			"file": "status/regen.png"
+		},
+		"status.stealth": {
+			"type": "image",
+			"file": "status/stealth.png"
+		},
+		"ui.hero-bg": {
+			"type": "image",
+			"file": "ui/hero-bg.png"
+		},
+		"ui.coin": {
+			"type": "image",
+			"file": "ui/coin.png"
+		},
+		"ui.gem": {
+			"type": "image",
+			"file": "ui/gem.png"
+		},
+		"ui.heroXp": {
+			"type": "image",
+			"file": "ui/heroXp.png"
+		},
+		"ui.gearXp": {
+			"type": "image",
+			"file": "ui/gearXp.png"
+		},
+		"ui.order": {
+			"type": "image",
+			"file": "ui/order.png"
+		},
+		"ui.reward": {
+			"type": "image",
+			"file": "ui/reward.png"
+		},
+		"ui.chest": {
+			"type": "image",
+			"file": "ui/chest.png"
+		},
+		"ui.chest.common": {
+			"type": "image",
+			"file": "ui/chest.png"
+		},
+		"ui.chest.uncommon": {
+			"type": "image",
+			"file": "ui/chest-uncommon.png"
+		},
+		"ui.chest.rare": {
+			"type": "image",
+			"file": "ui/chest-rare.png"
+		},
+		"ui.chest.epic": {
+			"type": "image",
+			"file": "ui/chest-epic.png"
+		},
+		"ui.chest.legendary": {
+			"type": "image",
+			"file": "ui/chest-legendary.png"
+		},
+		"ui.star": {
+			"type": "image",
+			"file": "ui/star.png"
+		},
+		"ui.power": {
+			"type": "image",
+			"file": "ui/power.png"
+		},
+		"ui.crystal": {
+			"type": "image",
+			"file": "standalone/gem-ruby.png"
+		},
+		"piece.u-lilypad-aegis": {
+			"type": "image",
+			"file": "standalone/shield.png"
+		},
+		"piece.u-mireblade": {
+			"type": "image",
+			"file": "standalone/sword-falchion.png"
+		},
+		"piece.u-bog-charm": {
+			"type": "image",
+			"file": "standalone/orb-arcane.png"
+		},
+		"piece.u-hunter-cowl": {
+			"type": "image",
+			"file": "standalone/helm.png"
+		},
+		"piece.u-gloomthorn": {
+			"type": "image",
+			"file": "standalone/staff.png"
+		},
+		"piece.u-thornweave": {
+			"type": "image",
+			"file": "standalone/scroll.png"
+		},
+		"piece.u-ossuary-plate": {
+			"type": "image",
+			"file": "standalone/shield.png"
+		},
+		"piece.u-bonereaper": {
+			"type": "image",
+			"file": "standalone/sword-falchion.png"
+		},
+		"piece.u-grave-sigil": {
+			"type": "image",
+			"file": "standalone/key-gold.png"
+		},
+		"piece.u-magma-guard": {
+			"type": "image",
+			"file": "standalone/shield.png"
+		},
+		"piece.u-cinderfang": {
+			"type": "image",
+			"file": "standalone/sword-knight.png"
+		},
+		"piece.u-ember-band": {
+			"type": "image",
+			"file": "standalone/orb-fire.png"
+		},
+		"piece.u-glacial-ward": {
+			"type": "image",
+			"file": "standalone/tome.png"
+		},
+		"piece.u-rimebrand": {
+			"type": "image",
+			"file": "standalone/staff.png"
+		},
+		"piece.u-frost-locket": {
+			"type": "image",
+			"file": "standalone/potion-blue.png"
+		},
+		"piece.u-scale-aegis": {
+			"type": "image",
+			"file": "standalone/helm.png"
+		},
+		"piece.u-wyrmblade": {
+			"type": "image",
+			"file": "standalone/sword-knight.png"
+		},
+		"piece.u-dragonheart": {
+			"type": "image",
+			"file": "standalone/potion-red.png"
+		},
+		"zone.mossbog": {
+			"type": "image",
+			"file": "zones/zone-mossbog.png"
+		},
+		"zone.gloomwood": {
+			"type": "image",
+			"file": "zones/zone-gloomwood.png"
+		},
+		"zone.boneyard": {
+			"type": "image",
+			"file": "zones/zone-boneyard.png"
+		},
+		"zone.emberfall": {
+			"type": "image",
+			"file": "zones/zone-emberfall.png"
+		},
+		"zone.frostvault": {
+			"type": "image",
+			"file": "zones/zone-frostvault.png"
+		},
+		"zone.dragons-ascent": {
+			"type": "image",
+			"file": "zones/zone-dragons-ascent.png"
+		},
+		"hero.alchemist": {
+			"type": "image",
+			"file": "heroes/alchemist.png",
+			"anchor": {
+				"x": 0.5128,
+				"y": 0.963
+			}
+		},
+		"hero.beastmaster": {
+			"type": "image",
+			"file": "heroes/beastmaster.png",
+			"anchor": {
+				"x": 0.5383,
+				"y": 0.945
+			}
+		},
+		"hero.dancer": {
+			"type": "image",
+			"file": "heroes/dancer.png",
+			"anchor": {
+				"x": 0.527,
+				"y": 0.9315
+			}
+		},
+		"hero.dark-knight": {
+			"type": "image",
+			"file": "heroes/dark-knight.png",
+			"anchor": {
+				"x": 0.5727,
+				"y": 0.9544
+			}
+		},
+		"hero.geomancer": {
+			"type": "image",
+			"file": "heroes/geomancer.png",
+			"anchor": {
+				"x": 0.5479,
+				"y": 0.909
+			}
+		},
+		"hero.gladiator": {
+			"type": "image",
+			"file": "heroes/gladiator.png",
+			"anchor": {
+				"x": 0.5128,
+				"y": 0.9525
+			}
+		},
+		"hero.gunslinger": {
+			"type": "image",
+			"file": "heroes/gunslinger.png",
+			"anchor": {
+				"x": 0.4936,
+				"y": 0.9555
+			}
+		},
+		"hero.inquisitor": {
+			"type": "image",
+			"file": "heroes/inquisitor.png",
+			"anchor": {
+				"x": 0.5149,
+				"y": 0.8995
+			}
+		},
+		"hero.lancer": {
+			"type": "image",
+			"file": "heroes/lancer.png",
+			"anchor": {
+				"x": 0.5497,
+				"y": 0.9797
+			}
+		},
+		"hero.mage": {
+			"type": "image",
+			"file": "heroes/mage.png",
+			"anchor": {
+				"x": 0.5223,
+				"y": 0.9795
+			}
+		},
+		"hero.ninja": {
+			"type": "image",
+			"file": "heroes/ninja.png",
+			"anchor": {
+				"x": 0.5317,
+				"y": 0.9181
+			}
+		},
+		"hero.pirate": {
+			"type": "image",
+			"file": "heroes/pirate.png",
+			"anchor": {
+				"x": 0.488,
+				"y": 0.9615
+			}
+		},
+		"hero.priest": {
+			"type": "image",
+			"file": "heroes/priest.png",
+			"anchor": {
+				"x": 0.5225,
+				"y": 0.9495
+			}
+		},
+		"hero.samurai": {
+			"type": "image",
+			"file": "heroes/samurai.png",
+			"anchor": {
+				"x": 0.5112,
+				"y": 0.957
+			}
+		},
+		"hero.shaman": {
+			"type": "image",
+			"file": "heroes/shaman.png",
+			"anchor": {
+				"x": 0.5615,
+				"y": 0.981
+			}
+		},
+		"hero.spellblade": {
+			"type": "image",
+			"file": "heroes/spellblade.png",
+			"anchor": {
+				"x": 0.584,
+				"y": 0.9585
+			}
+		},
+		"hero.summoner": {
+			"type": "image",
+			"file": "heroes/summoner.png",
+			"anchor": {
+				"x": 0.5261,
+				"y": 0.9778
+			}
+		},
+		"hero.warlord": {
+			"type": "image",
+			"file": "heroes/warlord.png",
+			"anchor": {
+				"x": 0.5239,
+				"y": 0.948
+			}
+		},
+		"hero.warrior": {
+			"type": "image",
+			"file": "heroes/warrior.png",
+			"anchor": {
+				"x": 0.545,
+				"y": 0.9321
+			}
+		},
+		"hero.witch": {
+			"type": "image",
+			"file": "heroes/witch.png",
+			"anchor": {
+				"x": 0.527,
+				"y": 0.969
+			}
+		},
+		"enemy.banshee": {
+			"type": "image",
+			"file": "enemies/banshee.png",
+			"anchor": {
+				"x": 0.547,
+				"y": 0.8878
+			}
+		},
+		"enemy.bone-hound": {
+			"type": "image",
+			"file": "enemies/bone-hound.png",
+			"anchor": {
+				"x": 0.5216,
+				"y": 0.8025
+			}
+		},
+		"enemy.bone-warrior": {
+			"type": "image",
+			"file": "enemies/bone-warrior.png",
+			"anchor": {
+				"x": 0.5975,
+				"y": 0.8275
+			}
+		},
+		"enemy.crawling-hand": {
+			"type": "image",
+			"file": "enemies/crawling-hand.png",
+			"anchor": {
+				"x": 0.6235,
+				"y": 0.8066
+			}
+		},
+		"enemy.grave-golem": {
+			"type": "image",
+			"file": "enemies/grave-golem.png",
+			"anchor": {
+				"x": 0.509,
+				"y": 0.8882
+			}
+		},
+		"enemy.grave-wraith": {
+			"type": "image",
+			"file": "enemies/grave-wraith.png",
+			"anchor": {
+				"x": 0.5251,
+				"y": 0.8532
+			}
+		},
+		"enemy.plague-corpse": {
+			"type": "image",
+			"file": "enemies/plague-corpse.png",
+			"anchor": {
+				"x": 0.5581,
+				"y": 0.8692
+			}
+		},
+		"enemy.rotting-ghoul": {
+			"type": "image",
+			"file": "enemies/rotting-ghoul.png",
+			"anchor": {
+				"x": 0.5272,
+				"y": 0.7555
+			}
+		},
+		"enemy.skeletal-archer": {
+			"type": "image",
+			"file": "enemies/skeletal-archer.png",
+			"anchor": {
+				"x": 0.4067,
+				"y": 0.8459
+			}
+		},
+		"enemy.tomb-guard": {
+			"type": "image",
+			"file": "enemies/tomb-guard.png",
+			"anchor": {
+				"x": 0.5344,
+				"y": 0.8746
+			}
+		},
+		"enemy.ash-wraith": {
+			"type": "image",
+			"file": "enemies/ash-wraith.png",
+			"anchor": {
+				"x": 0.5013,
+				"y": 0.8743
+			}
+		},
+		"enemy.coal-brute": {
+			"type": "image",
+			"file": "enemies/coal-brute.png",
+			"anchor": {
+				"x": 0.4827,
+				"y": 0.8114
+			}
+		},
+		"enemy.ember-bat": {
+			"type": "image",
+			"file": "enemies/ember-bat.png",
+			"anchor": {
+				"x": 0.5019,
+				"y": 0.9599
+			}
+		},
+		"enemy.flame-skull": {
+			"type": "image",
+			"file": "enemies/flame-skull.png",
+			"anchor": {
+				"x": 0.516,
+				"y": 1
+			}
+		},
+		"enemy.hellhound": {
+			"type": "image",
+			"file": "enemies/hellhound.png",
+			"anchor": {
+				"x": 0.6101,
+				"y": 0.8944
+			}
+		},
+		"enemy.infernal-tyrant": {
+			"type": "image",
+			"file": "enemies/infernal-tyrant.png",
+			"anchor": {
+				"x": 0.4507,
+				"y": 0.9118
+			}
+		},
+		"enemy.lava-slug": {
+			"type": "image",
+			"file": "enemies/lava-slug.png",
+			"anchor": {
+				"x": 0.4926,
+				"y": 0.7934
+			}
+		},
+		"enemy.magma-golem": {
+			"type": "image",
+			"file": "enemies/magma-golem.png",
+			"anchor": {
+				"x": 0.5397,
+				"y": 0.774
+			}
+		},
+		"enemy.molten-knight": {
+			"type": "image",
+			"file": "enemies/molten-knight.png",
+			"anchor": {
+				"x": 0.578,
+				"y": 0.8271
+			}
+		},
+		"enemy.salamander": {
+			"type": "image",
+			"file": "enemies/salamander.png",
+			"anchor": {
+				"x": 0.5312,
+				"y": 0.7838
+			}
+		},
+		"enemy.antler-wraith": {
+			"type": "image",
+			"file": "enemies/antler-wraith.png",
+			"anchor": {
+				"x": 0.4987,
+				"y": 0.894
+			}
+		},
+		"enemy.boar-brute": {
+			"type": "image",
+			"file": "enemies/boar-brute.png",
+			"anchor": {
+				"x": 0.5615,
+				"y": 0.8538
+			}
+		},
+		"enemy.dire-wolf": {
+			"type": "image",
+			"file": "enemies/dire-wolf.png",
+			"anchor": {
+				"x": 0.5216,
+				"y": 0.808
+			}
+		},
+		"enemy.elder-treant": {
+			"type": "image",
+			"file": "enemies/elder-treant.png",
+			"anchor": {
+				"x": 0.5389,
+				"y": 0.8989
+			}
+		},
+		"enemy.goblin-archer": {
+			"type": "image",
+			"file": "enemies/goblin-archer.png",
+			"anchor": {
+				"x": 0.4174,
+				"y": 0.865
+			}
+		},
+		"enemy.moss-troll": {
+			"type": "image",
+			"file": "enemies/moss-troll.png",
+			"anchor": {
+				"x": 0.501,
+				"y": 0.8138
+			}
+		},
+		"enemy.mushroom-brute": {
+			"type": "image",
+			"file": "enemies/mushroom-brute.png",
+			"anchor": {
+				"x": 0.5058,
+				"y": 0.8943
+			}
+		},
+		"enemy.shade-stalker": {
+			"type": "image",
+			"file": "enemies/shade-stalker.png",
+			"anchor": {
+				"x": 0.5314,
+				"y": 0.8092
+			}
+		},
+		"enemy.thorn-sprite": {
+			"type": "image",
+			"file": "enemies/thorn-sprite.png",
+			"anchor": {
+				"x": 0.5901,
+				"y": 0.8643
+			}
+		},
+		"enemy.thornhound": {
+			"type": "image",
+			"file": "enemies/thornhound.png",
+			"anchor": {
+				"x": 0.5147,
+				"y": 0.8513
+			}
+		},
+		"enemy.treant-sapling": {
+			"type": "image",
+			"file": "enemies/treant-sapling.png",
+			"anchor": {
+				"x": 0.5048,
+				"y": 0.8735
+			}
+		},
+		"enemy.bog-goblin": {
+			"type": "image",
+			"file": "enemies/bog-goblin.png",
+			"anchor": {
+				"x": 0.4885,
+				"y": 0.8457
+			}
+		},
+		"enemy.bog-slime": {
+			"type": "image",
+			"file": "enemies/bog-slime.png",
+			"anchor": {
+				"x": 0.5048,
+				"y": 0.8359
+			}
+		},
+		"enemy.bog-zombie": {
+			"type": "image",
+			"file": "enemies/bog-zombie.png",
+			"anchor": {
+				"x": 0.4844,
+				"y": 0.8632
+			}
+		},
+		"enemy.fen-lurcher": {
+			"type": "image",
+			"file": "enemies/fen-lurcher.png",
+			"anchor": {
+				"x": 0.5163,
+				"y": 0.8875
+			}
+		},
+		"enemy.giant-leech": {
+			"type": "image",
+			"file": "enemies/giant-leech.png",
+			"anchor": {
+				"x": 0.5483,
+				"y": 0.8756
+			}
+		},
+		"enemy.giant-toad": {
+			"type": "image",
+			"file": "enemies/giant-toad.png",
+			"anchor": {
+				"x": 0.5549,
+				"y": 0.8196
+			}
+		},
+		"enemy.marsh-behemoth": {
+			"type": "image",
+			"file": "enemies/marsh-behemoth.png",
+			"anchor": {
+				"x": 0.5113,
+				"y": 0.88
+			}
+		},
+		"enemy.mud-golem": {
+			"type": "image",
+			"file": "enemies/mud-golem.png",
+			"anchor": {
+				"x": 0.5382,
+				"y": 0.8068
+			}
+		},
+		"enemy.reed-lurker": {
+			"type": "image",
+			"file": "enemies/reed-lurker.png",
+			"anchor": {
+				"x": 0.4871,
+				"y": 0.8374
+			}
+		},
+		"enemy.snapvine": {
+			"type": "image",
+			"file": "enemies/snapvine.png",
+			"anchor": {
+				"x": 0.5151,
+				"y": 0.9103
+			}
+		},
+		"enemy.swamp-hag": {
+			"type": "image",
+			"file": "enemies/swamp-hag.png",
+			"anchor": {
+				"x": 0.5221,
+				"y": 0.8664
+			}
+		},
+		"enemy.arcane-golem": {
+			"type": "image",
+			"file": "enemies/arcane-golem.png",
+			"anchor": {
+				"x": 0.5131,
+				"y": 0.7759
+			}
+		},
+		"enemy.cockatrice": {
+			"type": "image",
+			"file": "enemies/cockatrice.png",
+			"anchor": {
+				"x": 0.5336,
+				"y": 0.857
+			}
+		},
+		"enemy.dragonkin-warrior": {
+			"type": "image",
+			"file": "enemies/dragonkin-warrior.png",
+			"anchor": {
+				"x": 0.5404,
+				"y": 0.7786
+			}
+		},
+		"enemy.elder-wyrm": {
+			"type": "image",
+			"file": "enemies/elder-wyrm.png",
+			"anchor": {
+				"x": 0.4591,
+				"y": 0.9102
+			}
+		},
+		"enemy.harpy": {
+			"type": "image",
+			"file": "enemies/harpy.png",
+			"anchor": {
+				"x": 0.5019,
+				"y": 0.8734
+			}
+		},
+		"enemy.storm-drake": {
+			"type": "image",
+			"file": "enemies/storm-drake.png",
+			"anchor": {
+				"x": 0.5145,
+				"y": 0.83
+			}
+		},
+		"enemy.wyrmling-mage": {
+			"type": "image",
+			"file": "enemies/wyrmling-mage.png",
+			"anchor": {
+				"x": 0.4267,
+				"y": 0.8788
+			}
+		},
+		"enemy.wyvern": {
+			"type": "image",
+			"file": "enemies/wyvern.png",
+			"anchor": {
+				"x": 0.5429,
+				"y": 0.8585
+			}
+		},
+		"enemy.crystal-golem": {
+			"type": "image",
+			"file": "enemies/crystal-golem.png",
+			"anchor": {
+				"x": 0.5073,
+				"y": 0.8257
+			}
+		},
+		"enemy.frost-bat": {
+			"type": "image",
+			"file": "enemies/frost-bat.png",
+			"anchor": {
+				"x": 0.5131,
+				"y": 0.9257
+			}
+		},
+		"enemy.frost-wraith": {
+			"type": "image",
+			"file": "enemies/frost-wraith.png",
+			"anchor": {
+				"x": 0.5072,
+				"y": 0.8304
+			}
+		},
+		"enemy.frostbite-ghoul": {
+			"type": "image",
+			"file": "enemies/frostbite-ghoul.png",
+			"anchor": {
+				"x": 0.5432,
+				"y": 0.7614
+			}
+		},
+		"enemy.frozen-zombie": {
+			"type": "image",
+			"file": "enemies/frozen-zombie.png",
+			"anchor": {
+				"x": 0.4781,
+				"y": 0.8709
+			}
+		},
+		"enemy.glacial-warden": {
+			"type": "image",
+			"file": "enemies/glacial-warden.png",
+			"anchor": {
+				"x": 0.5953,
+				"y": 0.8329
+			}
+		},
+		"enemy.ice-golem": {
+			"type": "image",
+			"file": "enemies/ice-golem.png",
+			"anchor": {
+				"x": 0.5005,
+				"y": 0.8083
+			}
+		},
+		"enemy.ice-slime": {
+			"type": "image",
+			"file": "enemies/ice-slime.png",
+			"anchor": {
+				"x": 0.4867,
+				"y": 0.8262
+			}
+		},
+		"enemy.icicle-imp": {
+			"type": "image",
+			"file": "enemies/icicle-imp.png",
+			"anchor": {
+				"x": 0.5315,
+				"y": 0.8712
+			}
+		},
+		"enemy.snow-wolf": {
+			"type": "image",
+			"file": "enemies/snow-wolf.png",
+			"anchor": {
+				"x": 0.5201,
+				"y": 0.9108
+			}
+		},
+		"enemy.wendigo": {
+			"type": "image",
+			"file": "enemies/wendigo.png",
+			"anchor": {
+				"x": 0.5449,
+				"y": 0.8894
+			}
+		},
+		"hero.demon": {
+			"type": "image",
+			"file": "heroes/demon.png",
+			"anchor": {
+				"x": 0.5283,
+				"y": 0.9473
+			}
+		},
+		"hero.golem": {
+			"type": "image",
+			"file": "heroes/golem.png"
+		},
+		"hero.obsidia": {
+			"type": "image",
+			"file": "heroes/obsidia.png",
+			"anchor": {
+				"x": 0.5096,
+				"y": 0.9391
+			}
+		},
+		"enemy.bone-colossus": {
+			"type": "image",
+			"file": "enemies/bone-colossus.png",
+			"anchor": {
+				"x": 0.5006,
+				"y": 0.9124
+			}
+		},
+		"enemy.dragon-whelp": {
+			"type": "image",
+			"file": "enemies/dragon-whelp.png",
+			"anchor": {
+				"x": 0.4988,
+				"y": 0.7877
+			}
+		},
+		"enemy.drake-hatchling": {
+			"type": "image",
+			"file": "enemies/drake-hatchling.png",
+			"anchor": {
+				"x": 0.4991,
+				"y": 0.851
+			}
+		},
+		"enemy.gargoyle": {
+			"type": "image",
+			"file": "enemies/gargoyle.png",
+			"anchor": {
+				"x": 0.4859,
+				"y": 0.8019
+			}
+		},
+		"enemy.cinder-imp": {
+			"type": "image",
+			"file": "enemies/cinder-imp.png",
+			"anchor": {
+				"x": 0.5013,
+				"y": 0.8479
+			}
+		},
+		"enemy.cave-bat": {
+			"type": "image",
+			"file": "enemies/cave-bat.png"
+		},
+		"enemy.giant-rat": {
+			"type": "image",
+			"file": "enemies/giant-rat.png"
+		},
+		"enemy.goblin": {
+			"type": "image",
+			"file": "enemies/goblin.png"
+		},
+		"enemy.imp": {
+			"type": "image",
+			"file": "enemies/imp.png"
+		},
+		"enemy.kobold": {
+			"type": "image",
+			"file": "enemies/kobold.png"
+		},
+		"enemy.mushroom": {
+			"type": "image",
+			"file": "enemies/mushroom.png"
+		},
+		"enemy.orc": {
+			"type": "image",
+			"file": "enemies/orc.png"
+		},
+		"enemy.skeleton": {
+			"type": "image",
+			"file": "enemies/skeleton.png"
+		},
+		"enemy.slime": {
+			"type": "image",
+			"file": "enemies/slime.png"
+		},
+		"enemy.wraith": {
+			"type": "image",
+			"file": "enemies/wraith.png"
+		},
+		"enemy.zombie": {
+			"type": "image",
+			"file": "enemies/zombie.png"
+		},
+		"banner.bg.exclusive": {
+			"type": "image",
+			"file": "ui/banners/exclusive.png"
+		},
+		"banner.bg.mythic": {
+			"type": "image",
+			"file": "ui/banners/mythic.png"
+		},
+		"banner.bg.mega": {
+			"type": "image",
+			"file": "ui/banners/mega.png"
+		},
+		"hero.bishop": {
+			"type": "image",
+			"file": "heroes/bishop.png",
+			"anchor": {
+				"x": 0.5267,
+				"y": 0.9377
+			}
+		},
+		"special.0": {
+			"type": "image",
+			"file": "merge/special-0.png",
+			"anchor": {
+				"x": 0.5,
+				"y": 0.5
+			},
+			"scale": 1
+		},
+		"hero.nomad": {
+			"type": "image",
+			"file": "heroes/nomad.png",
+			"anchor": {
+				"x": 0.5119,
+				"y": 0.9232
+			}
+		},
+		"hero.dragon": {
+			"type": "image",
+			"file": "heroes/dragon.png"
+		},
+		"hero.doctor": {
+			"type": "image",
+			"file": "heroes/doctor.png",
+			"anchor": {
+				"x": 0.4762,
+				"y": 0.9015
+			}
+		},
+		"hero.imp": {
+			"type": "image",
+			"file": "heroes/imp.png",
+			"anchor": {
+				"x": 0.5317,
+				"y": 0.9175
+			}
+		},
+		"hero.merchant": {
+			"type": "image",
+			"file": "heroes/merchant.png",
+			"anchor": {
+				"x": 0.4957,
+				"y": 0.9702
+			}
+		},
+		"magic.0": {
+			"type": "image",
+			"file": "merge/magic-0.png",
+			"anchor": {
+				"x": 0.4919,
+				"y": 0.5135
+			},
+			"scale": 0.7,
+			"rotation": -7
+		},
+		"magic.0.shadow": {
+			"type": "image",
+			"file": "merge/magic-0_shadow.png"
+		},
+		"magic.1": {
+			"type": "image",
+			"file": "merge/magic-1.png",
+			"anchor": {
+				"x": 0.5018,
+				"y": 0.5299
+			},
+			"scale": 0.95,
+			"rotation": 4
+		},
+		"magic.1.shadow": {
+			"type": "image",
+			"file": "merge/magic-1_shadow.png"
+		},
+		"magic.2": {
+			"type": "image",
+			"file": "merge/magic-2.png",
+			"anchor": {
+				"x": 0.4976,
+				"y": 0.5179
+			},
+			"scale": 0.9,
+			"rotation": -6
+		},
+		"magic.2.shadow": {
+			"type": "image",
+			"file": "merge/magic-2_shadow.png"
+		},
+		"magic.3": {
+			"type": "image",
+			"file": "merge/magic-3.png",
+			"anchor": {
+				"x": 0.5,
+				"y": 0.5
+			},
+			"scale": 0.85
+		},
+		"magic.3.shadow": {
+			"type": "image",
+			"file": "merge/magic-3_shadow.png"
+		},
+		"magic.4": {
+			"type": "image",
+			"file": "merge/magic-4.png",
+			"anchor": {
+				"x": 0.5,
+				"y": 0.5
+			},
+			"scale": 0.9
+		},
+		"magic.4.shadow": {
+			"type": "image",
+			"file": "merge/magic-4_shadow.png"
+		},
+		"magic.5": {
+			"type": "image",
+			"file": "merge/magic-5.png",
+			"anchor": {
+				"x": 0.4833,
+				"y": 0.5385
+			},
+			"scale": 0.9,
+			"rotation": -16
+		},
+		"magic.5.shadow": {
+			"type": "image",
+			"file": "merge/magic-5_shadow.png"
+		},
+		"magic.6": {
+			"type": "image",
+			"file": "merge/magic-6.png",
+			"anchor": {
+				"x": 0.4984,
+				"y": 0.5141
+			},
+			"scale": 1.05,
+			"rotation": -10
+		},
+		"magic.6.shadow": {
+			"type": "image",
+			"file": "merge/magic-6_shadow.png"
+		},
+		"magic.7": {
+			"type": "image",
+			"file": "merge/magic-7.png",
+			"anchor": {
+				"x": 0.5,
+				"y": 0.5
+			},
+			"rotation": -1
+		},
+		"magic.7.shadow": {
+			"type": "image",
+			"file": "merge/magic-7_shadow.png"
+		},
+		"gen.magic.0": {
+			"type": "image",
+			"file": "gen/magic-0.png",
+			"anchor": {
+				"x": 0.4793,
+				"y": 0.4622
+			},
+			"scale": 0.9
+		},
+		"gen.magic.0.shadow": {
+			"type": "image",
+			"file": "gen/magic-0_shadow.png"
+		},
+		"gen.magic.1": {
+			"type": "image",
+			"file": "gen/magic-1.png",
+			"anchor": {
+				"x": 0.5,
+				"y": 0.5
+			}
+		},
+		"gen.magic.1.shadow": {
+			"type": "image",
+			"file": "gen/magic-1_shadow.png"
+		},
+		"gen.magic.2": {
+			"type": "image",
+			"file": "gen/magic-2.png",
+			"anchor": {
+				"x": 0.5,
+				"y": 0.5
+			},
+			"scale": 1.1
+		},
+		"gen.magic.2.shadow": {
+			"type": "image",
+			"file": "gen/magic-2_shadow.png"
+		},
+		"gen.magic.3": {
+			"type": "image",
+			"file": "gen/magic-3.png",
+			"anchor": {
+				"x": 0.4983,
+				"y": 0.5072
+			},
+			"scale": 1.1
+		},
+		"gen.magic.3.shadow": {
+			"type": "image",
+			"file": "gen/magic-3_shadow.png"
+		},
+		"gen.magic.4": {
+			"type": "image",
+			"file": "gen/magic-4.png",
+			"anchor": {
+				"x": 0.502,
+				"y": 0.5076
+			},
+			"scale": 1.05
+		},
+		"gen.magic.4.shadow": {
+			"type": "image",
+			"file": "gen/magic-4_shadow.png"
+		},
+		"blade.0": {
+			"type": "image",
+			"file": "merge/blade-0.png",
+			"anchor": {
+				"x": 0.5,
+				"y": 0.5
+			},
+			"scale": 0.9
+		},
+		"blade.0.shadow": {
+			"type": "image",
+			"file": "merge/blade-0_shadow.png"
+		},
+		"blade.1": {
+			"type": "image",
+			"file": "merge/blade-1.png",
+			"anchor": {
+				"x": 0.5,
+				"y": 0.5
+			},
+			"rotation": 5
+		},
+		"blade.1.shadow": {
+			"type": "image",
+			"file": "merge/blade-1_shadow.png"
+		},
+		"blade.2": {
+			"type": "image",
+			"file": "merge/blade-2.png",
+			"anchor": {
+				"x": 0.504,
+				"y": 0.5129
+			},
+			"scale": 1.1
+		},
+		"blade.2.shadow": {
+			"type": "image",
+			"file": "merge/blade-2_shadow.png"
+		},
+		"blade.3": {
+			"type": "image",
+			"file": "merge/blade-3.png",
+			"anchor": {
+				"x": 0.5,
+				"y": 0.5
+			},
+			"scale": 1.1
+		},
+		"blade.3.shadow": {
+			"type": "image",
+			"file": "merge/blade-3_shadow.png"
+		},
+		"blade.4": {
+			"type": "image",
+			"file": "merge/blade-4.png",
+			"anchor": {
+				"x": 0.5,
+				"y": 0.5
+			},
+			"scale": 1.15,
+			"rotation": 6
+		},
+		"blade.4.shadow": {
+			"type": "image",
+			"file": "merge/blade-4_shadow.png"
+		},
+		"blade.5": {
+			"type": "image",
+			"file": "merge/blade-5.png",
+			"anchor": {
+				"x": 0.479,
+				"y": 0.5169
+			},
+			"scale": 1.2,
+			"rotation": 3
+		},
+		"blade.5.shadow": {
+			"type": "image",
+			"file": "merge/blade-5_shadow.png"
+		},
+		"blade.6": {
+			"type": "image",
+			"file": "merge/blade-6.png",
+			"anchor": {
+				"x": 0.4865,
+				"y": 0.5334
+			},
+			"scale": 1.15,
+			"rotation": 4
+		},
+		"blade.6.shadow": {
+			"type": "image",
+			"file": "merge/blade-6_shadow.png"
+		},
+		"blade.7": {
+			"type": "image",
+			"file": "merge/blade-7.png",
+			"anchor": {
+				"x": 0.491,
+				"y": 0.5036
+			},
+			"scale": 1.1,
+			"rotation": 1
+		},
+		"blade.7.shadow": {
+			"type": "image",
+			"file": "merge/blade-7_shadow.png"
+		},
+		"gen.blade.0": {
+			"type": "image",
+			"file": "gen/blade-0.png",
+			"anchor": {
+				"x": 0.5054,
+				"y": 0.4117
+			},
+			"scale": 0.85
+		},
+		"gen.blade.0.shadow": {
+			"type": "image",
+			"file": "gen/blade-0_shadow.png"
+		},
+		"gen.blade.1": {
+			"type": "image",
+			"file": "gen/blade-1.png",
+			"anchor": {
+				"x": 0.5,
+				"y": 0.5
+			},
+			"scale": 1.05
+		},
+		"gen.blade.1.shadow": {
+			"type": "image",
+			"file": "gen/blade-1_shadow.png"
+		},
+		"gen.blade.2": {
+			"type": "image",
+			"file": "gen/blade-2.png",
+			"anchor": {
+				"x": 0.5,
+				"y": 0.5
+			},
+			"scale": 1.1
+		},
+		"gen.blade.2.shadow": {
+			"type": "image",
+			"file": "gen/blade-2_shadow.png"
+		},
+		"gen.blade.3": {
+			"type": "image",
+			"file": "gen/blade-3.png",
+			"anchor": {
+				"x": 0.5,
+				"y": 0.5
+			},
+			"scale": 1.15
+		},
+		"gen.blade.3.shadow": {
+			"type": "image",
+			"file": "gen/blade-3_shadow.png"
+		},
+		"gen.blade.4": {
+			"type": "image",
+			"file": "gen/blade-4.png",
+			"anchor": {
+				"x": 0.4981,
+				"y": 0.5047
+			},
+			"scale": 1.15
+		},
+		"gen.blade.4.shadow": {
+			"type": "image",
+			"file": "gen/blade-4_shadow.png"
+		},
+		"range.0": {
+			"type": "image",
+			"file": "merge/range-0.png",
+			"anchor": {
+				"x": 0.4952,
+				"y": 0.5109
+			},
+			"scale": 1.05,
+			"rotation": 15
+		},
+		"range.0.shadow": {
+			"type": "image",
+			"file": "merge/range-0_shadow.png"
+		},
+		"range.1": {
+			"type": "image",
+			"file": "merge/range-1.png",
+			"anchor": {
+				"x": 0.4929,
+				"y": 0.5282
+			},
+			"scale": 0.95,
+			"rotation": 4
+		},
+		"range.1.shadow": {
+			"type": "image",
+			"file": "merge/range-1_shadow.png"
+		},
+		"range.2": {
+			"type": "image",
+			"file": "merge/range-2.png",
+			"anchor": {
+				"x": 0.5054,
+				"y": 0.5076
+			},
+			"scale": 1.2,
+			"rotation": 9
+		},
+		"range.2.shadow": {
+			"type": "image",
+			"file": "merge/range-2_shadow.png"
+		},
+		"range.3": {
+			"type": "image",
+			"file": "merge/range-3.png",
+			"anchor": {
+				"x": 0.5041,
+				"y": 0.5216
+			},
+			"scale": 1.25,
+			"rotation": 32
+		},
+		"range.3.shadow": {
+			"type": "image",
+			"file": "merge/range-3_shadow.png"
+		},
+		"range.4": {
+			"type": "image",
+			"file": "merge/range-4.png",
+			"anchor": {
+				"x": 0.4877,
+				"y": 0.512
+			},
+			"scale": 1.25,
+			"rotation": -22
+		},
+		"range.4.shadow": {
+			"type": "image",
+			"file": "merge/range-4_shadow.png"
+		},
+		"range.5": {
+			"type": "image",
+			"file": "merge/range-5.png",
+			"anchor": {
+				"x": 0.4749,
+				"y": 0.4785
+			},
+			"scale": 1.25,
+			"rotation": 20
+		},
+		"range.5.shadow": {
+			"type": "image",
+			"file": "merge/range-5_shadow.png"
+		},
+		"range.6": {
+			"type": "image",
+			"file": "merge/range-6.png",
+			"anchor": {
+				"x": 0.5002,
+				"y": 0.5138
+			},
+			"scale": 1.25,
+			"rotation": -17
+		},
+		"range.6.shadow": {
+			"type": "image",
+			"file": "merge/range-6_shadow.png"
+		},
+		"range.7": {
+			"type": "image",
+			"file": "merge/range-7.png",
+			"anchor": {
+				"x": 0.5701,
+				"y": 0.4577
+			},
+			"scale": 1.35,
+			"rotation": -34
+		},
+		"range.7.shadow": {
+			"type": "image",
+			"file": "merge/range-7_shadow.png"
+		},
+		"gen.range.0": {
+			"type": "image",
+			"file": "gen/range-0.png",
+			"anchor": {
+				"x": 0.5022,
+				"y": 0.4269
+			},
+			"scale": 1.05
+		},
+		"gen.range.0.shadow": {
+			"type": "image",
+			"file": "gen/range-0_shadow.png"
+		},
+		"gen.range.1": {
+			"type": "image",
+			"file": "gen/range-1.png",
+			"anchor": {
+				"x": 0.4981,
+				"y": 0.4409
+			},
+			"scale": 1.1
+		},
+		"gen.range.1.shadow": {
+			"type": "image",
+			"file": "gen/range-1_shadow.png"
+		},
+		"gen.range.2": {
+			"type": "image",
+			"file": "gen/range-2.png",
+			"anchor": {
+				"x": 0.4976,
+				"y": 0.4784
+			},
+			"scale": 1.2
+		},
+		"gen.range.2.shadow": {
+			"type": "image",
+			"file": "gen/range-2_shadow.png"
+		},
+		"gen.range.3": {
+			"type": "image",
+			"file": "gen/range-3.png",
+			"anchor": {
+				"x": 0.5001,
+				"y": 0.4707
+			},
+			"scale": 1.2
+		},
+		"gen.range.3.shadow": {
+			"type": "image",
+			"file": "gen/range-3_shadow.png"
+		},
+		"gen.range.4": {
+			"type": "image",
+			"file": "gen/range-4.png",
+			"anchor": {
+				"x": 0.5015,
+				"y": 0.4857
+			},
+			"scale": 1.2
+		},
+		"gen.range.4.shadow": {
+			"type": "image",
+			"file": "gen/range-4_shadow.png"
+		}
+	}
+}
