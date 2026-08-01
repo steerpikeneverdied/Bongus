@@ -1,0 +1,11 @@
+# magic merge chain — 8 tiers. SPELLBOOKS (single object each). paper → folio → leather → ornate → arcane → cosmic → white-gold.
+# Palette: parchment tan → leather brown → brass/blue-gem → arcane blue → cosmic violet → white+gold. Single object, fills the square, no shadow.
+# Names: 1 Scrap · 2 Loose Sheets · 3 Bound Folio · 4 Leather Spellbook · 5 Ornate Spellbook · 6 Arcane Grimoire · 7 Cosmic Codex · 8 Radiant Tome
+magic-1	a SINGLE sheet of the same ancient magical paper as the stack — light luminous magical BLUE and PURPLE, elegant flowing gold arcane handwriting, WORN and TATTERED with ragged torn and frayed edges (not clean-cut), a faint inner arcane glow, with a PURPLE WAX SEAL in one corner, exquisitely hand-painted premium game-icon art, matte
+magic-2	a fuller stack of MANY sheets of that same ancient magical paper (a thick pile of pages) — believable aged parchment, softly worn curled edges, toned in LIGHT luminous magical BLUE and PURPLE (bright enough to read on a black background), elegant arcane handwriting, a faint inner arcane glow, exquisitely hand-painted premium game-icon art, matte
+magic-3	the same ancient magical pages bound in an aged leather harness and tied with a BLUE-AND-PURPLE velvet rope, weathered parchment pages with faint script and a subtle blue-to-purple gradient ACCENT on the edges, matte, no shine, nothing else
+magic-4	a sturdy BLUE-AND-PURPLE leather spellbook with brass corner caps and a small clasp
+magic-5	a mysterious spellbook with a DARK GRADIENT PURPLE-AND-BROWN cover, GOLD corner caps and a LARGE blue gem set in the centre, no filigree or scrollwork
+magic-6	a large grand arcane grimoire with glowing blue-edged pages and gilded edges, a central blue gem with FOUR PROMINENT blue cardinal-direction gems around it, glowing blue runes, softly glowing
+magic-7	a large cosmic codex radiating light, its cover set with a LARGE purple gem in the center and glowing violet runes, a few floating torn page fragments
+magic-8	a pristine white spellbook with gold trim and a large round golden stone set in the middle of the cover, radiant
