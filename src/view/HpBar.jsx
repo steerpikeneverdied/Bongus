@@ -13,9 +13,10 @@
 //   4. PURE-WHITE overlay blip — 60ms, linear env=(1-t), opacity 1→0.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, memo } from 'react';
 import { VFX_CONFIG } from '../data/config.js';
 import { subscribeBar } from './fx/bar-ticker.js';
+import { noShadows } from './fx/fx-debug.js';
 
 const HP = VFX_CONFIG.hpbar;
 const TAIL_LERP_DURATION = HP.ghostLerpSec; // ghost catch-up (cubic ease-in), seconds
@@ -23,7 +24,7 @@ const WHOLE_FLASH_DUR = HP.wholeFlashSec; // whole-bar brightness/saturate/drop-
 const PINK_FLASH_DUR = HP.pinkFlashSec; // pink trailing layer (ghost only)
 const WHITE_BLIP_DUR = HP.whiteBlipSec; // pure-white overlay blip
 
-export default function HpBar({ frac, kind }) {
+function HpBar({ frac, kind }) {
   const barRef = useRef(null);
   const fracRef = useRef(frac);
   const st = useRef({ prevFrac: frac, ghostFrac: frac, ghostStart: frac, hitT: -1 });
@@ -71,9 +72,12 @@ export default function HpBar({ frac, kind }) {
       // (2) WHOLE-BAR flash — 240ms, env=(1-t)³.
       if (age < WHOLE_FLASH_DUR) {
         const env = (1 - age / WHOLE_FLASH_DUR) ** 3;
-        bar.style.filter =
-          `brightness(${(1 + HP.wholeFlash.brightness * env).toFixed(3)}) saturate(${(1 + HP.wholeFlash.saturate * env).toFixed(3)}) ` +
-          `drop-shadow(0 0 ${(HP.wholeFlash.dropShadowPx * env).toFixed(2)}px ${HP.wholeFlash.shadowColor})`;
+        // A running WAAPI/JS filter overrides the CSS `.fx-no-shadows` kill, so honour the toggle here:
+        // keep the brightness/saturate flash, drop the (expensive) animated drop-shadow.
+        bar.style.filter = noShadows()
+          ? `brightness(${(1 + HP.wholeFlash.brightness * env).toFixed(3)}) saturate(${(1 + HP.wholeFlash.saturate * env).toFixed(3)})`
+          : `brightness(${(1 + HP.wholeFlash.brightness * env).toFixed(3)}) saturate(${(1 + HP.wholeFlash.saturate * env).toFixed(3)}) ` +
+            `drop-shadow(0 0 ${(HP.wholeFlash.dropShadowPx * env).toFixed(2)}px ${HP.wholeFlash.shadowColor})`;
       } else if (bar.style.filter) {
         bar.style.filter = '';
       }
@@ -108,3 +112,8 @@ export default function HpBar({ frac, kind }) {
     </div>
   );
 }
+
+// Memoized: props are primitives (frac, kind). The parent chip re-renders every combat tick, but an
+// unchanged HP fraction (a unit not hit this tick) skips HpBar's reconciliation entirely — the smooth
+// fill/ghost/flash still runs off the shared bar-ticker rAF (reads fracRef, updated only when frac changes).
+export default memo(HpBar);

@@ -9,8 +9,8 @@
 //   • limitBreak   → a crit-tier impact across the enemy line.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { useEffect, useRef } from 'react';
-import { useGame } from '../controller/GameContext';
+import { useEffect, useRef, useSyncExternalStore } from 'react';
+import { useGame, useGameStore } from '../controller/GameContext';
 import FxCanvas from './fx/FxCanvas.jsx';
 import { fx } from './fx/fx-engine.js';
 import { currencyBurst } from './fx/currency-pickup.js';
@@ -565,6 +565,7 @@ function handleBossRaise(ev) {
 
 export default function FxLayer() {
   const { state, actions } = useGame();
+  const store = useGameStore(); // the store buffers per-dispatch VFX events; drained post-commit below (replaces state.fx)
   const overlayRef = useRef(null);
   const chestLayerRef = useRef(null);
 
@@ -582,13 +583,18 @@ export default function FxLayer() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.battle.status, state.battle.level]);
 
+  // fx events are buffered by the store as the reducer produces them (synchronously, at dispatch). Drain
+  // them in a POST-COMMIT effect keyed on the store's fxEpoch, so every handler queries FRESHLY-committed
+  // DOM — e.g. a just-merged icon's cell is laid out before its limit-charge mote fires (restoring the
+  // pre-store timing). This replaces the old state.fx drain + its CLEAR_FX round-trip (the 2nd re-render).
+  const fxEpoch = useSyncExternalStore(store.subscribeFx, store.getFxEpoch);
   useEffect(() => {
-    if (!state.fx.length) return;
-    _drainEls = new Map(); // #9: cache data-battle-* lookups for the duration of this synchronous drain
-    const ids = state.fx.map((e) => e.id);
-    for (const ev of state.fx) {
-      // Haptics ride the SAME fx bus as the visuals (one owner, no parallel
-      // channel). The module decides which events buzz and throttles the rest.
+    const batch = store.takePendingFx();
+    if (!batch.length) return;
+    _drainEls = new Map(); // #9: cache data-battle-* lookups for the duration of this synchronous batch
+    for (const ev of batch) {
+      // Haptics ride the SAME fx stream as the visuals (one owner, no parallel channel). The module
+      // decides which events buzz and throttles the rest.
       hapticForFx(ev);
       if (ev.type === 'heroAttacks') handleHeroAttacks(ev);
       else if (ev.type === 'enemyAttacks') handleEnemyAttacks(ev);
@@ -605,9 +611,8 @@ export default function FxLayer() {
       else if (ev.type === 'gachaReveal') handleGachaReveal(ev, overlayRef.current);
       else if (ev.type === 'generatorUnlock') playGeneratorUnlock(overlayRef.current, ev);
     }
-    actions.clearFx(ids);
     _drainEls = null; // deferred (setTimeout) handlers past this point re-query live
-  }, [state.fx, actions]);
+  }, [fxEpoch, store, actions]);
 
   return (
     <>

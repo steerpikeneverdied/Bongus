@@ -3,6 +3,6 @@
 	"name": "Grave Golem",
 	"iconAssetId": "enemy.grave-golem",
 	"combat": {
-		"scale": 1.75
+		"scale": 1.7
 	}
 }

@@ -128,6 +128,9 @@ function marksmanAudioEnabled(): boolean {
 
 export default defineConfig(({ mode }) => ({
   base: mode === 'capacitor' ? './' : '/',
+  // Profiling flag: `PERF=1 vite build …` enables the on-device perf-probe stream (see src/view/fx/perf-probe.js)
+  // WITHOUT enabling the rest of the dev/debug system. The normal shipped build (PERF unset) stays inert.
+  define: { 'import.meta.env.VITE_PERF': JSON.stringify(process.env.PERF === '1') },
   plugins: [
     react(),
     tailwindcss(),

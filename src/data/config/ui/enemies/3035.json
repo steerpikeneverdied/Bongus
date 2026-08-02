@@ -1,7 +1,7 @@
 {
 	"id": 3035,
 	"name": "Zombie",
-	"iconAssetId": "enemy.zombie",
+	"iconAssetId": "enemy.bog-zombie",
 	"emoji": "👾",
 	"combat": {
 		"scale": 1.05

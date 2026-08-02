@@ -3,22 +3,25 @@
 // the seeded sim rng (seedSim) + content C are set at boot. Persistence routes through the six-section
 // account (src/game/store/persistence). The view reads {state, actions} via useGame() — its seam.
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useReducer, useEffect, useMemo, useRef, type ReactNode } from 'react';
-import { reducer, initState } from '../game/store/reducer.ts';
+import { createContext, useContext, useSyncExternalStore, useEffect, useMemo, useRef, type ReactNode } from 'react';
+import { initState } from '../game/store/reducer.ts';
+import { createGameStore, type GameStore } from '../game/store/game-store.ts';
 import { A } from '../game/store/actions.ts';
 import { C } from '../game/content.ts';
 import { seedSim } from '../game/sim-random.ts';
 import { loadSaved, save, clearSaved } from '../game/store/persistence.ts';
 import { submitMinigame as metaSubmitMinigame } from '../game/minigame/meta.ts';
-import { isMarksmanPaused } from './dev-pause.ts'; // dev-only Marksman pause seam (bishop infra; no-op in prod build)
+import { startGameLoop } from './game-loop.ts'; // the fixed-step rAF accumulator (replaces the setInterval/setTimeout sim timers)
+import { excludedView, META_EXCLUDE, HUD_EXCLUDE } from './excluded-view.ts'; // memoized per-frequency state views
 
 const StateContext = createContext<any>(null);
 const ActionsContext = createContext<any>(null);
-// Meta view of state (everything EXCEPT the high-frequency, combat-only slices below). Consumers that
-// don't render combat read this via useMetaGame so neither the 5 Hz BATTLE_TICK (battle/fx) NOR the 1 Hz
-// REGEN_TICK (energy/now) re-renders them. Header reads energy/now via full-state useGame, not this view.
+const StoreContext = createContext<GameStore | null>(null); // the live world store (for the bus + future selectors)
+// Meta view (useMetaGame) — Board/Orders/NavBar/screens: skips the 5Hz battle tick AND the 1Hz regen tick.
+// Hud view (useHudGame) — the currency bar (Header): keeps energy/now (1Hz regen) but skips the 5Hz battle.
+// Exclude sets + the memoized `excludedView` live in excluded-view.ts (React-free → headlessly testable).
 const MetaStateContext = createContext<any>(null);
-const META_EXCLUDE = new Set(['battle', 'fx', 'energy', 'now']);
+const HudStateContext = createContext<any>(null);
 
 // A "full screen" takes over the play area (combat panel + FxLayer hidden) and runs the engine HEADLESS
 // — the sim keeps ticking, so returning to a combat screen resumes the exact, still-advancing gameplay.
@@ -32,64 +35,52 @@ export const engineHeadless = (s: any): boolean => !!s.headless || isFullScreen(
 // minigame, AFK popup, and manual background hide it. When it's absent, fx are drained here instead.
 export const fxVisible = (s: any): boolean => !s.headless && !s.menuHeroId && !s.afkOpen && !s.minigame;
 
+// Boundary-only PRNG seed generator: entropy is produced HERE (the composition seam), never inside the
+// sim — so the reducer stays wall-clock/entropy free and a run is reproducible from its persisted seed.
+const makeSeed = (): number => (((Date.now() >>> 0) ^ Math.floor(Math.random() * 0x100000000)) >>> 0);
+
 export function GameProvider({ children }: { children: ReactNode }) {
-  const [state, dispatch] = useReducer(reducer, undefined, () => {
-    seedSim(Date.now());
-    try { return initState(Date.now(), loadSaved()); } catch { return initState(Date.now()); }
-  });
+  // The live world store owns the authoritative state + the sim clock (created ONCE per mount). The RAF
+  // loop + player actions dispatch through it; React reads it via useSyncExternalStore. Replaces useReducer.
+  const storeRef = useRef<GameStore | null>(null);
+  if (!storeRef.current) {
+    // Seed at the composition boundary (NOT in the sim): a saved run replays from its persisted seed; a
+    // fresh run gets a new boundary-generated seed. seedSim() must run BEFORE initState (which draws rng).
+    let saved: any = null; try { saved = loadSaved(); } catch { saved = null; }
+    const seed = (saved && saved.seed != null) ? (saved.seed >>> 0) : makeSeed();
+    seedSim(seed);
+    let init: any; try { init = initState(Date.now(), saved, seed); } catch { init = initState(Date.now(), null, seed); }
+    storeRef.current = createGameStore(init);
+  }
+  const store = storeRef.current!; // guaranteed set by the guard above
+  const dispatch = store.dispatch; // stable; every effect/action below dispatches through the store unchanged
+  const state = useSyncExternalStore(store.subscribe, store.getState);
 
   const stateRef = useRef(state);
   stateRef.current = state;
 
-  // Stable "meta" view = state minus the high-frequency combat-only slices (META_EXCLUDE: battle/fx from
-  // the 200ms tick + energy/now from the 1s regen tick). Its identity changes only when a meta-relevant
-  // slice actually changes, so meta consumers (Game shell, Heroes/Gear screens) don't re-render on either
-  // timer — only on real edits (gear, heroes, coins, screen, pendingAfk, …).
+  // Stable "meta" view (excl battle/fx/energy/now) — meta consumers (screens) skip BOTH the 200ms battle
+  // tick and the 1s regen tick, re-rendering only on real edits (gear/heroes/coins/screen/board/orders/…).
   const metaRef = useRef<any>(null);
-  {
-    const prev = metaRef.current;
-    let same = !!prev;
-    if (same) {
-      for (const k in state) { if (META_EXCLUDE.has(k)) continue; if (state[k] !== prev[k]) { same = false; break; } }
-      if (same) for (const k in prev) { if (!META_EXCLUDE.has(k) && !(k in state)) { same = false; break; } }
-    }
-    if (!same) { const meta: any = {}; for (const k in state) if (!META_EXCLUDE.has(k)) meta[k] = state[k]; metaRef.current = meta; }
-  }
+  metaRef.current = excludedView(state, metaRef.current, META_EXCLUDE);
   const metaState = metaRef.current;
+  // Stable "hud" view (excl only battle/fx) — the currency bar keeps energy/now (updates on the 1s regen
+  // tick) but is spared the 5Hz battle re-render.
+  const hudRef = useRef<any>(null);
+  hudRef.current = excludedView(state, hudRef.current, HUD_EXCLUDE);
+  const hudState = hudRef.current;
 
-  useEffect(() => {
-    const id = setInterval(() => { if (stateRef.current.afkOpen || isMarksmanPaused()) return; dispatch({ type: A.REGEN_TICK, now: Date.now() }); }, C.RUNTIME.regenTickMs);
-    return () => clearInterval(id);
-  }, []);
+  // ONE fixed-step accumulator on requestAnimationFrame drives the whole sim — energy regen, the battle
+  // tick, and the five battle-status resolvers — replacing the former two setInterval timers + five
+  // setTimeout resolvers. It dispatches through the SAME store/reducer as player actions, in fixed
+  // dt = tickMs steps (deterministic). See src/controller/game-loop.ts. `store` is stable → runs once.
+  useEffect(() => startGameLoop(store, { now: Date.now }), [store]);
 
-  useEffect(() => {
-    const id = setInterval(() => {
-      const s = stateRef.current;
-      if (s.afkOpen || isMarksmanPaused()) return; // the AFK collect popup (or the dev Marksman markup tool) freezes the sim
-      if (s.flags && s.flags.ftuePaused) return; // FTUE: a pausing coachmark beat freezes combat while it explains
-      // Full screens / background mode keep ticking regardless of tab visibility (seamless resume).
-      if (engineHeadless(s)) { dispatch({ type: A.BATTLE_TICK, dt: C.BATTLE.tickMs }); return; }
-      if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
-      dispatch({ type: A.BATTLE_TICK, dt: C.BATTLE.tickMs });
-    }, C.BATTLE.tickMs);
-    return () => clearInterval(id);
-  }, []);
+  // (fx no longer accumulates in state — the store drains each dispatch's fx onto world.bus, and FxLayer
+  // subscribes only while mounted, so an unmounted combat view simply drops the events. No queue to clear.)
 
-  // Whenever the combat view is unmounted (full screen / background), nothing drains the fx queue — the
-  // auto-battle would pile up combat-fx events unbounded. Clear them as they arrive (view-only, safe to drop).
-  useEffect(() => {
-    if (!fxVisible(state) && state.fx.length) dispatch({ type: A.CLEAR_FX, ids: state.fx.map((f: any) => f.id) });
-  }, [state.fx, state.headless, state.menuHeroId, state.afkOpen, state.minigame]);
-
-  useEffect(() => {
-    const s = state.battle.status;
-    if (s === 'clearing') { const id = setTimeout(() => dispatch({ type: A.SHOW_COMPLETE }), C.BATTLE.clearPauseMs); return () => clearTimeout(id); }
-    if (s === 'lost') { const id = setTimeout(() => dispatch({ type: A.RESOLVE_LOSS }), C.BATTLE.loseBannerMs); return () => clearTimeout(id); }
-    if (s === 'won') { const id = setTimeout(() => dispatch({ type: A.RESOLVE_WIN }), C.BATTLE.completeBannerMs); return () => clearTimeout(id); }
-    if (s === 'chest') { const id = setTimeout(() => dispatch({ type: A.RESOLVE_CHEST }), C.BATTLE.chestFallbackMs); return () => clearTimeout(id); }
-    if (s === 'intro') { const id = setTimeout(() => dispatch({ type: A.START_COMBAT }), C.BATTLE.introFallbackMs); return () => clearTimeout(id); }
-    return undefined;
-  }, [state.battle.status]);
+  // (The five battle-status resolvers formerly scheduled here as one-shot setTimeouts now live on the rAF
+  // accumulator in game-loop.ts — one clock for all sim timing.)
 
   // AREA COMPLETE with a BOARD AWARD (a generator unlock): route to the merge tab so the generator can
   // dramatically fly onto the board (the combat panel keeps showing the earnings synopsis on top). No
@@ -120,7 +111,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
     const flush = () => save(stateRef.current);
     const onVisibility = () => {
       if (document.visibilityState === 'hidden') flush();
-      else if (!engineHeadless(stateRef.current)) dispatch({ type: A.RESUME_AFK, now: Date.now() }); // engine kept running headless — no offline catch-up
+      // The rAF sim loop is paused by the browser while hidden — for EVERY mode now (headless included),
+      // so credit the offline gap via RESUME_AFK on return in all modes (game-loop.ts drops the old
+      // setInterval reliance that let headless combat tick in a background tab).
+      else dispatch({ type: A.RESUME_AFK, now: Date.now() });
     };
     document.addEventListener('visibilitychange', onVisibility);
     window.addEventListener('pagehide', flush);
@@ -183,18 +177,29 @@ export function GameProvider({ children }: { children: ReactNode }) {
     equipBestSquad: () => dispatch({ type: A.EQUIP_BEST_SQUAD }),
     upgradeHero: (id: string) => dispatch({ type: A.UPGRADE_HERO, id }),
     debugGrantCurrency: () => dispatch({ type: A.DEBUG_GRANT_CURRENCY }),
-    clearFx: (ids: number[]) => dispatch({ type: A.CLEAR_FX, ids }),
-    resetGame: () => { clearSaved(); dispatch({ type: A.RESET_GAME, now: Date.now() }); },
+    resetGame: () => { clearSaved(); const seed = makeSeed(); seedSim(seed); dispatch({ type: A.RESET_GAME, now: Date.now(), seed }); },
   }), []);
 
   return (
-    <ActionsContext.Provider value={actions}>
-      <MetaStateContext.Provider value={metaState}>
-        <StateContext.Provider value={state}>{children}</StateContext.Provider>
-      </MetaStateContext.Provider>
-    </ActionsContext.Provider>
+    <StoreContext.Provider value={store}>
+      <ActionsContext.Provider value={actions}>
+        <MetaStateContext.Provider value={metaState}>
+          <HudStateContext.Provider value={hudState}>
+            <StateContext.Provider value={state}>{children}</StateContext.Provider>
+          </HudStateContext.Provider>
+        </MetaStateContext.Provider>
+      </ActionsContext.Provider>
+    </StoreContext.Provider>
   );
 }
+
+// The live world store (stable). FxLayer reads its buffered fx (subscribeFx/getFxEpoch/takePendingFx);
+// `bus` is the signal hub for future cross-module events. Stable across renders — reading it never re-renders.
+export const useGameStore = (): GameStore => {
+  const store = useContext(StoreContext);
+  if (!store) throw new Error('useGameStore must be used within <GameProvider>');
+  return store;
+};
 
 export const useGame = () => {
   const state = useContext(StateContext);
@@ -209,6 +214,15 @@ export const useMetaGame = () => {
   const state = useContext(MetaStateContext);
   const actions = useContext(ActionsContext);
   if (state == null || actions == null) throw new Error('useMetaGame must be used within <GameProvider>');
+  return { state, actions };
+};
+// Like useGame, but reads the HUD view (state without battle/fx — KEEPS energy/now). The currency bar
+// (Header) uses this so a BATTLE_TICK doesn't re-render it, while energy/now still update on the regen tick.
+// The returned `state` has NO `battle`/`fx` — never read those through this hook.
+export const useHudGame = () => {
+  const state = useContext(HudStateContext);
+  const actions = useContext(ActionsContext);
+  if (state == null || actions == null) throw new Error('useHudGame must be used within <GameProvider>');
   return { state, actions };
 };
 export const useActions = () => {

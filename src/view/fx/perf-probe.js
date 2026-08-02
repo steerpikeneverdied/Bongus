@@ -1,6 +1,8 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// PERF PROBE (dev instrumentation) — press **P** to copy a "graphical load"
-// snapshot to the clipboard for auditing.
+// PERF PROBE (dev instrumentation) — captures a "graphical load" snapshot for auditing. The rAF sampler
+// runs always (cheap); a profiling build (`PERF=1 vite build`, e.g. `npm run cap:profile`) also STREAMS a
+// long log into an in-app buffer. The sole trigger is the Settings ▸ Debug "Copy perf log" button, which
+// calls the exported `copyPerfLog()` — profile the INSTALLED APP on a device, tap it, paste to Claude.
 //
 // It runs its own rAF loop measuring real frame times (a jank on the main thread
 // stretches the rAF interval, so this is a faithful FPS proxy), keeps a rolling
@@ -12,8 +14,6 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { fx } from './fx-engine.js';
-import { iconAsset } from '../assets.js';
-import { debugFeatureOn } from '../../model/debug.js';
 
 const CAP = 1200; // ring-buffer frames (~20s @ 60fps)
 let started = false;
@@ -21,6 +21,17 @@ let started = false;
 export function startPerfProbe() {
   if (started || typeof window === 'undefined') return;
   started = true;
+
+  // PROFILE = a dedicated profiling build (`PERF=1 vite build …`). It streams a long perf log into an
+  // in-app buffer and shows a tappable ⏱ PERF button → COPY (below), so you can profile the INSTALLED APP
+  // standalone on the device and paste the log to Claude — no Mac tether, no webview inspector. `perfOn`
+  // is also true in normal dev (press P) via the registered debug feature flag.
+  const PROFILE = import.meta.env.VITE_PERF === true;
+  let logBuf = '';
+  const appendLog = (line) => {
+    logBuf += line + '\n';
+    if (logBuf.length > 100000) logBuf = logBuf.slice(logBuf.length - 100000); // bounded — keep the tail
+  };
 
   const dt = new Float32Array(CAP); // frame time (ms)
   const nPart = new Int16Array(CAP);
@@ -39,12 +50,15 @@ export function startPerfProbe() {
   let lastFly = 0;
   let domNodes = 0;
   let frame = 0;
+  let lastJankLog = 0;   // throttle for the per-jank stream lines
+  let lastStreamLog = 0; // throttle for the periodic rolling-report stream
 
   // Long-task recorder (main-thread blocks ≥50ms) over a rolling window.
   const longTasks = []; // { t, ms }
   try {
     const po = new PerformanceObserver((list) => {
       for (const e of list.getEntries()) longTasks.push({ t: performance.now(), ms: Math.round(e.duration) });
+      if (longTasks.length > 300) longTasks.splice(0, longTasks.length - 300); // long-session cap (no unbounded growth)
     });
     po.observe({ entryTypes: ['longtask'] });
   } catch {
@@ -70,6 +84,19 @@ export function startPerfProbe() {
     nFly[head] = lastFly;
     head = (head + 1) % CAP;
     if (filled < CAP) filled++;
+
+    // Profiling build: STREAM a long log into the in-app buffer (no keypress) so a whole play session is
+    // captured; the ⏱ PERF button copies it out on the device itself.
+    if (PROFILE) {
+      if (d > 16.7 && now - lastJankLog > 500) { // a frame over the 60fps budget → a compact hitch line + live load
+        lastJankLog = now;
+        appendLog(`[jank] ${d.toFixed(0)}ms  part ${fx.particles ? fx.particles.length : 0}  imp ${fx.impacts ? fx.impacts.length : 0}  anim ${lastAnim}  dom ${domNodes}`);
+      }
+      if (now - lastStreamLog > 5000) { // the rolling report every ~5s (the long-log body)
+        lastStreamLog = now; now0 = now;
+        appendLog(report());
+      }
+    }
 
     requestAnimationFrame(tick);
   };
@@ -150,17 +177,19 @@ export function startPerfProbe() {
       .onfinish = () => t.remove();
   };
 
-  window.addEventListener('keydown', (e) => {
-    if (e.key !== 'p' && e.key !== 'P') return;
-    if (!debugFeatureOn('perfProbe')) return; // registered debug feature — off when debug is disabled
-    const tag = (e.target && e.target.tagName) || '';
-    if (tag === 'INPUT' || tag === 'TEXTAREA' || (e.target && e.target.isContentEditable)) return;
+  // Copy the perf log out — invoked by the Settings ▸ Debug "Copy perf log" button (the sole trigger; the
+  // old floating tab + P hotkey are gone, per "all debug lives in Settings"). In a profiling build this is
+  // the long streamed buffer; in normal dev it's a fresh one-shot snapshot.
+  _copyPerfLog = () => {
     now0 = performance.now();
-    const text = report();
+    const text = logBuf.length ? logBuf : report();
     copy(text);
-    toast(iconAsset('dev.perf').emoji + ' Graphical load copied — paste it to Claude');
-    // Also log it, so it's recoverable even if the clipboard write is blocked.
+    toast('perf log copied — paste to Claude');
     // eslint-disable-next-line no-console
-    console.log(text);
-  });
+    console.log(text); // also to console (recoverable if the clipboard write is blocked)
+  };
 }
+
+// The Settings debug grid calls this (see SettingsPopup); no-op until startPerfProbe has run.
+let _copyPerfLog = () => {};
+export const copyPerfLog = () => _copyPerfLog();

@@ -2,8 +2,10 @@
 	"enabledByDefault": true,
 	"currencyGrant": 10000,
 	"features": [
-		{ "key": "testMinigame", "label": "Test Minigame", "description": "Top-bar button — launch a random pooled minigame.", "defaultOn": true },
-		{ "key": "perfProbe", "label": "Perf Probe", "description": "Press P — copy a graphical-load snapshot to the clipboard.", "defaultOn": true },
-		{ "key": "giveCurrency", "label": "Give Currency", "description": "Press S — grant currencyGrant of EVERY upgrade currency (coins, heroXp, gearXp, all crystals).", "defaultOn": true }
+		{ "key": "noShadows", "label": "No shadows/blur", "description": "Disable ALL CSS drop-shadow / box-shadow / text-shadow / blur (compositing killers on mobile) to A/B render cost.", "kind": "toggle", "defaultOn": true },
+		{ "key": "noParticles", "label": "No particles", "description": "Disable the canvas particle system (impacts, confetti, trails, motes) to A/B render cost.", "kind": "toggle", "defaultOn": true },
+		{ "key": "testMinigame", "label": "Test minigame", "description": "Launch a random pooled minigame.", "kind": "button", "defaultOn": true },
+		{ "key": "giveCurrency", "label": "Give currency", "description": "Grant currencyGrant of EVERY upgrade currency (coins, heroXp, gearXp, all crystals).", "kind": "button", "defaultOn": true },
+		{ "key": "perfProbe", "label": "Copy perf log", "description": "Copy the graphical-load perf log (streamed in a profiling build) to the clipboard.", "kind": "button", "defaultOn": true }
 	]
 }

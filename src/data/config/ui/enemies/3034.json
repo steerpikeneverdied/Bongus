@@ -1,7 +1,7 @@
 {
 	"id": 3034,
 	"name": "Goblin",
-	"iconAssetId": "enemy.goblin",
+	"iconAssetId": "enemy.bog-goblin",
 	"emoji": "👾",
 	"combat": {
 		"scale": 1.15

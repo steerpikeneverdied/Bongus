@@ -30,6 +30,12 @@ mkdir -p "$ROOT/raw" "$ROOT/logs" "$OUT"
 
 CAT="$(basename "$OUT" | sed 's/^icons-//')"
 
+# ── operator spec (v: icons are white-bg + 512): the operator does the chroma + trim, so KEEP Gemini's
+# flat white background (never auto-strip to alpha), and deliver the source at SRC_SIZE (Gemini emits
+# ~1024). Overridable via env for one-off runs. Applies to BOTH the tool's ⟳ regen and CLI runs.
+export NO_REMBG="${NO_REMBG:-1}"
+SRC_SIZE="${SRC_SIZE:-512}"
+
 # ── operator-set base prompt (positive + negative), read at run time ──
 # Per-category override ICON_POSITIVE-<cat>.txt (e.g. banner) wins over the global ICON_POSITIVE.txt.
 POSITIVE="$(cat "$ROOT/ICON_POSITIVE-$CAT.txt" 2>/dev/null || cat "$ROOT/ICON_POSITIVE.txt" 2>/dev/null)"
@@ -67,14 +73,14 @@ gen_one() {  # $1=slug  $2=subject
     fi
     if [ -f "$ROOT/raw/$slug.png" ]; then
       st="$(corner_light "$ROOT/raw/$slug.png")"
-      if [ "$st" != "DARK" ]; then cp "$ROOT/raw/$slug.png" "$OUT/$slug.png"; echo "OK   $slug ($st)"; return 0; fi
+      if [ "$st" != "DARK" ]; then cp "$ROOT/raw/$slug.png" "$OUT/$slug.png"; sips -Z "$SRC_SIZE" "$OUT/$slug.png" >/dev/null 2>&1; echo "OK   $slug ($st)"; return 0; fi
       echo "  ..$slug try $t bg=DARK, retrying"
     else
       echo "  ..$slug try $t NO_IMAGE, retrying"
     fi
     sleep 2
   done
-  if [ -f "$ROOT/raw/$slug.png" ]; then cp "$ROOT/raw/$slug.png" "$OUT/$slug.png"; echo "WARN $slug (kept non-white bg)"; return 0; fi
+  if [ -f "$ROOT/raw/$slug.png" ]; then cp "$ROOT/raw/$slug.png" "$OUT/$slug.png"; sips -Z "$SRC_SIZE" "$OUT/$slug.png" >/dev/null 2>&1; echo "WARN $slug (kept non-white bg)"; return 0; fi
   echo "FAIL $slug"; return 1
 }
 

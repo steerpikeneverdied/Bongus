@@ -3,6 +3,6 @@
 	"name": "Elder Treant",
 	"iconAssetId": "enemy.elder-treant",
 	"combat": {
-		"scale": 1.05
+		"scale": 1.25
 	}
 }

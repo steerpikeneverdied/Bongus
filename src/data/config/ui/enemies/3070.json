@@ -3,6 +3,6 @@
 	"name": "Coal Brute",
 	"iconAssetId": "enemy.coal-brute",
 	"combat": {
-		"scale": 1.4
+		"scale": 1.3
 	}
 }

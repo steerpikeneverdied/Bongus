@@ -1,6 +1,7 @@
 // Root shell: top currency bar, a PERSISTENT combat panel (the autobattler,
 // same area on every screen), a swappable CONTEXT panel driven by the navbar,
 // the bottom nav, and the VFX overlay.
+import { useState } from 'react';
 import { useMetaGame, isFullScreen, fxVisible } from '../controller/GameContext';
 import Header from './Header.jsx';
 import NavBar from './NavBar.jsx';
@@ -18,14 +19,16 @@ import AfkPopup from './screens/AfkPopup.jsx';
 import RewardPopup from './screens/RewardPopup.jsx';
 import AfkAlert from './AfkAlert.jsx';
 import FtueLayer from './ftue/FtueLayer.jsx';
-import DebugHotkeys from './DebugHotkeys.jsx';
+import SettingsPopup from './SettingsPopup.jsx';
 import ScreenTransition from './ScreenTransition.jsx';
 import { AFK } from '../data/config.js';
+import './fx/fx-debug.js'; // apply persisted debug render toggles (no-shadows / no-particles) at boot
 
 export default function Game() {
   // Meta view — Game reads only screen/headless/menu/afk/minigame (never battle/fx), so it must NOT
   // re-render on the 5 Hz combat tick (that would re-create the whole screen subtree every 200ms).
   const { state } = useMetaGame();
+  const [settingsOpen, setSettingsOpen] = useState(false); // cog → SettingsPopup (non-pausing; combat runs behind)
   // Background mode: unmount the ENTIRE view (combat panel, board, FxLayer, canvas). The controller's
   // timers keep ticking underneath, so the engine runs with zero rendering.
   if (state.headless) return <HeadlessScreen />;
@@ -41,7 +44,7 @@ export default function Game() {
   const full = isFullScreen(state);
   return (
     <div className="app">
-      <Header />
+      <Header onOpenSettings={() => setSettingsOpen(true)} />
       {/* Persistent combat panel — shown only on combat screens (merge/heroes/gear). Any full screen
           hides it while the sim keeps ticking; the AFK popup freezes it underneath its overlay. */}
       {!full && !afkOpen && (
@@ -67,8 +70,9 @@ export default function Game() {
       {state.rewardPopup && <RewardPopup />}
       {/* FTUE coachmark layer — self-gates on flags.ftueActive; renders nothing when the FTUE is off. */}
       <FtueLayer />
-      {/* Dev-only debug hotkeys (S = grant soft currency, …) — each gated on debugFeatureOn(key). */}
-      {import.meta.env.DEV && <DebugHotkeys />}
+      {/* Settings modal (cog) — General (reset) + a debug-gated grid that is the SOLE home for all debug
+          functionality (toggles + one-shot actions). Non-pausing so debug render toggles A/B live. */}
+      {settingsOpen && <SettingsPopup onClose={() => setSettingsOpen(false)} />}
       {/* Screen-crumble transition — self-gates on state.transition; outlives the minigame mount. */}
       <ScreenTransition />
     </div>

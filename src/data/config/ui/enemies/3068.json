@@ -3,6 +3,6 @@
 	"name": "Hellhound",
 	"iconAssetId": "enemy.hellhound",
 	"combat": {
-		"scale": 0.9
+		"scale": 1.15
 	}
 }

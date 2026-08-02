@@ -1,5 +1,8 @@
 {
 	"id": 3042,
 	"name": "Marsh Behemoth",
-	"iconAssetId": "enemy.marsh-behemoth"
+	"iconAssetId": "enemy.marsh-behemoth",
+	"combat": {
+		"scale": 1.25
+	}
 }

@@ -191,14 +191,14 @@
       var rawSubject=doc.activeLayer;
 
       // C+D. square exports (from the RAW subject) THEN small treatment. Every cat gets 256; merge chains also get 128.
-      // ICONS EXCEPTION: icons clip to the SMALLEST size only (ICON_SIZE), with NO outline treatment (they carry
-      // their own black contour) and NO _trim/_128 — the operator wants only the tiny game-ready export. It's still
-      // written into the `_256` slot so the tool preview + export-to-game find it unchanged (content is ICON_SIZE px).
+      // ICONS: clip to a single ICON_SIZE square (128, or 256 for chests) AND apply the configured small treatment (the die-cut
+      // outline) — same as every other cut. Written into the `_256` slot (content is ICON_SIZE px) so the tool
+      // preview + export-to-game find it unchanged. No _trim/_128 for icons.
       var MERGE_CATS = { magic:1, blade:1, range:1, "blade-gen":1, "range-gen":1, "magic-gen":1 };
       var isIconCat = catName.indexOf("icons-") === 0;
-      var ICON_SIZE = 32;
+      var ICON_SIZE = (catName === "icons-chest") ? 256 : 128;   // chests are shown large in-game → cut at 256; every other icon at 128
       var sizes = isIconCat ? [ICON_SIZE] : (MERGE_CATS[catName] ? [SIZE_256, 128] : [SIZE_256]);
-      var treat = isIconCat ? [] : TREAT_SMALL;          // icons: no die-cut halo/outline
+      var treat = TREAT_SMALL;                            // icons now get the die-cut treatment too (128px square)
       for(var si=0; si<sizes.length; si++){
         var sz=sizes[si];
         var suffix = isIconCat ? "256" : ("" + sz);      // icons reuse the _256 export slot (at ICON_SIZE px)

@@ -208,6 +208,61 @@ def _regen_plan(root, category):
         tsv = "rosters/classes.tsv"; cwd = PIPELINE
     return cwd, tsv, env
 
+def _roster_path(category):
+    """Absolute path to the roster TSV that holds `<slug>\\t<subject>` for a category.
+    Mirrors _regen_plan's routing (heroes → the top-level classes.tsv)."""
+    if category in ENEMY_AREAS: return os.path.join(ENEMY_PIPELINE, "rosters", category + ".tsv")
+    if category in MERGE_CATS:  return os.path.join(MERGE_PIPELINE, "rosters", category + ".tsv")
+    if category in GEAR_CATS:   return os.path.join(GEAR_PIPELINE,  "rosters", category + ".tsv")
+    if category in LOOT_CATS:   return os.path.join(LOOT_PIPELINE,  "rosters", category + ".tsv")
+    if is_icon_cat(category):   return os.path.join(ICON_PIPELINE,  "rosters", category + ".tsv")
+    return os.path.join(PIPELINE, "classes.tsv")   # heroes
+
+def read_prompts(category):
+    """{slug: subject} parsed from the category's roster TSV (skips # comments + blanks).
+    subject is column 2 onward (tab-joined) — the per-entry generation prompt."""
+    out = {}
+    try:
+        with open(_roster_path(category), encoding="utf-8") as f:
+            for ln in f:
+                s = ln.rstrip("\n")
+                if not s.strip() or s.lstrip().startswith("#"): continue
+                parts = s.split("\t")
+                if len(parts) < 2: continue
+                slug = parts[0].strip()
+                if slug: out[slug] = "\t".join(parts[1:]).strip()
+    except OSError:
+        pass
+    return out
+
+def write_prompt(category, slug, prompt):
+    """Update <slug>'s subject in the roster TSV IN PLACE (preserve order + comments).
+    Appends a new row if the slug isn't present. Returns (ok, error)."""
+    slug = (slug or "").strip()
+    if not slug: return False, "empty slug"
+    prompt = (prompt or "").replace("\t", " ").replace("\r", " ").replace("\n", " ").strip()
+    path = _roster_path(category)
+    try:
+        try:
+            with open(path, encoding="utf-8") as f: lines = f.readlines()
+        except OSError:
+            lines = []
+        found = False
+        for i, ln in enumerate(lines):
+            s = ln.rstrip("\n")
+            if not s.strip() or s.lstrip().startswith("#"): continue
+            parts = s.split("\t")
+            if parts and parts[0].strip() == slug:
+                lines[i] = "%s\t%s\n" % (slug, prompt); found = True; break
+        if not found:
+            if lines and not lines[-1].endswith("\n"): lines[-1] += "\n"
+            lines.append("%s\t%s\n" % (slug, prompt))
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "w", encoding="utf-8") as f: f.writelines(lines)
+        return True, None
+    except OSError as e:
+        return False, str(e)
+
 def _roster_count(cwd, tsv):
     try:
         n = 0
@@ -507,6 +562,10 @@ def build_handler(root, meta_path):
                     cats.append({"name": cat, "images": imgs,
                                  "bosses": boss_slugs(cat) if cat in ENEMY_AREAS else []})
                 return self._send(200, "application/json", json.dumps({"root": root, "categories": cats}))
+            if path == "/api/prompts":
+                q = parse_qs(urlparse(self.path).query)
+                cat = (q.get("cat", [""])[0])
+                return self._send(200, "application/json", json.dumps({"ok": True, "cat": cat, "prompts": read_prompts(cat)}))
             if path == "/api/meta":
                 if os.path.exists(meta_path):
                     with open(meta_path) as f: return self._send(200, "application/json", f.read())
@@ -560,6 +619,19 @@ def build_handler(root, meta_path):
                 try: os.remove(RUNCTL)
                 except OSError: pass
                 return self._send(200, "application/json", json.dumps(result))
+            if path == "/api/prompt":
+                n = int(self.headers.get("Content-Length", 0))
+                try:
+                    body = json.loads(self.rfile.read(n).decode("utf-8"))
+                except Exception as e:
+                    return self._send(400, "application/json", json.dumps({"ok": False, "error": "bad json: %s" % e}))
+                cat = (body.get("cat") or "").strip()
+                slug = (body.get("slug") or "").strip()      # roster slug = the base filename (NOT slugified — rosters key on exact slug)
+                if not cat or not slug:
+                    return self._send(400, "application/json", json.dumps({"ok": False, "error": "cat and slug required"}))
+                ok, err = write_prompt(cat, slug, body.get("prompt", ""))
+                code = 200 if ok else 500
+                return self._send(code, "application/json", json.dumps({"ok": ok, "cat": cat, "slug": slug, "error": err}))
             if path == "/api/generate":
                 n = int(self.headers.get("Content-Length", 0))
                 try:

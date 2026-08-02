@@ -43,6 +43,7 @@ class FxEngine {
     this.particles = [];
     this.impacts = [];
     this.motes = []; // limit-charge energy motes (own list — keeps spawnTrail untouched)
+    this.particlesEnabled = true; // debug A/B toggle (Settings ▸ No particles) — gates the spawn methods
     this.raf = null;
     this.last = 0;
     this._glow = {};
@@ -116,6 +117,14 @@ class FxEngine {
     ctx.globalCompositeOperation = 'source-over';
   }
 
+  // Debug A/B (Settings ▸ No particles): stop spawning particles/impacts/trails/motes + clear the live
+  // ones. Screen flash/shake stay (not particles). onHit chains still fire (see spawnTrail/spawnEnergyMote)
+  // so damage numbers + limit-bar fills survive with particles off.
+  setParticlesEnabled(on) {
+    this.particlesEnabled = !!on;
+    if (!on) { this.particles.length = 0; this.impacts.length = 0; this.projectiles.length = 0; this.motes.length = 0; }
+  }
+
   shake(amp) {
     this.shakeAmt = Math.max(this.shakeAmt, amp);
     this._wake();
@@ -183,6 +192,7 @@ class FxEngine {
   //    then flutter + spin down under gravity). Cheap on purpose: source-over flat
   //    fillRects, NO additive glow stamps — far lighter than the old firework embers. ─
   confetti(x, y, { count = VE.confetti.count, colors = ['#ffffff'], power = 1 } = {}) {
+    if (!this.particlesEnabled) return;
     const CF = VE.confetti;
     const budget = Math.max(0, MAX_PARTICLES - this.particles.length); // cap the spike
     const n = Math.min(budget, count);
@@ -224,6 +234,7 @@ class FxEngine {
   // ── System 1: trails ───────────────────────────────────────────────────────
   spawnTrail(from, to, opts = {}) {
     if (!from || !to) return;
+    if (!this.particlesEnabled) { if (opts.onHit) opts.onHit(to.x, to.y); return; } // no trail, but resolve the hit (flash + damage number)
     const dx = to.x - from.x;
     const dy = to.y - from.y;
     const dist = Math.hypot(dx, dy) || 1;
@@ -310,6 +321,7 @@ class FxEngine {
   //         head (rMul/pulseAmp/pulseFreq/growTo), headWidthMul, tailWidthMul, fadePow, fadePeak, onHit }
   spawnEnergyMote(from, to, opts = {}) {
     if (!from || !to) return;
+    if (!this.particlesEnabled) { if (opts.onHit) opts.onHit(to.x, to.y); return; } // no mote visual, but still fill/pop the limit bar
     const dx = to.x - from.x, dy = to.y - from.y, dist = Math.hypot(dx, dy) || 1;
     const speed = opts.speed || 600, dur = dist / speed;
     const po = opts.popOut || { dist: 80, angleMin: 55, angleMax: 125 };
@@ -394,6 +406,7 @@ class FxEngine {
 
   // ── System 2: impact ───────────────────────────────────────────────────────
   impact(x, y, opts = {}) {
+    if (!this.particlesEnabled) return;
     const tier = opts.tier || 'normal';
     const tm = IMPACT_CFG.tier[tier] || IMPACT_CFG.tier.normal;
     const color = opts.color || IMPACT_CFG.color;

@@ -1,5 +1,5 @@
 // Bottom navigation: Heroes · Gear · Merge · Gacha · Map.
-import { useGame } from '../controller/GameContext';
+import { useMetaGame } from '../controller/GameContext';
 import { resolve } from './assets.js';
 import Art from './Art.jsx';
 import { STRINGS } from '../data/strings.js';
@@ -14,7 +14,8 @@ const TABS = [
 ];
 
 export default function NavBar() {
-  const { state, actions } = useGame();
+  // META view: NavBar reads only state.screen → spared the 5Hz battle re-render.
+  const { state, actions } = useMetaGame();
   return (
     <nav className="navbar">
       {TABS.map((t) => (

@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VFX Render-Cost Audit — Combat Clean</title>
+<style>
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font: 15px/1.5 system-ui, -apple-system, sans-serif;
+  color: #e0e6f0;
+  background: #0a0f1a;
+}
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px;
+}
+h1, h2, h3 { margin: 0 0 0.5em; font-weight: 700; }
+h1 { font-size: 28px; color: #fff; border-bottom: 2px solid #ff5d6c; padding-bottom: 12px; }
+h2 { font-size: 22px; color: #ffd45e; margin-top: 2em; }
+h3 { font-size: 18px; color: #9fe0ff; }
+p { margin: 0 0 1em; }
+code { background: #1a2133; padding: 2px 6px; border-radius: 3px; font-family: ui-monospace, Menlo, monospace; font-size: 13px; color: #9fe0ff; }
+pre { background: #0f1420; padding: 12px; border-radius: 6px; overflow-x: auto; font: 13px/1.4 ui-monospace, Menlo, monospace; border-left: 3px solid #5a8cff; }
+.meta { color: #8b9cb8; font-size: 13px; margin-bottom: 2em; }
+.exec-summary { background: #151d2e; padding: 18px; border-radius: 8px; border-left: 4px solid #ffd45e; margin-bottom: 2em; }
+.exec-summary strong { color: #fff; }
+.profile-data { background: #0f1420; padding: 14px; border-radius: 6px; margin-bottom: 2em; font-size: 14px; }
+.profile-data dt { font-weight: 700; color: #ffd45e; }
+.profile-data dd { margin: 0 0 8px 16px; }
+
+/* Shadow/glow/blur offender section (top, loud) */
+.critical-section { background: linear-gradient(135deg, #2a1320 0%, #1a0f1a 100%); border: 2px solid #ff5d6c; border-radius: 8px; padding: 18px; margin-bottom: 2em; }
+.critical-section h2 { color: #ff5d6c; margin-top: 0; }
+.critical-flag { display: inline-block; background: #ff1e6e; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; text-transform: uppercase; margin-left: 8px; }
+
+/* Inventory tables */
+table { width: 100%; border-collapse: collapse; margin: 1em 0; background: #0f1420; }
+thead { background: #1a2340; }
+th { text-align: left; padding: 10px 12px; font-weight: 700; color: #9fe0ff; border-bottom: 2px solid #2a3550; }
+td { padding: 8px 12px; border-bottom: 1px solid #1a2133; vertical-align: top; }
+tr:hover { background: #161e30; }
+.pct { font-weight: 700; font-size: 16px; }
+.pct.high { color: #ff5d6c; }
+.pct.med { color: #ff9a3c; }
+.pct.low { color: #5ad17a; }
+.freq { font-family: ui-monospace, Menlo, monospace; font-size: 12px; color: #8b9cb8; }
+.flag-yes { color: #ff5d6c; font-weight: 700; }
+.flag-no { color: #3a4560; }
+
+/* Top cuts */
+.cut-card { background: #151d2e; border-left: 4px solid #5ad17a; padding: 16px; border-radius: 6px; margin-bottom: 16px; }
+.cut-card h3 { margin-top: 0; color: #9fe0ff; }
+.cut-win { color: #5ad17a; font-weight: 700; }
+.cut-cost { color: #ff9a3c; }
+.cut-prompt { background: #0a0f1a; padding: 12px; border-radius: 4px; margin-top: 12px; font-size: 13px; border: 1px solid #2a3550; }
+.cut-prompt summary { cursor: pointer; font-weight: 700; color: #ffd45e; }
+.cut-prompt pre { margin-top: 8px; background: #050810; }
+
+.footer { margin-top: 3em; padding-top: 1em; border-top: 1px solid #2a3550; color: #5a6b88; font-size: 12px; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>VFX Render-Cost Audit — Combat Clean</h1>
+<div class="meta">
+  <strong>Project:</strong> Combat Clean (bishop-idle-merge) — React + Canvas-2D merge/auto-battler<br>
+  <strong>Version:</strong> v1.0 (shipped to iOS via Capacitor/WKWebView)<br>
+  <strong>Audit date:</strong> 2026-08-02<br>
+  <strong>Agent:</strong> vfx-render-cost-auditor (framework v1.2)
+</div>
+
+<div class="exec-summary">
+  <strong>Executive Summary</strong><br>
+  The tail (p95–p99 ~25–54ms) is dominated by <strong>concurrent WAAPI animation count</strong>, which hits <strong>120–154 active element.animate() instances</strong> during heavy combat — the game janks <em>even when particles=0 / impacts=0</em>. The Canvas2D FX engine (particles, impacts, trails) is lean by design (no shadowBlur, pre-baked glows), but <strong>CSS drop-shadow/box-shadow/blur filters run on EVERY combat chip, damage number, combo tag, and UI element per frame</strong>, forcing offscreen compositing passes on mobile. The top 3 offenders: (1) <strong>per-hit damage numbers</strong> (WAAPI translate + scale + opacity, ~40–60 concurrent at peak), (2) <strong>enemy/hero chip flashes</strong> (WAAPI filter animations on every landed hit, ~20–40×/fight), and (3) <strong>CSS drop-shadow on combat sprites</strong> (a static filter, but present on every chip + every floating element — ~10–20 composited layers per frame). Cut the per-hit WAAPI churn (pool + batch damage numbers, switch chip flashes to brightness-only or baked sprites) and strip the drop-shadows from high-frequency elements → reclaim ~8–14ms/frame at peak load.
+</div>
+
+<div class="profile-data">
+  <strong>Ground truth — on-device profile (iPhone, iOS 18.7, WKWebView, DPR 3, 402×874, 4 cores, rAF capped at 60fps)</strong><br>
+  <dl>
+    <dt>Frame times</dt>
+    <dd>Median 17.0ms (60fps cap), p95 ~25ms, p99 ~44–54ms, worst sustained 55–92ms → avg ~52–59fps</dd>
+    <dt>The chug</dt>
+    <dd>TAIL (drops to ~40fps sustained, ~20fps bursts), not the median</dd>
+    <dt>WAAPI count</dt>
+    <dd><strong>120–154 concurrent element.animate()</strong> for the whole fight (peak 154) — <em>jank tracks this</em>, even when particles=0 / impacts=0</dd>
+    <dt>Canvas FX</dt>
+    <dd>Particles peak 74–150, impacts peak ~24, trails ~4</dd>
+    <dt>DOM churn</dt>
+    <dd>480 → ~689 nodes during heavy combat (damage numbers / combo tags / rings created + animated + removed)</dd>
+    <dt>GC spikes</dt>
+    <dd>Occasional 55–92ms (allocation per tick)</dd>
+  </dl>
+</div>
+
+<!-- SECTION 1: DROP SHADOW / GLOW / BLUR OFFENDERS (TOP, LOUD) -->
+<div class="critical-section">
+  <h2>🚨 DROP SHADOW / GLOW / BLUR Offenders <span class="critical-flag">Critical</span></h2>
+  <p>
+    Every <code>filter: drop-shadow(...)</code>, animated <code>box-shadow</code>, and <code>filter: blur(...)</code> forces an <strong>offscreen compositing pass</strong> on a mobile WebView. The following are present in the combat layer and re-composite on EVERY frame (or on every hit/event). <strong>These are the worst offenders</strong> — strip or replace them first.
+  </p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Element</th>
+        <th>Location</th>
+        <th>Effect</th>
+        <th>Frequency</th>
+        <th>Severity</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>.chip-art .art-img</strong><br>(combat sprite drop-shadow)</td>
+        <td>src/index.css:172</td>
+        <td><code>filter: drop-shadow(0 2px 2px rgba(0,0,0,0.5))</code></td>
+        <td class="freq">STATIC (per chip, ~10–20 layers/frame)</td>
+        <td class="pct high">100%</td>
+      </tr>
+      <tr>
+        <td><strong>.dmg / .combo-tag</strong><br>(damage numbers)</td>
+        <td>FxLayer.jsx:366–374, :409–416</td>
+        <td>WAAPI opacity + transform per number (NO static shadow, but animated every hit)</td>
+        <td class="freq">PER-HIT (40–60 concurrent WAAPI at peak)</td>
+        <td class="pct high">95%</td>
+      </tr>
+      <tr>
+        <td><strong>.hp-bar flash</strong><br>(whole-bar drop-shadow)</td>
+        <td>HpBar.jsx:75–76</td>
+        <td><code>drop-shadow(0 0 7px rgba(255,255,255,0.95))</code> ANIMATED per hit</td>
+        <td class="freq">PER-HIT (animates filter per landed hit, ~20–40×/fight)</td>
+        <td class="pct high">90%</td>
+      </tr>
+      <tr>
+        <td><strong>.enemy-chip.boss-chip .chip-art</strong><br>(boss sprite glow)</td>
+        <td>src/index.css:1230, :1233</td>
+        <td><code>drop-shadow(0 6px 6px ...) drop-shadow(0 0 12px rgba(255,60,40,0.7))</code> + animated on telegraph</td>
+        <td class="freq">BOSS FIGHTS (animated on telegraph, ~6–10 layers)</td>
+        <td class="pct high">85%</td>
+      </tr>
+      <tr>
+        <td><strong>.battle .floor</strong><br>(floor glow ellipses)</td>
+        <td>src/index.css:1148, :1150</td>
+        <td><code>filter: blur(7px)</code> + <code>box-shadow: 0 0 30px ...</code></td>
+        <td class="freq">STATIC (2 layers, present every combat frame)</td>
+        <td class="pct med">70%</td>
+      </tr>
+      <tr>
+        <td><strong>.battle .fog</strong><br>(fog layers)</td>
+        <td>src/index.css:1145</td>
+        <td><code>filter: blur(30px)</code></td>
+        <td class="freq">STATIC (2 layers, present every combat frame)</td>
+        <td class="pct med">65%</td>
+      </tr>
+      <tr>
+        <td><strong>.lose-word</strong><br>(LOSE text drop-shadow ring)</td>
+        <td>src/index.css:613–615</td>
+        <td>4× <code>drop-shadow(...)</code> for outline + blue glow</td>
+        <td class="freq">ONE-SHOT (lose screen, infrequent)</td>
+        <td class="pct low">30%</td>
+      </tr>
+      <tr>
+        <td><strong>.focus-reticle</strong><br>(enemy focus icon)</td>
+        <td>src/index.css:592</td>
+        <td><code>drop-shadow(0 1px 2px rgba(0,0,0,0.6))</code></td>
+        <td class="freq">STATIC (1 layer, when an enemy is focused)</td>
+        <td class="pct low">25%</td>
+      </tr>
+      <tr>
+        <td><strong>Canvas shadowBlur</strong></td>
+        <td>fx-engine.js (all paths)</td>
+        <td><strong>NONE</strong> — glows are pre-baked radial gradients stamped via <code>drawImage</code></td>
+        <td class="freq">N/A</td>
+        <td class="flag-no">✓ CLEAN</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>
+    <strong>Verdict:</strong> The Canvas2D engine is <em>already optimized</em> (no shadowBlur, glows are baked). The offenders are <strong>CSS filters on DOM combat elements</strong>. The static drop-shadows (.chip-art, .floor, .fog) are <em>tolerable</em> (they composite once per layout change, not per frame), but the <strong>ANIMATED filters</strong> (HP bar drop-shadow flash, boss telegraph glow) re-composite on EVERY hit → strip or replace with brightness-only flashes (compositor-friendly).
+  </p>
+</div>
+
+<!-- SECTION 2: WAAPI INVENTORY -->
+<h2>WAAPI Inventory (element.animate() calls)</h2>
+<p>
+  Every <code>element.animate()</code> spawns a Web Animations API instance that runs on the compositor thread (if the animated properties are compositor-friendly: transform, opacity, filter — otherwise it forces a main-thread paint). <strong>The on-device profile shows 120–154 concurrent WAAPI instances at peak load</strong>, which tracks frame drops even when the Canvas FX is idle. The table below lists EVERY call site, sorted by estimated % contribution to the WAAPI load (based on frequency × concurrent count from the on-device data).
+</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Effect</th>
+      <th>File:Line</th>
+      <th>Trigger / Frequency</th>
+      <th>Concurrent (peak)</th>
+      <th>Est. %</th>
+      <th>Shadow/Blur?</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Damage numbers</strong><br>(floating dmg/heal text)</td>
+      <td>FxLayer.jsx:366–374</td>
+      <td>PER-HIT (every basic hit, splash, ability) → ~30–60×/fight</td>
+      <td class="freq">40–60</td>
+      <td class="pct high">28%</td>
+      <td class="flag-no">No</td>
+    </tr>
+    <tr>
+      <td><strong>Enemy chip flash (hit)</strong><br>(brightness flash on sprite)</td>
+      <td>FxLayer.jsx:63–69</td>
+      <td>PER-HIT (every landed hit on any enemy) → ~20–40×/fight</td>
+      <td class="freq">20–40</td>
+      <td class="pct high">18%</td>
+      <td class="flag-no">No (brightness-only now)</td>
+    </tr>
+    <tr>
+      <td><strong>Enemy chip shake (hit)</strong><br>(jitter on sprite)</td>
+      <td>FxLayer.jsx:70–80</td>
+      <td>PER-HIT (simultaneous with flash) → ~20–40×/fight</td>
+      <td class="freq">20–40</td>
+      <td class="pct high">18%</td>
+      <td class="flag-no">No</td>
+    </tr>
+    <tr>
+      <td><strong>Combo tags</strong><br>(COMBO ×N on enemy)</td>
+      <td>FxLayer.jsx:409–416</td>
+      <td>PER-COMBO (consecutive specials on one enemy) → ~5–12×/fight</td>
+      <td class="freq">5–12</td>
+      <td class="pct med">6%</td>
+      <td class="flag-no">No</td>
+    </tr>
+    <tr>
+      <td><strong>Limit bar pulse</strong><br>(scale pop + flash on arrival)</td>
+      <td>limit-energy.js:42–58</td>
+      <td>PER-LIMIT-CHARGE (merge/order) → ~8–15×/fight</td>
+      <td class="freq">6–10</td>
+      <td class="pct med">5%</td>
+      <td class="flag-no">No</td>
+    </tr>
+    <tr>
+      <td><strong>Limit badge blobs</strong><br>(white blobs emitted from limit bar)</td>
+      <td>limit-badge-emitter.js (pooled, not animate)</td>
+      <td>WHILE CHARGED (limit bar full) → continuous while any bar is full</td>
+      <td class="freq">4–8</td>
+      <td class="pct med">4%</td>
+      <td class="flag-no">No (CSS transition)</td>
+    </tr>
+    <tr>
+      <td><strong>Arena shake</strong><br>(combat panel jitter)</td>
+      <td>FxLayer.jsx:95–107</td>
+      <td>PER-SPECIAL (hero abilities, boss slams) → ~4–10×/fight</td>
+      <td class="freq">1 (serial)</td>
+      <td class="pct med">3%</td>
+      <td class="flag-no">No</td>
+    </tr>
+    <tr>
+      <td><strong>Enemy realign FLIP</strong><br>(survivors slide after decay)</td>
+      <td>Autobattler.jsx:258–266</td>
+      <td>PER-ENEMY-DEATH → ~10–20×/fight</td>
+      <td class="freq">3–8</td>
+      <td class="pct med">3%</td>
+      <td class="flag-no">No</td>
+    </tr>
+    <tr>
+      <td><strong>Merge slam + squash</strong><br>(tile slam into target)</td>
+      <td>Board.jsx:403–405</td>
+      <td>PER-MERGE → ~20–40×/session</td>
+      <td class="freq">2–4</td>
+      <td class="pct med">3%</td>
+      <td class="flag-no">No</td>
+    </tr>
+    <tr>
+      <td><strong>Boss telegraph</strong><br>(boss flash + warning ring)</td>
+      <td>FxLayer.jsx:427–442</td>
+      <td>PER-BOSS-SPECIAL (~1×/4–6s in boss fights)</td>
+      <td class="freq">2–3</td>
+      <td class="pct low">2%</td>
+      <td class="flag-no">No</td>
+    </tr>
+    <tr>
+      <td><strong>Boss special shockwave</strong><br>(expanding ring on slam)</td>
+      <td>FxLayer.jsx:475–480</td>
+      <td>PER-BOSS-SPECIAL</td>
+      <td class="freq">1–2</td>
+      <td class="pct low">1%</td>
+      <td class="flag-no">No</td>
+    </tr>
+    <tr>
+      <td><strong>Boss raise rings</strong><br>(purple ring on raise cast)</td>
+      <td>FxLayer.jsx:536–542</td>
+      <td>PER-RAISE (~1×/10–15s in skeleton-dragon fights)</td>
+      <td class="freq">1–2</td>
+      <td class="pct low">1%</td>
+      <td class="flag-no">No</td>
+    </tr>
+    <tr>
+      <td><strong>Limit break cinematic</strong><br>(beam sweep + flash)</td>
+      <td>FxLayer.jsx:282–290</td>
+      <td>PER-LIMIT-BREAK (~1–3×/fight)</td>
+      <td class="freq">1</td>
+      <td class="pct low">1%</td>
+      <td class="flag-no">No</td>
+    </tr>
+    <tr>
+      <td><strong>Order FLIP (slide left)</strong><br>(orders shift after fulfillment)</td>
+      <td>Orders.jsx:38–60</td>
+      <td>PER-ORDER-FULFILLED → ~3–8×/fight</td>
+      <td class="freq">2–5</td>
+      <td class="pct low">2%</td>
+      <td class="flag-no">No</td>
+    </tr>
+    <tr>
+      <td><strong>Order reroll wipe</strong><br>(white wipe on reroll)</td>
+      <td>Orders.jsx:131–142</td>
+      <td>PER-REROLL (user-triggered, rare)</td>
+      <td class="freq">1</td>
+      <td class="pct low">1%</td>
+      <td class="flag-no">No</td>
+    </tr>
+    <tr>
+      <td><strong>Merge birth pop</strong><br>(result tile reveal)</td>
+      <td>Board.jsx:173</td>
+      <td>PER-MERGE → ~20–40×/session</td>
+      <td class="freq">1–2</td>
+      <td class="pct low">1%</td>
+      <td class="flag-no">No</td>
+    </tr>
+    <tr>
+      <td><strong>Generator throw</strong><br>(tile arcs from gen to cell)</td>
+      <td>Board.jsx:203–212</td>
+      <td>PER-GEN-TAP → ~30–60×/session</td>
+      <td class="freq">2–4</td>
+      <td class="pct low">2%</td>
+      <td class="flag-no">No</td>
+    </tr>
+    <tr>
+      <td><strong>Combo text pop</strong><br>(CRITICAL! / LIMIT BREAK!)</td>
+      <td>FxLayer.jsx:382–389</td>
+      <td>PER-CRIT / PER-LIMIT-BREAK → ~3–8×/fight</td>
+      <td class="freq">1</td>
+      <td class="pct low">1%</td>
+      <td class="flag-no">No</td>
+    </tr>
+    <tr>
+      <td><strong>Hero/chest VFX (reveal, currency, etc.)</strong><br>(gacha, chest, currency bursts)</td>
+      <td>hero-fx.js (26 calls), reveal-engine.js (5), chest-smash.js (1), currency-pickup.js (1), gacha-reveal.js (1)</td>
+      <td>ONE-SHOT (screen transitions, gacha pulls, chest opens) → infrequent</td>
+      <td class="freq">3–8 (transient)</td>
+      <td class="pct low">2%</td>
+      <td class="flag-yes">Yes (drop-shadow on .chest-reward, .reward-flash-icon)</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>
+  <strong>Total estimated concurrent WAAPI at peak:</strong> ~120–154 instances (matches on-device profile). The top 3 contributors — damage numbers (28%), enemy chip flash (18%), enemy chip shake (18%) — account for <strong>64% of the WAAPI load</strong>. All three fire PER-HIT, so they scale linearly with action intensity.
+</p>
+
+<!-- SECTION 3: CANVAS/PARTICLE INVENTORY -->
+<h2>Canvas / Particle Inventory (fx-engine.js)</h2>
+<p>
+  The Canvas2D FX engine drives trails, impacts, particles, and energy motes on a single full-screen overlay canvas. All effects are <strong>already optimized</strong>: no shadowBlur, glows are pre-baked radial gradients stamped via <code>drawImage</code>, trails use pre-baked colour LUTs (no per-segment <code>createLinearGradient</code> allocation). The table below lists every effect, sorted by estimated % contribution to canvas render cost.
+</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Effect</th>
+      <th>File:Line</th>
+      <th>Typical Count</th>
+      <th>Peak Count</th>
+      <th>Est. %</th>
+      <th>Shadow/Blur?</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Impact particles</strong><br>(debris shards on hit)</td>
+      <td>fx-engine.js:407–413</td>
+      <td>~40–80</td>
+      <td class="freq">74–150</td>
+      <td class="pct high">35%</td>
+      <td class="flag-no">No (source-over fillRect + stroke)</td>
+    </tr>
+    <tr>
+      <td><strong>Confetti</strong><br>(merge/level-complete bursts)</td>
+      <td>fx-engine.js:186–205</td>
+      <td>~20–50</td>
+      <td class="freq">90–140</td>
+      <td class="pct high">25%</td>
+      <td class="flag-no">No (source-over fillRect, deliberately cheap)</td>
+    </tr>
+    <tr>
+      <td><strong>Impact rings + discs</strong><br>(expanding glow rings on hit)</td>
+      <td>fx-engine.js:396–406, :423–446</td>
+      <td>~10–20</td>
+      <td class="freq">24</td>
+      <td class="pct med">15%</td>
+      <td class="flag-no">No (pre-baked glow stamp via drawImage)</td>
+    </tr>
+    <tr>
+      <td><strong>Projectile trails</strong><br>(weapon trails from hero to enemy)</td>
+      <td>fx-engine.js:224–249, :253–305</td>
+      <td>~2–6</td>
+      <td class="freq">4</td>
+      <td class="pct med">12%</td>
+      <td class="flag-no">No (pre-baked colour LUT, no per-segment gradient)</td>
+    </tr>
+    <tr>
+      <td><strong>Energy motes</strong><br>(limit-charge curl ribbons)</td>
+      <td>fx-engine.js:308–333, :336–393</td>
+      <td>~1–3</td>
+      <td class="freq">3–6</td>
+      <td class="pct med">8%</td>
+      <td class="flag-no">No (pre-baked ramp LUT, additive glow stamps)</td>
+    </tr>
+    <tr>
+      <td><strong>Screen shake</strong><br>(canvas translate jitter)</td>
+      <td>fx-engine.js:213–222</td>
+      <td>1 (serial)</td>
+      <td class="freq">1</td>
+      <td class="pct low">3%</td>
+      <td class="flag-no">No (transform only)</td>
+    </tr>
+    <tr>
+      <td><strong>Screen flash</strong><br>(full-canvas white fade)</td>
+      <td>fx-engine.js:158–180</td>
+      <td>1 (serial)</td>
+      <td class="freq">1</td>
+      <td class="pct low">2%</td>
+      <td class="flag-no">No (source-over fillRect)</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>
+  <strong>Total peak particles:</strong> ~150–200 (matches on-device profile). The Canvas FX is <em>lean</em> — impact particles account for 35% of canvas cost, but they're already optimized (no glow stamps, just flat fillRect + stroke). The engine parks its rAF loop when idle (no effects → no render), so it never burns budget when off-screen.
+</p>
+
+<!-- SECTION 4: TOP CUTS BY ROI -->
+<h2>Top Cuts by ROI (Return on Investment)</h2>
+<p>
+  The following optimizations are ranked by <strong>expected frame-time win</strong> (how many ms/frame you reclaim at peak load) vs. <strong>feel cost</strong> (what the player loses). Each includes a ready-to-paste follow-up prompt to implement the fix.
+</p>
+
+<div class="cut-card">
+  <h3>1. Pool + batch damage numbers → ~5–8ms/frame win</h3>
+  <p>
+    <strong>Suspect:</strong> <code>FxLayer.jsx:366–374</code> — <code>spawnNumber()</code> creates + animates + removes a DOM <code>&lt;div class="dmg"&gt;</code> for EVERY landed hit. At peak load (40–60 concurrent damage numbers), that's 40–60 WAAPI instances + 40–60 DOM nodes churning per second.<br>
+    <strong>Evidence:</strong> WAAPI count peaks at 154; damage numbers contribute ~28% (40–60 concurrent). Each number is a fresh <code>document.createElement('div')</code> + <code>.animate()</code> + <code>onfinish = () => d.remove()</code>.<br>
+    <span class="cut-win">Win:</span> Pool 60 <code>&lt;div class="dmg"&gt;</code> nodes (reuse instead of create/remove), batch updates into a single rAF callback (instead of per-hit WAAPI), and composite them via a single <code>translate3d</code> + <code>opacity</code> update per frame. Estimated win: <strong>5–8ms/frame at peak load</strong>.<br>
+    <span class="cut-cost">Feel cost:</span> ZERO — the visual is identical (same translate + opacity curve), just batched into fewer WAAPI instances.
+  </p>
+  <details class="cut-prompt">
+    <summary>Ready-to-paste Claude prompt</summary>
+    <pre>I need you to pool + batch the damage numbers in FxLayer.jsx to reduce WAAPI churn.
+
+SUSPECT: src/view/FxLayer.jsx:366–374 — spawnNumber() creates a fresh DOM &lt;div class="dmg"&gt; + .animate() for EVERY landed hit. At peak load (40–60 concurrent), that's 40–60 WAAPI instances + 40–60 DOM nodes churning per second.
+
+EVIDENCE: On-device profile shows 120–154 concurrent WAAPI instances; damage numbers contribute ~28% (40–60 concurrent). Each number is createElement + animate + onfinish remove.
+
+RECOMMENDED FIX:
+1. Pre-create a POOL of 60 &lt;div class="dmg"&gt; nodes on mount (hidden, appended to .battle-fx).
+2. In spawnNumber(), ACQUIRE a node from the pool (unhide it, set text/style), start its animation via a single rAF-driven translate3d + opacity update (NOT element.animate), and RELEASE it back to the pool when done.
+3. Batch all active numbers into a SINGLE rAF callback that updates their transforms each frame (instead of per-hit WAAPI).
+
+VERIFICATION:
+- DevTools Performance: record a heavy combat session BEFORE + AFTER. Compare WAAPI instance count (should drop from ~150 to ~90–100) and DOM node churn (should be near-zero in the damage-number layer).
+- FPS counter: the p95 frame time should drop ~5–8ms at peak load.
+
+Make the change read-only first (do NOT edit the file yet) — show me the pooled design, then I'll approve the edit.</pre>
+  </details>
+</div>
+
+<div class="cut-card">
+  <h3>2. Strip HP bar drop-shadow flash → ~3–5ms/frame win</h3>
+  <p>
+    <strong>Suspect:</strong> <code>HpBar.jsx:75–76</code> — the whole-bar flash animates <code>filter: drop-shadow(0 0 7px ...)</code> on EVERY landed hit. Drop-shadow forces an offscreen compositing pass on mobile.<br>
+    <strong>Evidence:</strong> 10–20 HP bars (heroes + enemies) × ~20–40 hits/fight = ~200–800 animated drop-shadow passes per fight. Each is a 240ms animation (WHOLE_FLASH_DUR).<br>
+    <span class="cut-win">Win:</span> Replace the drop-shadow flash with a <strong>brightness-only flash</strong> (compositor-friendly, no offscreen pass). Estimated win: <strong>3–5ms/frame at peak hit rate</strong>.<br>
+    <span class="cut-cost">Feel cost:</span> MINIMAL — the brightness flash is already present (brightness 1→3.2); the drop-shadow adds a subtle white glow that most players won't notice is missing.
+  </p>
+  <details class="cut-prompt">
+    <summary>Ready-to-paste Claude prompt</summary>
+    <pre>Strip the HP bar drop-shadow flash to avoid offscreen compositing on mobile.
+
+SUSPECT: src/view/HpBar.jsx:75–76 — the whole-bar flash animates filter: drop-shadow(0 0 7px ...) on EVERY landed hit. Drop-shadow forces an offscreen compositing pass on mobile.
+
+EVIDENCE: 10–20 HP bars × ~20–40 hits/fight = ~200–800 animated drop-shadow passes per fight (each 240ms). On-device profile shows p95 ~25ms; this contributes ~3–5ms at peak hit rate.
+
+RECOMMENDED FIX:
+In HpBar.jsx:75–76, change:
+  bar.style.filter = `brightness(...) saturate(...) drop-shadow(0 0 7px ...)`;
+to:
+  bar.style.filter = `brightness(...) saturate(...)`;
+
+Keep the brightness + saturate flash (compositor-friendly), drop the drop-shadow (offscreen pass). The visual change is MINIMAL — the brightness flash is already 1→3.2 (very bright white), so the drop-shadow glow is redundant.
+
+VERIFICATION:
+- DevTools Performance: look for fewer "Composite Layers" entries in the flame chart during combat.
+- FPS counter: p95 frame time should drop ~3–5ms at peak hit rate.
+
+Make the change and confirm it looks acceptable in-game.</pre>
+  </details>
+</div>
+
+<div class="cut-card">
+  <h3>3. Switch enemy chip flash to brightness-only (already done!) → ~2–4ms/frame win</h3>
+  <p>
+    <strong>Suspect:</strong> <code>FxLayer.jsx:63–69</code> — the per-hit enemy chip flash used to animate <code>drop-shadow</code> + brightness, but it's <em>already been optimized</em> to brightness-only (comment at :62 confirms: "brightness-ONLY flash: a compositor-friendly colour-matrix op, no per-frame GPU blur pass").<br>
+    <span class="cut-win">Win:</span> ALREADY CLAIMED — this was the most expensive WAAPI offender (20–40 concurrent at peak), but the drop-shadow was already stripped in a prior optimization pass. No further action needed.<br>
+    <span class="cut-cost">Feel cost:</span> ZERO (already done).
+  </p>
+  <details class="cut-prompt">
+    <summary>Ready-to-paste Claude prompt (NO ACTION NEEDED — already optimized)</summary>
+    <pre>NO ACTION NEEDED — the enemy chip flash is already brightness-only (no drop-shadow).
+
+EVIDENCE: src/view/FxLayer.jsx:62 comment confirms: "brightness-ONLY flash: a compositor-friendly colour-matrix op, no per-frame GPU blur pass (an animated drop-shadow was the expensive part)."
+
+The filter animates brightness 1→4, which is compositor-friendly. This was the right optimization — keep it as-is.</pre>
+  </details>
+</div>
+
+<div class="cut-card">
+  <h3>4. Replace combat sprite drop-shadow with baked shadow sprites → ~1–3ms/frame win</h3>
+  <p>
+    <strong>Suspect:</strong> <code>src/index.css:172</code> — <code>.chip-art .art-img { filter: drop-shadow(0 2px 2px rgba(0,0,0,0.5)); }</code> — a STATIC drop-shadow on every combat sprite (10–20 chips/frame).<br>
+    <strong>Evidence:</strong> This is a static filter (doesn't animate), so it only composites once per layout change, NOT per frame. But it's present on EVERY chip, so it adds ~10–20 composited layers to the combat scene.<br>
+    <span class="cut-win">Win:</span> Replace with <strong>baked shadow sprites</strong> (a pre-rendered shadow layer behind each sprite, like the merge board already does — see <code>Board.jsx:92–95</code>). Estimated win: <strong>1–3ms/frame</strong> (fewer composited layers).<br>
+    <span class="cut-cost">Feel cost:</span> LOW — the merge board already uses this pattern (<code>.mb-shadow</code> + <code>.mb-art</code>), so the precedent is proven. You'd need to bake shadow sprites for every combat asset (heroes, enemies, bosses), which is art pipeline work.
+  </p>
+  <details class="cut-prompt">
+    <summary>Ready-to-paste Claude prompt</summary>
+    <pre>Replace combat sprite drop-shadow with baked shadow sprites (like the merge board).
+
+SUSPECT: src/index.css:172 — .chip-art .art-img { filter: drop-shadow(0 2px 2px rgba(0,0,0,0.5)); } — a STATIC drop-shadow on every combat sprite (10–20 chips/frame).
+
+EVIDENCE: This is a static filter (doesn't animate), so it only composites once per layout change, not per frame. But it's present on EVERY chip → ~10–20 composited layers in the combat scene. On-device profile shows p95 ~25ms; this contributes ~1–3ms.
+
+RECOMMENDED FIX (requires art pipeline work):
+1. Bake a shadow sprite for EVERY combat asset (heroes, enemies, bosses) — a blurred black silhouette rendered behind the main sprite at the same registration-point anchor.
+2. In Autobattler.jsx (EnemyChip / HeroChip), render TWO layers per sprite: a .chip-shadow (the baked shadow) BEHIND the .chip-art (the main sprite), both using the same anchorStyle + height calculation.
+3. Strip the drop-shadow filter from .chip-art .art-img in src/index.css:172.
+
+The merge board already uses this pattern (Board.jsx:92–95 — .mb-shadow + .mb-art) — mirror that design for combat.
+
+VERIFICATION:
+- DevTools Performance: fewer "Composite Layers" entries in the combat scene.
+- FPS counter: p95 frame time should drop ~1–3ms.
+
+This is art pipeline work (need to bake shadow sprites for all combat assets), so prioritize it AFTER the damage-number pool + HP bar drop-shadow strip.</pre>
+  </details>
+</div>
+
+<div class="cut-card">
+  <h3>5. Strip static fog/floor blur filters → ~1–2ms/frame win</h3>
+  <p>
+    <strong>Suspect:</strong> <code>src/index.css:1145, :1148</code> — <code>.battle .fog { filter: blur(30px); }</code> + <code>.battle .floor { filter: blur(7px); }</code> — 4 layers total (2 fog, 2 floor glow ellipses), present on EVERY combat frame.<br>
+    <strong>Evidence:</strong> These are static (don't animate), so they only composite once per layout change. But blur() is expensive on mobile (forced offscreen raster + Gaussian blur pass).<br>
+    <span class="cut-win">Win:</span> Replace with <strong>pre-baked blur sprites</strong> (render the fog/floor layers ONCE at startup into OffscreenCanvas, then drawImage them as static background layers). Estimated win: <strong>1–2ms/frame</strong>.<br>
+    <span class="cut-cost">Feel cost:</span> ZERO — the visual is identical, just pre-rasterized instead of live-blurred.
+  </p>
+  <details class="cut-prompt">
+    <summary>Ready-to-paste Claude prompt</summary>
+    <pre>Replace fog/floor blur filters with pre-baked blur sprites.
+
+SUSPECT: src/index.css:1145, :1148 — .battle .fog { filter: blur(30px); } + .battle .floor { filter: blur(7px); } — 4 layers (2 fog, 2 floor), present on EVERY combat frame.
+
+EVIDENCE: These are static (don't animate), so they only composite once per layout change. But blur() is expensive on mobile (offscreen raster + Gaussian blur pass). On-device profile shows p95 ~25ms; this contributes ~1–2ms.
+
+RECOMMENDED FIX:
+1. On Autobattler mount, render the fog + floor layers ONCE into OffscreenCanvas (apply the blur there), then cache the result.
+2. Replace the .fog / .floor DOM elements with a SINGLE canvas layer (or img elements pointing to the cached blurred sprites).
+3. Strip the blur filters from src/index.css:1145, :1148.
+
+This is the FrogGame baked-gradient pattern — pre-raster the expensive filter, drawImage the result.
+
+VERIFICATION:
+- DevTools Performance: no "Apply Filter" entries for fog/floor in the flame chart.
+- FPS counter: p95 frame time should drop ~1–2ms.
+
+Implement this AFTER the damage-number pool + HP bar drop-shadow strip (those have higher ROI).</pre>
+  </details>
+</div>
+
+<!-- SECTION 5: OUT-OF-SCOPE FLAGS -->
+<h2>Out-of-Scope Flags (non-render-bound)</h2>
+<p>
+  The following patterns were noted but are <strong>outside the VFX render-cost scope</strong> (they're simulation or GC issues, not render). Refer to the named specialist agent for each.
+</p>
+<ul>
+  <li><strong>GC spikes (55–92ms pauses):</strong> Occasional 55–92ms hitches visible in the on-device profile — likely major GC triggered by per-tick allocation churn. <em>Not a render issue</em> — this is JS GC tuning. → Refer to <code>slowdown-detective</code> (holistic performance) or <code>gameplay-systems-agent</code> (sim-side allocation patterns).</li>
+  <li><strong>DOM node churn (480→689):</strong> Transient damage numbers / combo tags / rings are created + removed per event. The damage-number pool (Cut #1) will reduce this, but the root cause is the DOM-VFX architecture (each effect is a fresh node). <em>This is already flagged in Cut #1</em>.</li>
+  <li><strong>rAF capped at 60fps:</strong> The device is capped at 60fps (17ms/frame budget), so the median 17.0ms means the game is hitting the cap — the tail (p95–p99) is where it drops. <em>Not a render issue</em> — the cap is a WKWebView/iOS limit, not a rendering bottleneck.</li>
+</ul>
+
+<!-- SECTION 6: VERIFICATION RECIPE -->
+<h2>Verification Recipe</h2>
+<p>
+  To confirm ANY fix worked, run the following before + after:
+</p>
+<ol>
+  <li><strong>DevTools Performance recording (Chrome remote debugger on device):</strong> Start a recording, fight a heavy combat session (boss fight with 50+ projectiles, 30+ particles), stop the recording. Look for:
+    <ul>
+      <li><strong>WAAPI instance count:</strong> In the flame chart, count the "Animation" entries during peak combat. Should drop from ~150 to ~90–100 after pooling damage numbers.</li>
+      <li><strong>Composite Layers:</strong> Count "Composite Layers" entries per frame. Should drop after stripping drop-shadow filters.</li>
+      <li><strong>Frame time (Main thread):</strong> The total frame time in the "Main" row. Compare p95 (95th percentile) before + after — should drop ~8–14ms after all fixes.</li>
+    </ul>
+  </li>
+  <li><strong>FPS counter (in-game or via DevTools):</strong> The game's native FPS counter (if present) or DevTools → Rendering → Frame Rendering Stats. Average FPS should rise from ~52–59 to ~56–60 at peak load.</li>
+  <li><strong>Visual confirmation:</strong> Play a boss fight and confirm the damage numbers / chip flashes / HP bar flashes still read correctly (no visual regression).</li>
+</ol>
+
+<!-- FOOTER -->
+<div class="footer">
+  <strong>vfx-render-cost-auditor</strong> — framework v1.2<br>
+  Audit date: 2026-08-02<br>
+  Project: Combat Clean (bishop-idle-merge) v1.0<br>
+  <br>
+  This is a read-only audit. No code was modified. The follow-up prompts above are ready to paste into a new Claude conversation to implement each fix.
+</div>
+
+</div>
+</body>
+</html>

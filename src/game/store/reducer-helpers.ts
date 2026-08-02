@@ -98,7 +98,11 @@ export const buildBattle = (heroes: any, gear: any, order: string[], ordersCompl
   return { battle, nextId: id };
 };
 
-export const initState = (now: number, saved: any = null): S => {
+// `seed` is the run's PRNG seed, injected at the composition boundary (GameContext) — never derived
+// inside the sim (keeps the reducer wall-clock/entropy free). It is stored on state so it persists, and
+// a load path passes the saved seed back (see persistence.ts). Fresh runs get a boundary-generated seed;
+// the seedSim() call that actually seeds the shared rng happens in the controller BEFORE initState draws.
+export const initState = (now: number, saved: any = null, seed = 0): S => {
   let id = 1;
   const heroes: any = {}; const order: string[] = []; let cid = 1;
   for (const hero of C.STARTER_HEROES) { const c = `c${cid++}`; heroes[c] = newCharacter(c, hero, C.HEROES[hero].rarity); order.push(c); }
@@ -144,6 +148,7 @@ export const initState = (now: number, saved: any = null): S => {
   for (const bid of Object.keys(C.BANNERS)) pity[bid] = Gacha.initPity(C.BANNERS[bid]);
 
   const fresh: S = {
+    seed, // run PRNG seed (persisted); the shared rng is seeded from this at boot (see GameContext)
     screen: 'merge', board, energy: Energy.initEnergy(now), now,
     coins: 0, heroXp: 0, gearXp: 0,
     heroes, gear, order, ordersCompleted, orders, battle: built.battle, pity,
@@ -165,6 +170,9 @@ export const initState = (now: number, saved: any = null): S => {
 
   const { lastSeen = now, ...savedRest } = saved;
   const merged = { ...fresh, ...savedRest, now, fx: [], lastPull: null, transition: null };
+  // Keep the run seed: a save that carries one wins; an older seed-less save keeps the boundary-generated
+  // `seed` the controller already seeded the rng with (so state.seed === the seed actually in effect).
+  merged.seed = (saved.seed != null) ? (saved.seed >>> 0) : seed;
   // Non-FTUE (+ legacy) saves keep special orders on from the start; an FTUE save keeps its own
   // specialOrders progress (unlocked later at specialsUnlockAtLevel) so a reload can't re-enable them early.
   merged.flags = (saved.flags && saved.flags.ftueActive) ? { ...(merged.flags || {}) } : { ...(merged.flags || {}), specialOrders: true };

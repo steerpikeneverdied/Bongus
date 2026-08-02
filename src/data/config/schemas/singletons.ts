@@ -66,7 +66,7 @@ export const zEnergyConfig = z.object({
 
 // battle — the combat loop + cadence + reward knobs.
 export const zBattleConfig = z.object({
-  tickMs: num.describe('Combat tick = real interval AND simulated dt (no time-stretch/rate mul).'),
+  tickMs: num.describe('Fixed simulated dt per battle step (ms). The RAF accumulator advances the sim in whole tickMs steps; kept == the former tick interval so the seeded rng draw sequence is unchanged.'),
   attackMsByWeapon: configRecord('chains', 'key', num).describe('Per-weapon basic-attack cadence (ms), keyed by chain/weapon.'),
   enemyAttackMs: num,
   defaultAttackMs: num.describe('Fallback basic-attack cadence (ms) when a weapon has no attackMsByWeapon entry.'),
@@ -82,6 +82,7 @@ export const zBattleConfig = z.object({
   attackJitterSteps: int, attackJitterMs: num,
   critChance: num, critMult: num, comboMin: int,
   startLevel: int, orderPowerBonus: num.describe('+fraction to all heroes per completed order.'),
+  maxCatchupMs: num.describe('RAF accumulator clamp (ms): the most sim-time a single frame may advance, so a stall/jank never triggers a spiral of catch-up battle steps.'),
   clearPauseMs: num, loseBannerMs: num, completeBannerMs: num, chestFallbackMs: num, introFallbackMs: num,
   reward: z.object({
     heroXpBase: num, heroXpPerLevel: num, gearXpBase: num, gearXpPerLevel: num, coinsBase: num, coinsPerLevel: num,

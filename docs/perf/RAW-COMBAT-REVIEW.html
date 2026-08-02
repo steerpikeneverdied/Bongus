@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RAW COMBAT REVIEW — what's cooking the phone</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #0b0f1e; color: #dfe7fb; font: 15px/1.55 -apple-system, system-ui, sans-serif; }
+  .wrap { max-width: 1000px; margin: 0 auto; padding: 28px 20px 80px; }
+  h1 { font-size: 26px; margin: 0 0 4px; letter-spacing: .5px; }
+  h2 { font-size: 19px; margin: 34px 0 10px; padding-top: 14px; border-top: 1px solid #26304f; }
+  h3 { font-size: 15px; margin: 18px 0 6px; color: #ffd45e; }
+  .sub { color: #8fa3c8; margin: 0 0 18px; }
+  code { background: #141a30; color: #a9d5ff; padding: 1px 5px; border-radius: 5px; font-size: 12.5px; }
+  .thesis { background: linear-gradient(180deg,#2a1622,#1a1020); border: 1px solid #6b2f3f; border-radius: 12px; padding: 14px 16px; margin: 16px 0; }
+  .thesis b { color: #ff9db0; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0 6px; font-size: 13px; }
+  th, td { text-align: left; padding: 7px 9px; border-bottom: 1px solid #232d49; vertical-align: top; }
+  th { color: #8fa3c8; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: .5px; }
+  tr:hover td { background: #10152a; }
+  .sev { font-weight: 800; border-radius: 5px; padding: 1px 7px; font-size: 11px; white-space: nowrap; }
+  .crit { background: #4a1420; color: #ff9db0; }
+  .high { background: #4a2f14; color: #ffcf8a; }
+  .med  { background: #143a4a; color: #8fe3ff; }
+  .low  { background: #1c3a24; color: #9befbd; }
+  .flag { color: #ff8fa3; font-weight: 700; }
+  .fix { color: #9bffcf; }
+  .cost { color: #ffb38f; }
+  .rank { display:inline-block; width: 26px; height: 26px; line-height: 26px; text-align:center; background:#26304f; border-radius:50%; font-weight:800; margin-right:8px; }
+  .note { color: #7f8fb0; font-size: 12.5px; }
+  .kpi { display: grid; grid-template-columns: repeat(auto-fit,minmax(150px,1fr)); gap: 10px; margin: 14px 0; }
+  .kpi div { background: #10152a; border: 1px solid #232d49; border-radius: 10px; padding: 10px 12px; }
+  .kpi b { display:block; font-size: 22px; color: #eaf0ff; }
+  .kpi span { color:#8fa3c8; font-size: 12px; }
+  ul { margin: 6px 0 6px 2px; padding-left: 18px; }
+  li { margin: 3px 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>RAW COMBAT REVIEW</h1>
+<p class="sub">Why the phone runs hot <b>even with Particles + Shadows/Blur OFF</b> — from two on-device logs (iPhone, iOS 18.7, WKWebView, DPR 3, 4 cores, rAF capped at 60&nbsp;fps).</p>
+
+<div class="thesis">
+<b>Heat ≠ FPS.</b> With particles and shadows off, the game holds the 60&nbsp;fps cap (frame time <code>median 17ms</code>) — but the phone still cooks. That's because <b>heat is sustained work that never lets the SoC idle</b>, not dropped frames. The proof is in the logs: <code>particles 0 · impacts 0 · trails 0</code>, yet <b><code>anim</code> (running CSS animations + WAAPI) never falls below ~40–60 and spikes to ~150</b> for the whole session. Every one of those is the GPU compositor doing work on every display refresh, forever. Turning off particles/shadows cut GPU <em>fill</em> (which helped frame-time) but did nothing to this animation/CPU floor — which is exactly why <b>FPS got better and heat did not.</b>
+</div>
+
+<div class="kpi">
+  <div><b>17ms</b><span>median frame — pinned at the 60fps WebView cap</span></div>
+  <div><b>0</b><span>particles / impacts / trails (toggles work)</span></div>
+  <div><b>~40–152</b><span><code>anim</code> running the whole fight (never idles)</span></div>
+  <div><b>~50</b><span><code>anim</code> FLOOR even as combat winds down</span></div>
+  <div><b>450–640</b><span>DOM nodes, churning (damage #s, tags)</span></div>
+  <div><b>21</b><span>peak <code>will-change</code> compositor layers</span></div>
+</div>
+
+<h2>The heat sources, ranked</h2>
+
+<h3><span class="rank">1</span>Always-on <code>animation: … infinite</code> — the idle heat floor <span class="sev crit">CRITICAL</span></h3>
+<p>Dozens of CSS keyframe animations run <b>continuously</b> on the combat + merge screens. They are NOT tied to combat events — they loop forever at the display refresh, so the compositor + main thread <b>never idle</b>, on every screen, whether or not anything is happening. This is the single biggest thermal driver and it's completely independent of the particle/shadow toggles. It matches the ~40–60 <code>anim</code> floor the logs show even when combat quietens.</p>
+<table>
+  <tr><th>Animation</th><th>On (count in a fight)</th><th>file:line</th><th>Runs</th></tr>
+  <tr><td>Hero idle bob (<code>heroBob</code>)</td><td>every hero avatar (~5)</td><td>index.css:1232</td><td>forever</td></tr>
+  <tr><td>Enemy idle sway (<code>enemySway</code>)</td><td>every enemy (~3–5)</td><td>index.css:1233</td><td>forever</td></tr>
+  <tr><td>Ambient embers (<code>emberRise</code>)</td><td>~6–12 ember nodes</td><td>index.css:1187</td><td>forever</td></tr>
+  <tr><td>Limit bar sweep + breathe + pop (<code>limitSweep</code>/<code>limitBreathe</code>/<code>lbPop</code>)</td><td>3 anims × each charged hero</td><td>index.css:230,232,244</td><td>while charged</td></tr>
+  <tr><td>Charge pips (<code>chargeRise</code>)</td><td>7 pips × each limit-ready hero</td><td>index.css:1393</td><td>while ready</td></tr>
+  <tr><td>Focus pulse + reticle bob (<code>focusPulse</code>/<code>reticleBob</code>)</td><td>focused enemy</td><td>index.css:1665,1667</td><td>while focused</td></tr>
+  <tr><td>Low-HP flash (<code>hpFlash</code>)</td><td>every low-HP bar</td><td>index.css:1657</td><td>while low</td></tr>
+  <tr><td>Boss shiver / danger pulse (<code>bossShiver</code> .1s / <code>dangerPulse</code>)</td><td>boss</td><td>index.css:1256,1276</td><td>boss fights</td></tr>
+  <tr><td>Generator cog spin (<code>mbCogSpin</code>) + merge hints (<code>mbCanmerge</code>/<code>mbBestRing</code>/<code>mbConnFlow</code>)</td><td>merge board (2–3 gens + hints)</td><td>index.css:1561,1590,1613,1619</td><td>forever (merge screen)</td></tr>
+</table>
+<p class="fix"><b>Fix:</b> this is ~30–60 permanent compositor animations. Biggest thermal win in the whole game: (a) drop the constant <b>hero bob / enemy sway</b> (the two highest-count, always-on ones) or run them far slower / pause them when not the active screen; (b) pause ambient loops (embers, generator cogs, merge hints) via <code>animation-play-state: paused</code> when idle or off-screen; (c) only animate limit sweep/pips on the hero(es) that actually changed. <span class="cost">Feel cost: less "alive" idle motion — but this is the lever that most reduces steady-state heat/battery.</span></p>
+
+<h3><span class="rank">2</span>WAAPI per-hit combat animations <span class="sev high">HIGH</span></h3>
+<p>On top of the ambient floor, active fighting adds <code>element.animate()</code> calls that push <code>anim</code> to 100–150: the per-hit chip flash (2 animations/hit), attacker telegraphs, and the floating damage numbers (a fresh <code>&lt;div&gt;</code> + <code>.animate()</code> each, then removed). These scale with hit rate and drive both the compositor and DOM churn (nodes climb 450→640).</p>
+<table>
+  <tr><th>Effect</th><th>Trigger</th><th>file:line</th></tr>
+  <tr><td>Chip flash (brightness) + shake — 2 anims</td><td>every landed hit</td><td>FxLayer.jsx (flashChip)</td></tr>
+  <tr><td>Attacker telegraph lunge</td><td>per attacker per tick</td><td>FxLayer.jsx (telegraphChip)</td></tr>
+  <tr><td>Floating damage numbers (div + animate + remove)</td><td>per damage instance</td><td>FxLayer.jsx (spawnNumber)</td></tr>
+  <tr><td>Combo tags / centre popper</td><td>per combo / crit</td><td>FxLayer.jsx (handleCombo/combo)</td></tr>
+</table>
+<p class="fix"><b>Fix:</b> cap concurrent damage numbers (e.g. ≤10, drop the rest), collapse the 2-animation chip flash to 1, throttle telegraphs. <span class="cost">Feel cost: fewer floating numbers / flashes at high hit density.</span></p>
+
+<h3><span class="rank">3</span>Several always-on <code>requestAnimationFrame</code> loops <span class="sev high">HIGH</span></h3>
+<p>Multiple rAF loops each wake the CPU <b>every frame (60×/s)</b> whether or not there's visible change: the sim <code>game-loop.ts</code>, the shared <code>bar-ticker</code> (HP/limit bar easing — active the whole fight), and the <code>fx-engine</code> loop, plus per-screen loops in <code>Board</code>/<code>Orders</code>/<code>Autobattler</code>. Even the sim loop fires 60×/s to advance a <b>5&nbsp;Hz</b> simulation. Constant rAF wakeups = the CPU never sleeps = heat.</p>
+<p class="fix"><b>Fix:</b> ensure every loop <b>parks</b> when there's nothing to animate (the fx-engine already does; verify <code>bar-ticker</code> stops when all bars are settled). Bigger lever below (#4). <span class="cost">Feel cost: none if parking is correct.</span></p>
+
+<h3><span class="rank">4</span>Rendering a 5&nbsp;Hz sim at 60&nbsp;fps <span class="sev med">MED — biggest single knob</span></h3>
+<p>The battle simulation steps at <code>tickMs = 200</code> (5&nbsp;Hz), but the whole view + canvas + animations render at the 60&nbsp;fps cap — <b>~12× more often than the sim changes.</b> On a 4-core phone that's a lot of redundant compositor/CPU work per second purely for smoothness.</p>
+<p class="fix"><b>Fix:</b> cap combat rendering to ~30&nbsp;fps (throttle the rAF-driven visuals / bar-ticker to every other frame). Roughly halves steady-state per-frame work → a large, broad heat reduction. <span class="cost">Feel cost: bars/idle motion at 30fps instead of 60 — usually imperceptible for an idle auto-battler.</span></p>
+
+<h3><span class="rank">5</span><code>will-change</code> layers + DOM churn <span class="sev med">MED</span></h3>
+<p>Up to <b>21</b> <code>will-change</code> nodes = 21 promoted GPU compositor layers held in memory; plus persistent <code>will-change: transform</code> on <code>.mb-tile</code> / <code>.mb-shaker</code> / chip arts. Combined with the damage-number create→animate→remove churn (DOM 450→640), this is steady GPU-layer management + style recalc + GC.</p>
+<p class="fix"><b>Fix:</b> drop <code>will-change</code> from elements that aren't mid-transition (set it only during an animation, clear after); pool damage-number nodes instead of create/remove. <span class="cost">Feel cost: none.</span></p>
+
+<h2>Why the Particles / Shadows toggles didn't cool it</h2>
+<p>Those toggles removed <b>GPU fill + compositing cost</b> (canvas particles, drop-shadow/blur passes) — which is a <em>frame-time</em> cost, so FPS improved and the worst hitches shrank. But heat is dominated by <b>work that happens every frame regardless of fill</b>: the ~40–60 always-on animations (#1), the rAF wakeups (#3), the 60fps-over-5Hz render (#4), and React reconciling the combat surface each tick. None of those are touched by the particle/shadow flags — so the SoC stays pinned and the phone stays hot.</p>
+
+<h2>Top heat cuts by ROI</h2>
+<table>
+  <tr><th>#</th><th>Cut</th><th>Thermal win</th><th>Feel cost</th></tr>
+  <tr><td>1</td><td>Kill/slow the always-on <b>hero bob + enemy sway</b> + pause ambient loops (embers, gen cogs, merge hints) when idle/off-screen</td><td>Largest — removes the steady-state animation floor</td><td>Less idle motion</td></tr>
+  <tr><td>2</td><td><b>Cap combat render to 30fps</b> (throttle the rAF visuals)</td><td>Large + broad — ~halves per-frame work</td><td>30fps bars/motion</td></tr>
+  <tr><td>3</td><td>Cap/pool <b>damage numbers</b> + collapse chip flash to 1 animation</td><td>Medium — cuts the WAAPI/​DOM spikes during fights</td><td>Fewer floating #s</td></tr>
+  <tr><td>4</td><td>Verify all rAF loops <b>park</b> when idle; trim <code>will-change</code></td><td>Medium — lets the CPU/GPU actually sleep between events</td><td>None</td></tr>
+</table>
+
+<p class="note" style="margin-top:24px">Method: two on-device profiling logs (Particles + Shadows OFF) cross-referenced with the source. The <code>anim</code> figure is <code>document.getAnimations().length</code> (running CSS animations + WAAPI). Percentages/ms are analysis estimates weighted to the on-device correlation, not per-effect measurements — treat them as a priority order. The <code>1184ms</code> / <code>267ms</code> outliers in the logs are a background/resume artifact, not gameplay.</p>
+
+</div>
+</body>
+</html>

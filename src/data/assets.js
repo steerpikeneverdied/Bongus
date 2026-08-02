@@ -89,22 +89,22 @@ export const ASSETS = {
   'status.regen': { emoji: '➕', label: 'Regen', art: 'status/regen' },
   'status.stealth': { emoji: '🌫️', label: 'Stealth', art: 'status/stealth' },
   // ── UI / currencies / rewards (art/ui/<name>.png) ──────────────────────────
-  'ui.energy': { emoji: '⚡', label: 'Energy', art: 'ui/energy' },
-  'ui.coin': { emoji: '🪙', label: 'Coins', art: 'ui/coin' },
-  'ui.gem': { emoji: '💎', label: 'Gems', art: 'ui/gem' },
-  'ui.heroXp': { emoji: '📘', label: 'Hero XP', art: 'ui/heroXp' },
-  'ui.gearXp': { emoji: '🔧', label: 'Gear XP', art: 'ui/gearXp' },
+  'ui.energy': { emoji: '⚡', label: 'Energy', art: 'icons/energy' },
+  'ui.coin': { emoji: '🪙', label: 'Coins', art: 'icons/coins' },
+  'ui.gem': { emoji: '💎', label: 'Gems', art: 'icons/gems' },
+  'ui.heroXp': { emoji: '📘', label: 'Hero XP', art: 'icons/hero-xp' },
+  'ui.gearXp': { emoji: '🔧', label: 'Gear XP', art: 'icons/gear-xp' },
   'ui.order': { emoji: '📜', label: 'Order', art: 'ui/order' },
   'ui.reroll': { emoji: '🎲', label: 'Reroll' }, // emoji-only until a die icon ships (add art: 'ui/reroll')
   'ui.reward': { emoji: '🎁', label: 'Reward', art: 'ui/reward' },
-  'ui.chest': { emoji: '🧰', label: 'Chest', art: 'ui/chest' },
+  'ui.chest': { emoji: '🧰', label: 'Chest', art: 'icons/chest-common' },
   // Per-rarity chests (common reuses the shipped PNG; higher tiers are emoji
   // placeholders — swap to real art via this registry with no code change).
-  'ui.chest.common': { emoji: '📦', label: 'Common Chest', art: 'ui/chest' },
-  'ui.chest.uncommon': { emoji: '🧰', label: 'Uncommon Chest', art: 'ui/chest-uncommon' },
-  'ui.chest.rare': { emoji: '🎁', label: 'Rare Chest', art: 'ui/chest-rare' },
-  'ui.chest.epic': { emoji: '💰', label: 'Epic Chest', art: 'ui/chest-epic' },
-  'ui.chest.legendary': { emoji: '💎', label: 'Legendary Chest', art: 'ui/chest-legendary' },
+  'ui.chest.common': { emoji: '📦', label: 'Common Chest', art: 'icons/chest-common' },
+  'ui.chest.uncommon': { emoji: '🧰', label: 'Uncommon Chest', art: 'icons/chest-uncommon' },
+  'ui.chest.rare': { emoji: '🎁', label: 'Rare Chest', art: 'icons/chest-rare' },
+  'ui.chest.epic': { emoji: '💰', label: 'Epic Chest', art: 'icons/chest-epic' },
+  'ui.chest.legendary': { emoji: '💎', label: 'Legendary Chest', art: 'icons/chest-legendary' },
   'ui.star': { emoji: '⭐', label: 'Star', art: 'ui/star' },
   'ui.power': { emoji: '💪', label: 'Power', art: 'ui/power' },
   // UI glyphs (emoji-only) — referenced by key so components never inline an emoji.
@@ -130,7 +130,7 @@ export const ASSETS = {
   'fx.magic': { emoji: '🔮', label: 'Bolt' },
 
   // ── Ascension crystal + territory UNIQUE items (art/standalone/<name>.png) ────
-  'ui.crystal': { emoji: '💎', label: 'Ascension Crystal', art: 'standalone/gem-ruby' },
+  'ui.crystal': { emoji: '💎', label: 'Ascension Crystal', art: 'icons/ascension-crystal' },
   'piece.u-lilypad-aegis': { emoji: '🛡️', label: 'Lilypad Aegis', art: 'standalone/shield' },
   'piece.u-mireblade': { emoji: '🗡️', label: 'Mireblade', art: 'standalone/sword-falchion' },
   'piece.u-bog-charm': { emoji: '🔮', label: 'Bog Charm', art: 'standalone/orb-arcane' },

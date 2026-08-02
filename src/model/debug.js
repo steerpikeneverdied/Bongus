@@ -15,3 +15,7 @@ export const debugFeatureOn = (key) => {
   const f = (C.DEBUG.features || []).find((x) => x.key === key);
   return !!(f && f.defaultOn);
 };
+
+// The debug-feature registry, for the Settings ▸ Debug grid to render (toggles/buttons). Read-model access
+// so the view never imports game/content directly.
+export const debugFeatures = () => ((C.DEBUG && C.DEBUG.features) || []).filter((f) => f.defaultOn);

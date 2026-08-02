@@ -175,7 +175,7 @@
 		},
 		"ui.energy": {
 			"type": "image",
-			"file": "ui/energy.png"
+			"file": "icons/energy.png"
 		},
 		"status.atkUp": {
 			"type": "image",
@@ -215,19 +215,19 @@
 		},
 		"ui.coin": {
 			"type": "image",
-			"file": "ui/coin.png"
+			"file": "icons/coins.png"
 		},
 		"ui.gem": {
 			"type": "image",
-			"file": "ui/gem.png"
+			"file": "icons/gems.png"
 		},
 		"ui.heroXp": {
 			"type": "image",
-			"file": "ui/heroXp.png"
+			"file": "icons/hero-xp.png"
 		},
 		"ui.gearXp": {
 			"type": "image",
-			"file": "ui/gearXp.png"
+			"file": "icons/gear-xp.png"
 		},
 		"ui.order": {
 			"type": "image",
@@ -239,27 +239,27 @@
 		},
 		"ui.chest": {
 			"type": "image",
-			"file": "ui/chest.png"
+			"file": "icons/chest-common.png"
 		},
 		"ui.chest.common": {
 			"type": "image",
-			"file": "ui/chest.png"
+			"file": "icons/chest-common.png"
 		},
 		"ui.chest.uncommon": {
 			"type": "image",
-			"file": "ui/chest-uncommon.png"
+			"file": "icons/chest-uncommon.png"
 		},
 		"ui.chest.rare": {
 			"type": "image",
-			"file": "ui/chest-rare.png"
+			"file": "icons/chest-rare.png"
 		},
 		"ui.chest.epic": {
 			"type": "image",
-			"file": "ui/chest-epic.png"
+			"file": "icons/chest-epic.png"
 		},
 		"ui.chest.legendary": {
 			"type": "image",
-			"file": "ui/chest-legendary.png"
+			"file": "icons/chest-legendary.png"
 		},
 		"ui.star": {
 			"type": "image",
@@ -271,7 +271,7 @@
 		},
 		"ui.crystal": {
 			"type": "image",
-			"file": "standalone/gem-ruby.png"
+			"file": "icons/ascension-crystal.png"
 		},
 		"piece.u-lilypad-aegis": {
 			"type": "image",
@@ -605,8 +605,8 @@
 			"type": "image",
 			"file": "enemies/tomb-guard.png",
 			"anchor": {
-				"x": 0.5344,
-				"y": 0.8746
+				"x": 0.5373,
+				"y": 0.8966
 			}
 		},
 		"enemy.ash-wraith": {
@@ -621,23 +621,23 @@
 			"type": "image",
 			"file": "enemies/coal-brute.png",
 			"anchor": {
-				"x": 0.4827,
-				"y": 0.8114
+				"x": 0.5157,
+				"y": 0.8486
 			}
 		},
 		"enemy.ember-bat": {
 			"type": "image",
 			"file": "enemies/ember-bat.png",
 			"anchor": {
-				"x": 0.5019,
-				"y": 0.9599
+				"x": 0.5313,
+				"y": 1
 			}
 		},
 		"enemy.flame-skull": {
 			"type": "image",
 			"file": "enemies/flame-skull.png",
 			"anchor": {
-				"x": 0.516,
+				"x": 0.5517,
 				"y": 1
 			}
 		},
@@ -645,16 +645,16 @@
 			"type": "image",
 			"file": "enemies/hellhound.png",
 			"anchor": {
-				"x": 0.6101,
-				"y": 0.8944
+				"x": 0.5903,
+				"y": 0.7856
 			}
 		},
 		"enemy.infernal-tyrant": {
 			"type": "image",
 			"file": "enemies/infernal-tyrant.png",
 			"anchor": {
-				"x": 0.4507,
-				"y": 0.9118
+				"x": 0.5006,
+				"y": 0.8894
 			}
 		},
 		"enemy.lava-slug": {
@@ -669,16 +669,16 @@
 			"type": "image",
 			"file": "enemies/magma-golem.png",
 			"anchor": {
-				"x": 0.5397,
-				"y": 0.774
+				"x": 0.5228,
+				"y": 0.8196
 			}
 		},
 		"enemy.molten-knight": {
 			"type": "image",
 			"file": "enemies/molten-knight.png",
 			"anchor": {
-				"x": 0.578,
-				"y": 0.8271
+				"x": 0.5152,
+				"y": 0.8626
 			}
 		},
 		"enemy.salamander": {
@@ -717,8 +717,8 @@
 			"type": "image",
 			"file": "enemies/elder-treant.png",
 			"anchor": {
-				"x": 0.5389,
-				"y": 0.8989
+				"x": 0.527,
+				"y": 0.9017
 			}
 		},
 		"enemy.goblin-archer": {
@@ -829,8 +829,8 @@
 			"type": "image",
 			"file": "enemies/marsh-behemoth.png",
 			"anchor": {
-				"x": 0.5113,
-				"y": 0.88
+				"x": 0.5527,
+				"y": 0.8784
 			}
 		},
 		"enemy.mud-golem": {
@@ -893,8 +893,8 @@
 			"type": "image",
 			"file": "enemies/elder-wyrm.png",
 			"anchor": {
-				"x": 0.4591,
-				"y": 0.9102
+				"x": 0.491,
+				"y": 0.8709
 			}
 		},
 		"enemy.harpy": {
@@ -973,8 +973,8 @@
 			"type": "image",
 			"file": "enemies/glacial-warden.png",
 			"anchor": {
-				"x": 0.5953,
-				"y": 0.8329
+				"x": 0.551,
+				"y": 0.8769
 			}
 		},
 		"enemy.ice-golem": {
@@ -1041,8 +1041,8 @@
 			"type": "image",
 			"file": "enemies/bone-colossus.png",
 			"anchor": {
-				"x": 0.5006,
-				"y": 0.9124
+				"x": 0.5401,
+				"y": 0.8839
 			}
 		},
 		"enemy.dragon-whelp": {
@@ -1073,8 +1073,8 @@
 			"type": "image",
 			"file": "enemies/cinder-imp.png",
 			"anchor": {
-				"x": 0.5013,
-				"y": 0.8479
+				"x": 0.5188,
+				"y": 0.8619
 			}
 		},
 		"enemy.cave-bat": {

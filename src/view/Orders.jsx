@@ -9,7 +9,7 @@
 // order-chest VFX target the exact card. The section height is LOCKED to the game's
 // orders-bar height in index.css.
 import { useLayoutEffect, useEffect, useRef } from 'react';
-import { useGame } from '../controller/GameContext';
+import { useMetaGame } from '../controller/GameContext';
 import { itemAsset, resolve, mergeStylePx } from './assets.js';
 import Art, { Icon } from './Art.jsx';
 import { canFulfill, displayOrders, orderReward } from '../model/orders.js';
@@ -21,7 +21,9 @@ const OR = ANIM.orders;
 const REQ_ICON_PX = 40; // req-icon base height (px) in the fixed order slot — locked render size, like COMBAT_BASE_H
 
 export default function Orders() {
-  const { state, actions } = useGame();
+  // META view: Orders reads only state.orders + state.board (no battle/fx/energy/now) → spared the 5Hz
+  // battle re-render; re-renders only when orders/board change.
+  const { state, actions } = useMetaGame();
   const railRef = useRef(null);
   const cardRefs = useRef({});
   const prevRects = useRef({});

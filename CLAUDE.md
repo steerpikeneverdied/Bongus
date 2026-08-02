@@ -175,9 +175,10 @@ CLI, and the edit hook all read.
 | Scaffold CLI | `config/` | `scaffold.mjs` + per-registry authoring + the blocking edit hook. |
 | Game contracts | `src/game` | `types.ts` (World/System/Brain/etc.), `signals.ts` (signal hub), `content.ts` (read-model over `virtual:game-config`), `rng.ts`/`sim-random.ts` (seeded PRNG), `boot-content.ts`. |
 | Game systems | `src/game/<system>` | The 12 ported pure sim modules: board, merge, generator, energy, orders, heroes, gear, gacha, rarities, progression, map, combat. Read config via `content.ts`; take an injected `rng`. |
-| Store | `src/game/store` | `actions.ts` (action map); `reducer.ts` = thin combinator over per-domain handler-map slices (`reducer-shell/board/orders/combat/gacha/heroes/gear.ts`) + shared `reducer-helpers.ts` (orchestration primitives + `initState`/`buildBattle`); `persistence.ts` (runtime slice ↔ six-section account blob). |
+| Store | `src/game/store` | `game-store.ts` = the live, subscribable world store (`createGameStore` → `getState`/`dispatch`/`subscribe` + a post-commit fx buffer `subscribeFx`/`getFxEpoch`/`takePendingFx` + `bus`) that runs the reducer OUTSIDE React; `actions.ts` (action map); `reducer.ts` = thin combinator over per-domain handler-map slices (`reducer-shell/board/orders/combat/gacha/heroes/gear.ts`) + shared `reducer-helpers.ts` (orchestration primitives + `initState`/`buildBattle`); `persistence.ts` (runtime slice ↔ six-section account blob; persists the run `seed`). |
+| Game loop | `src/controller/game-loop.ts` | The single fixed-step accumulator on `requestAnimationFrame` (the sim's ONLY clock): advances regen + the battle tick (fixed `dt = C.BATTLE.tickMs`, clamp `maxCatchupMs`) + the 5 status resolvers, dispatching through the store. Replaces the former `setInterval`/`setTimeout` sim timers. |
 | Minigame | `src/game/minigame` + `src/view/minigame` | Modular minigame harness. `game/minigame/meta.ts` = the server-authoritative reward endpoint (`submitMinigame`, simulated in-process, swappable for `@fortis/bishop-meta-client`). `view/minigame/registry.js` maps id→component; each minigame implements `{ input, onComplete(result) }`. Result → server → reward popup (grant on claim). |
-| Controller | `src/controller` | React `GameProvider` (`GameContext.tsx`) — reducer + owned timers (REGEN 1s / BATTLE `tickMs`) + status resolvers + throttled persistence + AFK + the actions map. The seam the view reads via `useGame`/`useActions`. |
+| Controller | `src/controller` | React `GameProvider` (`GameContext.tsx`) — creates the live store, mounts the fixed-step rAF loop (`game-loop.ts`), seeds the PRNG from the persisted run seed, owns throttled persistence + AFK. Exposes the seam the view reads: `useGame` (full) / `useMetaGame` (no battle/fx/energy/now) / `useHudGame` (no battle/fx, keeps energy/now) / `useActions` / `useGameStore`. |
 | Model (view barrels) | `src/model` | Thin re-export barrels of `src/game` selectors for the view — single source is `src/game` (no logic). |
 | View | `src/view` | The ported MergeCombat React + Canvas-FX view (read-only). Reads content/presentation via `src/data/*` barrels + the `assets.js` resolver (art from `virtual:asset-registry`); state/actions via the controller. |
 | Platform | `src/platform` | Host abstraction (browser / Capacitor): `haptics.ts` (browser Vibration now; Capacitor on device), audio, device tier. |
@@ -189,10 +190,13 @@ CLI, and the edit hook all read.
 | _<your module>_ | `src/game/<module>` | _<purpose>_ |
 
 **Skeleton modules this port does NOT use** (present in the framework skeleton; restore if you add
-them): `src/core/math`, `src/core/bootstrap` (composition root), `src/app` (DI tokens / run loop /
-`GameApp` facade), `src/input`, `src/preferences`, `src/testing`. This port wires through the **React
-controller** (`src/controller/GameContext.tsx`) as its composition seam and takes input via React
-events — so the DI/composition-root/app-facade/run-loop scaffolding is absent by design.
+them): `src/core/math`, `src/core/bootstrap` (composition root), `src/app` (DI tokens / `GameApp`
+facade), `src/input`, `src/preferences`, `src/testing`. This port wires through the **React controller**
+(`src/controller/GameContext.tsx`) as its composition seam and takes input via React events — so the
+DI/composition-root/app-facade scaffolding is absent by design. It DOES implement the framework's
+**fixed-step run loop** (ARCHITECTURE.md "The run loop"), but as a controller-mounted module
+(`src/controller/game-loop.ts`) driving the live `src/game/store/game-store.ts`, rather than the skeleton's
+`src/app` run loop.
 
 **Governance:** `.claude/` holds the advisory `arch-*` architecture-enforcement agents + the
 `arch-review` / `arch-fix` orchestrator workflows (see `.claude/README.md`). Run them on feature
@@ -206,9 +210,11 @@ changeset runner (the `run-changeset.mjs` workflow): it fans out one worktree ag
 consolidated **`qa`** pass (`tsc`/build/`src/testing` harness — functional), and a completeness check
 before the human-confirmed `main` ff-merge. There is no team mode / cross-worktree ordering.
 
-**System execution order** — this port has no composition-root tick list. The sim advances through
-`src/game/store/reducer.ts` (action-driven) plus the controller's owned timers
-(`src/controller/GameContext.tsx`: REGEN 1s / BATTLE `tickMs`).
+**System execution order** — the sim advances through `src/game/store/reducer.ts` (action-driven, run by
+the live `game-store.ts`) driven by ONE clock: the fixed-step accumulator on `requestAnimationFrame`
+(`src/controller/game-loop.ts`, mounted by `GameContext.tsx`). Each frame it advances the sim in whole
+`dt = C.BATTLE.tickMs` steps (regen + battle tick) and ticks the five battle-status resolver deadlines —
+replacing the former `setInterval`/`setTimeout` timers. Player actions dispatch into the same store.
 
 ## Core mechanic (the core game rule)
 

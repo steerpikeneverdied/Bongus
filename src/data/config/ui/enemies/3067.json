@@ -3,6 +3,6 @@
 	"name": "Flame Skull",
 	"iconAssetId": "enemy.flame-skull",
 	"combat": {
-		"scale": 0.85
+		"scale": 0.95
 	}
 }

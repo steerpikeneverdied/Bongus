@@ -67,7 +67,8 @@ ok(typeof cfg.SELECTED_SLOTS === 'number', `SELECTED_SLOTS = ${cfg.SELECTED_SLOT
 // ── sim intact (reducer init + a few ticks) ──
 const { reducer, initState } = await import('../src/game/store/reducer.ts');
 const { A } = await import('../src/game/store/actions.ts');
-const { seedSim } = await import('../src/game/sim-random.ts');
+const simRandom = await import('../src/game/sim-random.ts');
+const { seedSim } = simRandom; // namespace import too, so we can probe the live rng (a live binding) after seeding
 seedSim(12345);
 let s = initState(0, null);
 ok(s && s.board && Object.keys(s.heroes).length >= 1, 'initState: board + starter hero');
@@ -92,11 +93,44 @@ const runSeq = (seed) => {
   st = reducer(st, { type: A.START_COMBAT });
   let t = 0;
   while (st.battle.status === 'fighting' && t < 600) { st = reducer(st, { type: A.BATTLE_TICK, dt: cfg.BATTLE?.tickMs ?? 200 }); t++; }
-  return sig(st);
+  // Signature captures the full rng-sensitive trajectory, not just a coarse end-state (which collides
+  // across seeds on a short deterministic fight): ticks-to-resolve (crit variance changes TTK), the
+  // surviving-hero HP sum, and a probe of the live stream position (distinct seeds → distinct streams).
+  const hp = (st.battle.heroes || []).reduce((a, h) => a + (h.hp || 0), 0);
+  const probe = Array.from({ length: 6 }, () => simRandom.rng()).join(',');
+  return `${sig(st)}|t=${t}|hp=${hp}|p=${probe}`;
 };
 const a = runSeq(999), b = runSeq(999), c = runSeq(1000);
 ok(a === b, `determinism: same seed → same run (${a === b})`);
 ok(a !== c, 'different seed → different run (PRNG actually varies)');
+
+// ── store fx buffer: DROP while no FxLayer subscriber (guards the unbounded-buffer/burst regression);
+//    BUFFER + deliver once a listener (FxLayer) subscribes. ──
+const { createGameStore } = await import('../src/game/store/game-store.ts');
+{
+  seedSim(7);
+  const store = createGameStore(initState(0, null));
+  store.dispatch({ type: A.START_COMBAT }); // intro → fighting
+  store.dispatch({ type: A.BATTLE_TICK, dt: cfg.BATTLE?.tickMs ?? 200 }); // produces fx, but nothing is subscribed
+  ok(store.takePendingFx().length === 0 && store.getFxEpoch() === 0, 'fx DROPPED while no FxLayer subscriber (no unbounded buffer)');
+  const off = store.subscribeFx(() => {});
+  store.dispatch({ type: A.BATTLE_TICK, dt: cfg.BATTLE?.tickMs ?? 200 }); // subscribed → buffered
+  ok(store.getFxEpoch() === 1 && store.takePendingFx().length > 0, 'fx BUFFERED + delivered to a subscribed FxLayer');
+  off();
+}
+
+// ── excludedView: meta/hud identity is STABLE across a battle+nextId-only tick (guards the context-split
+//    regression where a per-tick counter like nextId defeats the split). ──
+const { excludedView, META_EXCLUDE, HUD_EXCLUDE } = await import('../src/controller/excluded-view.ts');
+{
+  const bse = { screen: 'merge', coins: 5, battle: { hp: 1 }, fx: [], energy: 2, now: 10, nextId: 1 };
+  const tk = { ...bse, battle: { hp: 0 }, nextId: 2 }; // a BATTLE_TICK: only battle + nextId change
+  const metaPrev = excludedView(bse, null, META_EXCLUDE);
+  ok(excludedView(tk, metaPrev, META_EXCLUDE) === metaPrev, 'META view ref STABLE across a battle/nextId tick');
+  const hudPrev = excludedView(bse, null, HUD_EXCLUDE);
+  ok(excludedView(tk, hudPrev, HUD_EXCLUDE) === hudPrev, 'HUD view ref STABLE across a battle/nextId tick');
+  ok(excludedView({ ...bse, coins: 9 }, metaPrev, META_EXCLUDE) !== metaPrev, 'META view ref CHANGES when a rendered slice (coins) changes');
+}
 
 console.log(`\n[smoke] ${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

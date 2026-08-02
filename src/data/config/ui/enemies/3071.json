@@ -3,6 +3,6 @@
 	"name": "Molten Knight",
 	"iconAssetId": "enemy.molten-knight",
 	"combat": {
-		"scale": 1.4
+		"scale": 1.25
 	}
 }

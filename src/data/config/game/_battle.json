@@ -23,6 +23,7 @@
 	"comboMin": 2,
 	"startLevel": 1,
 	"orderPowerBonus": 0.05,
+	"maxCatchupMs": 1000,
 	"clearPauseMs": 500,
 	"loseBannerMs": 3500,
 	"completeBannerMs": 1500,

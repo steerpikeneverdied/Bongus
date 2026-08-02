@@ -4,7 +4,7 @@
 // attack trails. Boss levels swap to a dramatic red backdrop + a big boss sticker
 // and telegraph/slam VFX (fired via the fx queue in FxLayer). Pure presentation
 // on top of the existing battle simulation + fx pipeline.
-import { useState, useEffect, useLayoutEffect, useRef } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef, memo } from 'react';
 import { useGame } from '../controller/GameContext';
 import { heroAsset, resolve, anchorStyle, generatorAsset } from './assets.js';
 import Art, { Icon } from './Art.jsx';
@@ -59,7 +59,9 @@ const COMBAT_BASE_H_HERO = 75.6; // hero avatars render 1.4× the 54px base
 // always-on animating DOM nodes spread across the width read as ambient life cheaply.
 const EMBERS = AB.embers;
 
-function LevelTrack({ level }) {
+// Memoized: depends only on `level`, so the 15-dot track is rebuilt only when the level changes — not on
+// every combat tick (the parent re-renders each tick).
+const LevelTrack = memo(function LevelTrack({ level }) {
   const N = AB.trackWindow;
   const start = Math.max(1, level - AB.trackPast);
   const dots = [];
@@ -75,12 +77,12 @@ function LevelTrack({ level }) {
       <div className="dots">{dots}</div>
     </div>
   );
-}
+});
 
 // The limit bar fills IN SYNC with the arriving energy mote (limit-fill store), not on the reducer
 // grant — so it fills as the mote lands, then ready-pops when it visually caps. Mirrors HpBar's
 // persistent-rAF read. Tappability stays on the TRUE ready state (canFire); only the fill lags.
-function LimitBar({ h, canFire }) {
+const LimitBar = memo(function LimitBar({ h, canFire }) {
   const ref = useRef(null);
   const trueRef = useRef(0);
   trueRef.current = limitChargeFrac(h);
@@ -126,7 +128,9 @@ function LimitBar({ h, canFire }) {
       </i>
     </button>
   );
-}
+}, (a, b) => a.canFire === b.canFire && a.h.id === b.h.id && limitChargeFrac(a.h) === limitChargeFrac(b.h));
+// Memoized: the parent re-renders each tick, but the limit bar only needs a re-render when its charge
+// fraction or fire-ability changes (its smooth fill runs off the shared bar-ticker rAF, like HpBar).
 
 // Read-only: renders a unit's active statuses as icon badges with a per-second countdown. Pure view —
 // the sim (battle.ts) owns the statuses map + expiry; this just paints h.statuses / e.statuses.

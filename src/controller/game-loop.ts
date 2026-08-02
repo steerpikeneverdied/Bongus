@@ -81,9 +81,14 @@ export function startGameLoop(store: GameStore, deps: LoopDeps): () => void {
     const status = store.getState().battle.status; // re-read: a tick above may have changed it
     const resolver = RESOLVERS[status];
     if (resolver) {
-      if (armedStatus !== status) { armedStatus = status; resolverLeft = resolver.ms(); }
-      resolverLeft -= elapsed;
-      if (resolverLeft <= 0) { armedStatus = null; store.dispatch(resolver.action()); }
+      if (armedStatus !== status) {
+        armedStatus = status; resolverLeft = resolver.ms(); // arm this frame; count down from the NEXT frame
+      } else {
+        // Only advance once armed — so a big clamped `elapsed` on the arming frame (a jank spike ≥ a short
+        // banner like clearPauseMs) can't consume the whole stage at once and skip its beat.
+        resolverLeft -= elapsed;
+        if (resolverLeft <= 0) { armedStatus = null; store.dispatch(resolver.action()); }
+      }
     } else {
       armedStatus = null;
     }

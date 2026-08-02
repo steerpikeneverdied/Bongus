@@ -34,10 +34,12 @@ export default function FtueLayer() {
   const targetSel = shown ? resolveTarget(shown, state) : null;
 
   // Recorder: mark seen any unseen ACTION beat whose completion condition is met (decoupled from show).
+  // Keyed on [state, actions] so it runs on real state changes — not on the spotlight's rect setState
+  // re-renders (which don't change beat-completion), and `active`/`isSeen` both derive from `state`.
   useEffect(() => {
     if (!active) return;
     for (const b of FTUE_BEATS) if (b.done && !isSeen(b.id) && b.done(state)) actions.setFlag('ftueSeen_' + b.id, true);
-  }); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [state, actions]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Pause sync: freeze the sim while a `pause` beat is shown; resume otherwise (self-heals a stale pause).
   useEffect(() => {
@@ -93,7 +95,7 @@ export default function FtueLayer() {
         <div style={{ position: 'absolute', left: hx, top: hy, width: hw, height: hh, borderRadius: 12, border: `2px solid ${accent}`, boxShadow: `0 0 0 2px ${accent}55, 0 0 16px ${accent}aa`, pointerEvents: 'none' }} />
       )}
       {/* CARD: the coachmark copy. Only GOT IT (info beats) captures input. */}
-      <div style={{ ...cardWrap, ...(cardTop ? { top: 20 } : { bottom: 78 }) }}>
+      <div style={{ ...cardWrap, ...(cardTop ? { top: 'calc(20px + var(--safe-top-eff))' } : { bottom: 78 }) }}>
         <div style={{ ...card, borderColor: accent + '88' }}>
           <div style={{ ...tagS, color: gate ? '#e2c8ff' : '#ffe39a', borderColor: accent + '55' }}>
             {info ? 'TUTORIAL' : 'DO THIS'}

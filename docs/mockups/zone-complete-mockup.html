@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ZONE COMPLETE — celebration mockup</title>
+<!--
+  ZONE COMPLETE — celebration popup mockup (iterate here, then port to a <ZoneCompletePopup/>
+  component modelled on src/view/screens/AfkPopup.jsx, exactly like this file's sibling
+  afk-collection-mockup.html was ported).
+
+  DESIGN BASIS
+  • Style base = the LOSE screen (src/view/LoseScreen.jsx) juice vocabulary — banner scaleX-slam,
+    per-letter title slam-in with overshoot, particle emitter, heartbeat + CTA pulse — recoloured
+    from pink/menace (--lose) to GOLD/GREEN celebration.
+  • Coverage model = the AFK reward popup (src/view/screens/AfkPopup.jsx) — inset:0 dim + a big
+    card that sits OVER the header-to-nav span (merge board + orders included), fixing the current
+    bug where .area-complete renders inside the combat panel and clips the info.
+  • ALL existing AREA COMPLETE info is preserved: zone name, coins / hero-xp / gear-xp reward
+    count-ups, generator unlock reveal(s), CONTINUE. Everything else is celebratory juice.
+
+  Real assets referenced by relative path so this looks true-to-game:
+    fonts  ../../src/fonts/Uniform-*.ttf
+    zone   ../../assets/combatclean/zones/zone-mossbog.png
+    icons  ../../assets/combatclean/icons/{coins,hero-xp,gear-xp}.png
+    gen    ../../assets/combatclean/merge/gen-blade.png
+-->
+<style>
+@font-face { font-family:'Uniform Bold';            src:url('../../src/fonts/Uniform-Bold.ttf') format('truetype'); font-display:swap; }
+@font-face { font-family:'Uniform Condensed Bold';   src:url('../../src/fonts/Uniform-Condensed-Bold.ttf') format('truetype'); font-display:swap; }
+@font-face { font-family:'Uniform Condensed Medium'; src:url('../../src/fonts/Uniform-Condensed-Medium.ttf') format('truetype'); font-display:swap; }
+
+:root{
+  --bg:#0e1424; --panel:rgba(255,255,255,.06); --panel-line:rgba(255,255,255,.1);
+  --gold:#ffd45e; --green:#5ad17a; --red:#ff5d6c; --blue:#5a8cff; --purple:#b46bff;
+  --text:#eef2ff;
+}
+*{ box-sizing:border-box; margin:0; padding:0; }
+html,body{ height:100%; }
+body{
+  background:#05070f; color:var(--text);
+  font-family:'Uniform Condensed Medium', system-ui, sans-serif;
+  display:flex; flex-direction:column; align-items:center; gap:14px;
+  padding:22px 12px 40px; min-height:100%;
+}
+
+/* ── iteration control bar (outside the phone) ───────────────────────────── */
+.controls{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; justify-content:center; max-width:460px; }
+.controls .ttl{ width:100%; text-align:center; font-family:'Uniform Bold',sans-serif; letter-spacing:2px; font-size:12px; color:#7f8db0; text-transform:uppercase; margin-bottom:2px; }
+.btn{ font-family:'Uniform Condensed Bold',sans-serif; text-transform:uppercase; letter-spacing:1px; font-size:12px;
+  color:#cfe0ff; background:var(--panel); border:1px solid var(--panel-line); border-radius:9px; padding:8px 14px; cursor:pointer; }
+.btn:hover{ border-color:#3a4a6e; }
+.btn.on{ color:#241a02; background:linear-gradient(180deg,#ffe89a,var(--gold)); border-color:#fff3c8; }
+.btn.play{ color:#241a02; background:linear-gradient(180deg,#ffe89a,var(--gold)); border-color:#fff3c8; }
+
+/* ── phone frame ─────────────────────────────────────────────────────────── */
+.phone{
+  position:relative; width:390px; max-width:96vw; aspect-ratio:390/844;
+  border-radius:34px; overflow:hidden; background:
+    radial-gradient(120% 80% at 50% 0%, #1b2340 0%, var(--bg) 55%, #0a0f1c 100%);
+  box-shadow:0 30px 80px rgba(0,0,0,.6), 0 0 0 8px #12151f, 0 0 0 10px #23283a;
+}
+
+/* ── faux game behind (proves the popup covers the merge/orders area) ──────── */
+.game{ position:absolute; inset:0; display:flex; flex-direction:column; }
+.g-header{ height:52px; flex:0 0 auto; display:flex; align-items:center; gap:8px; padding:8px 12px;
+  background:rgba(0,0,0,.3); border-bottom:1px solid var(--panel-line); }
+.g-stat{ display:flex; align-items:center; gap:5px; font-family:'Uniform Bold',sans-serif; font-size:13px; }
+.g-stat img{ width:18px; height:18px; object-fit:contain; } .g-spacer{ flex:1; }
+.g-combat{ flex:0 0 150px; position:relative; overflow:hidden;
+  background:radial-gradient(120% 80% at 50% 20%,#12192e 0%,#070b15 70%); border-bottom:1px solid var(--panel-line); }
+.g-orders{ height:74px; flex:0 0 auto; display:flex; gap:8px; padding:10px; align-items:center; }
+.g-order{ width:64px; height:100%; border-radius:12px; background:var(--panel); border:1px solid var(--panel-line); }
+.g-board{ flex:1; display:grid; grid-template-columns:repeat(7,1fr); gap:5px; padding:8px; }
+.g-cell{ border-radius:9px; background:rgba(255,255,255,.045); border:1px solid rgba(255,255,255,.06); }
+.g-nav{ height:60px; flex:0 0 auto; display:flex; border-top:1px solid var(--panel-line); background:rgba(0,0,0,.4); }
+.g-nav div{ flex:1; display:grid; place-items:center; font-size:10px; color:#6a7796; font-family:'Uniform Condensed Bold',sans-serif; letter-spacing:1px; text-transform:uppercase; }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   ZONE COMPLETE POPUP
+   ══════════════════════════════════════════════════════════════════════════ */
+.zc{ position:absolute; inset:0; z-index:900; isolation:isolate;
+  font-family:'Uniform Condensed Bold', system-ui, sans-serif; }
+.zc .dim{ position:absolute; inset:0; background:rgba(3,6,14,.72); opacity:0; animation:dimIn .18s ease forwards; }
+@keyframes dimIn{ to{ opacity:1; } }
+
+/* white screen-flash on reveal */
+.zc .flash{ position:absolute; inset:0; z-index:60; background:#fff; opacity:0; pointer-events:none; animation:flash .5s ease-out forwards; }
+@keyframes flash{ 0%{ opacity:.85; } 100%{ opacity:0; } }
+
+/* the big card — covers header-to-nav (the AFK-popup coverage model) */
+.zc .card{ position:absolute; left:10px; right:10px; top:62px; bottom:14px; border-radius:24px; overflow:hidden;
+  background:#0c1220; border:1px solid #33406a; border-top-color:rgba(255,220,140,.35);
+  box-shadow:0 24px 60px rgba(0,0,0,.72), 0 0 0 1px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.06);
+  display:flex; flex-direction:column;
+  transform:translateY(16px) scale(.96); opacity:0; animation:cardIn .34s cubic-bezier(.2,.9,.25,1) .06s forwards; }
+@keyframes cardIn{ to{ transform:none; opacity:1; } }
+
+/* zone key-art backdrop, graded warm + slow ken-burns */
+.zc .bg{ position:absolute; inset:0; z-index:0; background-size:cover; background-position:center 30%;
+  filter:saturate(1.05) brightness(.6); transform:scale(1.12); animation:ken 14s ease-in-out infinite alternate; }
+@keyframes ken{ from{ transform:scale(1.12) translateY(0); } to{ transform:scale(1.2) translateY(-10px); } }
+.zc .bg-grade{ position:absolute; inset:0; z-index:1; background:
+  radial-gradient(120% 70% at 50% 8%, rgba(255,190,80,.28), transparent 55%),
+  linear-gradient(180deg, rgba(8,12,22,.35) 0%, rgba(8,12,22,.72) 46%, #0a1020 88%); }
+
+/* rotating god-rays behind the title */
+.zc .rays{ position:absolute; left:50%; top:78px; width:520px; height:520px; z-index:2; transform:translate(-50%,-50%);
+  background:repeating-conic-gradient(from 0deg at 50% 50%, rgba(255,221,122,.18) 0deg, rgba(255,221,122,.18) 6deg, transparent 6deg, transparent 15deg);
+  pointer-events:none; opacity:0; mask:radial-gradient(circle, #000 0%, #000 34%, transparent 66%);
+  -webkit-mask:radial-gradient(circle, #000 0%, #000 34%, transparent 66%);
+  animation:raysIn .6s ease .12s forwards, raysSpin 26s linear infinite; }
+@keyframes raysIn{ to{ opacity:1; } }
+@keyframes raysSpin{ to{ transform:translate(-50%,-50%) rotate(360deg); } }
+
+/* particle canvas (confetti + rising sparks) */
+.zc canvas.fx{ position:absolute; inset:0; z-index:40; pointer-events:none; }
+
+/* scrollable content column (so it never clips on short screens; no scrollbar) */
+.zc .body{ position:relative; z-index:10; flex:1; min-height:0; display:flex; flex-direction:column;
+  padding:18px 16px 0; overflow:auto; scrollbar-width:none; }
+.zc .body::-webkit-scrollbar{ display:none; }
+
+/* ── title block ─────────────────────────────────────────────────────────── */
+.zc .banner{ position:relative; align-self:center; padding:3px 22px; margin-top:4px;
+  background:linear-gradient(180deg,#5ad17a,#2f9e57); border-radius:6px;
+  box-shadow:0 3px 0 rgba(0,0,0,.35), 0 8px 18px rgba(40,160,90,.35);
+  transform:scaleX(0); transform-origin:center; animation:stripeIn .3s cubic-bezier(.2,.8,.2,1) .1s forwards; }
+@keyframes stripeIn{ 0%{ transform:scaleX(0); } 70%{ transform:scaleX(1.06); } 100%{ transform:scaleX(1); } }
+.zc .banner span{ font-family:'Uniform Condensed Bold',sans-serif; font-size:12px; letter-spacing:3px; text-transform:uppercase;
+  color:#eafff0; text-shadow:0 1px 0 rgba(0,0,0,.4); opacity:0; animation:fadeIn .3s ease .28s forwards; }
+@keyframes fadeIn{ to{ opacity:1; } }
+
+.zc .title{ position:relative; align-self:center; margin-top:6px; display:inline-flex; overflow:hidden; padding:2px 6px; }
+.zc .title .w{ font-family:'Uniform Bold',sans-serif; font-weight:900; font-style:italic; font-synthesis:style;
+  font-size:52px; line-height:.94; letter-spacing:-1px; text-transform:uppercase;
+  background:linear-gradient(180deg,#fff6d6 0%, var(--gold) 48%, #f0a92a 100%); -webkit-background-clip:text; background-clip:text; color:transparent;
+  filter:drop-shadow(0 3px 0 rgba(120,70,0,.55)) drop-shadow(0 6px 14px rgba(255,180,50,.35)); display:inline-flex; }
+.zc .title .l{ display:inline-block; opacity:0; transform:translateY(-60px) scale(1.5) rotate(-8deg); will-change:transform;
+  animation:slamIn .26s cubic-bezier(.2,.85,.2,1) forwards; }
+@keyframes slamIn{ 0%{ opacity:0; transform:translateY(-60px) scale(1.5) rotate(-8deg); }
+  55%{ opacity:1; transform:translateY(5px) scale(.92) rotate(1deg); }
+  78%{ transform:translateY(-2px) scale(1.04); } 100%{ opacity:1; transform:none; } }
+/* shine sweep across the finished word */
+.zc .title::after{ content:''; position:absolute; inset:0; z-index:2; pointer-events:none;
+  background:linear-gradient(105deg, transparent 38%, rgba(255,255,255,.85) 50%, transparent 62%);
+  transform:translateX(-130%); animation:shine 1.1s ease-in-out 1s; }
+@keyframes shine{ to{ transform:translateX(130%); } }
+
+.zc .zone{ align-self:center; margin-top:8px; padding:4px 14px; border-radius:999px;
+  background:rgba(9,14,26,.6); border:1px solid rgba(255,221,122,.4);
+  font-family:'Uniform Condensed Bold',sans-serif; font-size:14px; letter-spacing:2px; text-transform:uppercase; color:#ffe9ab;
+  opacity:0; transform:translateY(8px); animation:riseIn .32s ease .5s both; }
+@keyframes riseIn{ from{ opacity:0; transform:translateY(10px); } to{ opacity:1; transform:none; } }
+
+/* stars (celebratory flourish — decorative; wire to a rating later if desired) */
+.zc .stars{ align-self:center; display:flex; gap:10px; margin-top:12px; }
+.zc .stars .s{ font-size:34px; line-height:1; filter:drop-shadow(0 2px 6px rgba(255,190,60,.5));
+  opacity:0; transform:scale(0) rotate(-40deg); animation:starPop .42s cubic-bezier(.2,1.6,.35,1) both; }
+.zc .stars .s:nth-child(1){ animation-delay:.62s; } .zc .stars .s:nth-child(2){ animation-delay:.74s; } .zc .stars .s:nth-child(3){ animation-delay:.86s; }
+@keyframes starPop{ 0%{ opacity:0; transform:scale(0) rotate(-40deg); } 70%{ opacity:1; transform:scale(1.3) rotate(6deg); } 100%{ opacity:1; transform:scale(1) rotate(0); } }
+
+/* ── rewards ─────────────────────────────────────────────────────────────── */
+.zc .rew-lab{ align-self:center; margin:16px 0 8px; font-family:'Uniform Condensed Bold',sans-serif; font-size:11px; letter-spacing:3px;
+  text-transform:uppercase; color:#9fb0d0; opacity:0; animation:fadeIn .3s ease .95s forwards; }
+.zc .loot{ display:flex; gap:10px; justify-content:center; }
+.zc .item{ flex:1; max-width:110px; display:flex; flex-direction:column; align-items:center; gap:6px; padding:12px 8px 10px; border-radius:16px;
+  background:linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.02)); border:1px solid var(--panel-line);
+  opacity:0; transform:translateY(14px) scale(.9); animation:tilePop .4s cubic-bezier(.2,1.3,.35,1) both; }
+.zc .item:nth-child(1){ animation-delay:1.0s; } .zc .item:nth-child(2){ animation-delay:1.12s; } .zc .item:nth-child(3){ animation-delay:1.24s; }
+@keyframes tilePop{ to{ opacity:1; transform:none; } }
+.zc .item .sq{ width:52px; height:52px; border-radius:13px; display:grid; place-items:center;
+  background:radial-gradient(circle at 50% 35%, color-mix(in srgb, var(--c) 55%, #000), #0b0f1a); border:1px solid rgba(255,255,255,.12);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.14); }
+.zc .item .sq img{ width:34px; height:34px; object-fit:contain; filter:drop-shadow(0 2px 3px rgba(0,0,0,.5)); }
+.zc .item .n{ font-family:'Uniform Bold',sans-serif; font-size:22px; font-weight:900; color:#fff; line-height:1; text-shadow:0 1px 2px #000; }
+.zc .item .k{ font-family:'Uniform Condensed Bold',sans-serif; font-size:10px; letter-spacing:1px; text-transform:uppercase; color:#a9b7d6; }
+
+/* ── generator unlock reveal (0..N) ──────────────────────────────────────── */
+.zc .unlock{ margin:16px 4px 4px; display:flex; align-items:center; gap:12px; padding:12px 14px; border-radius:16px;
+  background:linear-gradient(180deg, rgba(90,209,122,.18), rgba(20,60,40,.25)); border:1px solid rgba(139,240,172,.5);
+  box-shadow:0 0 0 1px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.08);
+  opacity:0; transform:translateY(16px) scale(.94); animation:unlockSlam .45s cubic-bezier(.2,1.2,.3,1) 1.45s both; }
+@keyframes unlockSlam{ to{ opacity:1; transform:none; } }
+.zc .unlock .uart{ width:52px; height:52px; display:grid; place-items:center; border-radius:12px; flex:0 0 auto;
+  background:radial-gradient(circle,#0e2a1c,#081411); animation:unlockGlow 1.6s ease-in-out 1.9s infinite; }
+@keyframes unlockGlow{ 0%,100%{ box-shadow:0 0 8px 1px rgba(139,240,172,.4); } 50%{ box-shadow:0 0 18px 4px rgba(139,240,172,.8); } }
+.zc .unlock .uart img{ width:100%; height:100%; object-fit:contain; }
+.zc .unlock .ut{ display:flex; flex-direction:column; gap:1px; }
+.zc .unlock .ut .k{ font-family:'Uniform Condensed Bold',sans-serif; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:#8bf0ac; }
+.zc .unlock .ut .nm{ font-family:'Uniform Bold',sans-serif; font-size:17px; color:#fff; }
+.zc .unlock .new{ margin-left:auto; font-family:'Uniform Bold',sans-serif; font-size:10px; letter-spacing:1px; color:#0b1a10;
+  background:var(--green); border-radius:6px; padding:3px 8px; align-self:flex-start; }
+
+/* ── footer CTA (pinned) ─────────────────────────────────────────────────── */
+.zc .foot{ position:relative; z-index:10; flex:0 0 auto; padding:12px 16px 16px;
+  background:linear-gradient(180deg, transparent, rgba(6,10,18,.85) 40%); }
+.zc .cont{ width:100%; cursor:pointer; border:none; border-radius:14px; padding:15px 0;
+  font-family:'Uniform Bold',sans-serif; font-weight:900; font-size:19px; letter-spacing:2px; text-transform:uppercase; color:#241a02;
+  background:linear-gradient(180deg,#fff3c8,var(--gold) 55%,#f2b435);
+  box-shadow:0 5px 0 #b8791a, 0 12px 22px rgba(255,180,50,.35);
+  opacity:0; transform:translateY(14px); animation:riseIn .34s ease 1.7s both, ctaPulse 1.4s ease-in-out 2.1s infinite; }
+.zc .cont:active{ transform:translateY(3px); box-shadow:0 2px 0 #b8791a, 0 6px 14px rgba(255,180,50,.3); }
+@keyframes ctaPulse{ 0%,100%{ box-shadow:0 5px 0 #b8791a, 0 12px 22px rgba(255,180,50,.35); } 50%{ box-shadow:0 5px 0 #b8791a, 0 12px 30px rgba(255,205,90,.75); } }
+.zc .cont .arrow{ display:inline-block; margin-left:8px; animation:nudge 1s ease-in-out infinite; }
+@keyframes nudge{ 0%,100%{ transform:translateX(0); } 50%{ transform:translateX(5px); } }
+.zc .next{ text-align:center; margin-top:8px; font-family:'Uniform Condensed Medium',sans-serif; font-size:12px; color:#9fb0d0;
+  opacity:0; animation:fadeIn .3s ease 2s forwards; }
+.zc .next b{ color:#cfe0ff; }
+</style>
+</head>
+<body>
+
+<div class="controls">
+  <div class="ttl">Zone Complete — iteration controls</div>
+  <button class="btn play" id="replay">▶ Replay animation</button>
+  <button class="btn on" id="tUnlock">Unlock reveal</button>
+  <button class="btn on" id="tStars">Stars</button>
+  <button class="btn on" id="tConfetti">Confetti</button>
+</div>
+<div class="controls">
+  <button class="btn dev" data-dev="se">iPhone SE</button>
+  <button class="btn dev on" data-dev="ip16">iPhone 16</button>
+  <span class="devcap" id="devcap"></span>
+</div>
+
+<div class="phone">
+  <!-- faux game behind, dimmed — proves the popup covers the merge board + orders -->
+  <div class="game">
+    <div class="g-header">
+      <div class="g-stat"><img src="../../assets/combatclean/icons/energy.png" alt="">120</div>
+      <div class="g-spacer"></div>
+      <div class="g-stat"><img src="../../assets/combatclean/icons/coins.png" alt="">12.4k</div>
+      <div class="g-stat"><img src="../../assets/combatclean/icons/hero-xp.png" alt="">3.1k</div>
+      <div class="g-stat"><img src="../../assets/combatclean/icons/gear-xp.png" alt="">880</div>
+    </div>
+    <div class="g-combat"></div>
+    <div class="g-orders"><div class="g-order"></div><div class="g-order"></div><div class="g-order"></div></div>
+    <div class="g-board" id="fauxBoard"></div>
+    <div class="g-nav"><div>Heroes</div><div>Gear</div><div>Merge</div><div>Summon</div><div>Map</div></div>
+  </div>
+
+  <!-- ── the celebration popup ── -->
+  <div class="zc" id="zc">
+    <div class="dim"></div>
+    <div class="card">
+      <div class="bg" style="background-image:url('../../assets/combatclean/zones/zone-mossbog.png')"></div>
+      <div class="bg-grade"></div>
+      <div class="rays"></div>
+      <canvas class="fx" id="fx"></canvas>
+
+      <div class="body">
+        <div class="banner"><span>Zone Cleared</span></div>
+        <div class="title" id="title"></div>
+        <div class="zone">Mossbog Fens</div>
+        <div class="stars" id="stars"><div class="s">⭐</div><div class="s">⭐</div><div class="s">⭐</div></div>
+
+        <div class="rew-lab">Rewards</div>
+        <div class="loot">
+          <div class="item"><div class="sq" style="--c:#c8961e"><img src="../../assets/combatclean/icons/coins.png" alt=""></div><div class="n" data-to="4820">0</div><div class="k">Coins</div></div>
+          <div class="item"><div class="sq" style="--c:#2f7fd6"><img src="../../assets/combatclean/icons/hero-xp.png" alt=""></div><div class="n" data-to="1650">0</div><div class="k">Hero XP</div></div>
+          <div class="item"><div class="sq" style="--c:#2f9e57"><img src="../../assets/combatclean/icons/gear-xp.png" alt=""></div><div class="n" data-to="740">0</div><div class="k">Gear XP</div></div>
+        </div>
+
+        <div class="unlock" id="unlock">
+          <div class="uart"><img src="../../assets/combatclean/merge/gen-blade.png" alt=""></div>
+          <div class="ut"><span class="k">New Generator</span><span class="nm">Blade Forge</span></div>
+          <span class="new">NEW</span>
+        </div>
+      </div>
+
+      <div class="foot">
+        <button class="cont" id="cont">Continue<span class="arrow">→</span></button>
+        <div class="next">Next: <b>Gloomwood Thicket</b></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// faux board fill
+(function(){ const b=document.getElementById('fauxBoard'); for(let i=0;i<42;i++){ const c=document.createElement('div'); c.className='g-cell'; b.appendChild(c);} })();
+
+const zc = document.getElementById('zc');
+const titleEl = document.getElementById('title');
+const TITLE = 'ZONE COMPLETE';
+
+// build per-letter title (space handled)
+function buildTitle(){
+  titleEl.innerHTML='';
+  [...TITLE].forEach((ch,i)=>{
+    const s=document.createElement('span'); s.className='w';
+    const inner=document.createElement('span'); inner.className='l';
+    inner.textContent = ch===' ' ? ' ' : ch;
+    inner.style.animationDelay = (0.18 + i*0.045)+'s';
+    s.appendChild(inner); titleEl.appendChild(s);
+  });
+}
+
+// count-up numbers
+const fmt = n => n>=1e6 ? (Math.floor(n/1e4)/100)+'m' : n>=1000 ? (Math.floor(n/10)/100)+'k' : Math.floor(n);
+function countUp(el,to,dur,delay){
+  setTimeout(()=>{ const t0=performance.now();
+    const step=now=>{ const k=Math.min(1,(now-t0)/dur); const e=1-Math.pow(1-k,3);
+      el.textContent=fmt(to*e); if(k<1) requestAnimationFrame(step); else el.textContent=fmt(to); };
+    requestAnimationFrame(step);
+  }, delay);
+}
+
+// ── particle FX: confetti fall + rising spark burst on title reveal ──
+const cv=document.getElementById('fx'); const ctx=cv.getContext('2d');
+let parts=[], raf=0, running=false, confettiOn=true;
+const COLORS=['#ffd45e','#ffe89a','#5ad17a','#ffffff','#ffab2e','#b9f5cc'];
+function resize(){ const r=cv.getBoundingClientRect(); cv.width=r.width*devicePixelRatio; cv.height=r.height*devicePixelRatio; ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0); }
+function burst(){ const w=cv.getBoundingClientRect().width; // rising sparks from the title
+  for(let i=0;i<70;i++){ parts.push({x:w*0.5+(Math.random()-.5)*160, y:150, vx:(Math.random()-.5)*6, vy:-4-Math.random()*7,
+    g:0.14, r:2+Math.random()*3, c:COLORS[i%COLORS.length], life:1, spin:Math.random()*6, va:(Math.random()-.5)*.3, shape:'spark'}); }
+}
+function spawnConfetti(){ if(!confettiOn) return; const w=cv.getBoundingClientRect().width;
+  for(let i=0;i<2;i++){ parts.push({x:Math.random()*w, y:-10, vx:(Math.random()-.5)*1.6, vy:1.4+Math.random()*2.2,
+    g:0.02, r:3+Math.random()*4, c:COLORS[(Math.random()*COLORS.length)|0], life:1, spin:Math.random()*6, va:(Math.random()-.5)*.4, shape:'conf'}); } }
+function tick(){ const r=cv.getBoundingClientRect(); ctx.clearRect(0,0,r.width,r.height);
+  if(running && Math.random()<0.9) spawnConfetti();
+  parts=parts.filter(p=>p.y<r.height+20 && p.life>0);
+  for(const p of parts){ p.vy+=p.g; p.x+=p.vx; p.y+=p.vy; p.spin+=p.va; if(p.shape==='spark'){ p.life-=0.012; }
+    ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.spin); ctx.globalAlpha=Math.max(0,p.life); ctx.fillStyle=p.c;
+    if(p.shape==='conf'){ ctx.fillRect(-p.r,-p.r*0.6,p.r*2,p.r*1.2); } else { ctx.beginPath(); ctx.arc(0,0,p.r,0,7); ctx.fill(); }
+    ctx.restore(); }
+  raf=requestAnimationFrame(tick);
+}
+
+// ── run the whole choreography ──
+function play(){
+  cancelAnimationFrame(raf); parts=[]; resize(); running=true;
+  // re-trigger CSS animations by reflowing the popup
+  buildTitle();
+  const clone = zc; clone.style.display='none'; void clone.offsetWidth; clone.style.display='';
+  // numbers
+  document.querySelectorAll('.zc .item .n').forEach((el,i)=>{ el.textContent='0'; countUp(el, +el.dataset.to, 900, 1000 + i*120); });
+  raf=requestAnimationFrame(tick);
+  setTimeout(burst, 900);              // spark burst as title finishes
+  setTimeout(()=>{ // add a flash element each replay
+    const f=document.createElement('div'); f.className='flash'; zc.appendChild(f); setTimeout(()=>f.remove(),520);
+  }, 40);
+  setTimeout(()=>{ running=false; }, 4500); // stop spawning confetti, let it settle
+}
+window.addEventListener('resize', resize);
+
+// controls
+document.getElementById('replay').onclick=play;
+document.getElementById('cont').onclick=play;
+function toggle(id, apply){ const b=document.getElementById(id); b.onclick=()=>{ b.classList.toggle('on'); apply(b.classList.contains('on')); }; }
+toggle('tUnlock', on=> document.getElementById('unlock').style.display = on?'':'none');
+toggle('tStars',  on=> document.getElementById('stars').style.display  = on?'':'none');
+toggle('tConfetti', on=>{ confettiOn=on; });
+
+play();
+</script>
+</body>
+</html>

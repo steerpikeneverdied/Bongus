@@ -3,6 +3,6 @@
 	"name": "Ember Bat",
 	"iconAssetId": "enemy.ember-bat",
 	"combat": {
-		"scale": 1
+		"scale": 0.95
 	}
 }

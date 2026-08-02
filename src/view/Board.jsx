@@ -14,7 +14,7 @@
 // JUICE is baked at 1.5.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useEffect, useLayoutEffect, useRef } from 'react';
-import { useGame } from '../controller/GameContext';
+import { useMetaGame } from '../controller/GameContext';
 import { BOARD, TIER_PRESENTATION } from '../data/config.js';
 import { canMerge, canMergeGenerator, maxLevel } from '../model/merge.js';
 import { STRINGS } from '../data/strings.js';
@@ -36,7 +36,9 @@ const RM = typeof window !== 'undefined' && window.matchMedia && window.matchMed
 const pair = (a, b) => canMerge(a, b) || canMergeGenerator(a, b);
 
 export default function Board() {
-  const { state, actions } = useGame();
+  // HUD/meta view: Board reads ONLY state.board — never battle/fx/energy/now — so the META view spares it
+  // the 5Hz battle re-render; it re-renders only when the board actually changes (merge/move/spawn).
+  const { state, actions } = useMetaGame();
   const shakerRef = useRef(null);
   const tilesRef = useRef(null);
   const connRef = useRef(null);

@@ -101,7 +101,7 @@
 		"deathDust": { "r": 6 },
 		"limitPulse": { "ms": 300, "scale": 1.2, "scalePeak": 0.09, "white": 0.95, "whitePeak": 0.06, "wipeMs": 230, "wipeColor": "rgba(255,255,255,0.9)", "ghost": { "sx": 1.7, "sy": 3.2, "ms": 420, "opacity": 0.85, "color": "rgba(255,255,255,0.7)" } },
 		"limitCharge": {
-			"launchDelay": 90, "gatherFlashR": 8, "stagger": 150,
+			"launchDelay": 0, "gatherFlashR": 8, "stagger": 150,
 			"trail": { "width": 3.5, "length": 18, "speed": 600, "r": 6.5, "tailWidthMul": 0.2, "headWidthMul": 2, "fadePow": 2, "fadePeak": 1,
 				"ramp": [ { "p": 0, "c": "#ffffff" }, { "p": 0.05933665644171779, "c": "#ffbb00" }, { "p": 0.19622915069018404, "c": "#8c00ff" }, { "p": 0.4559588286042945, "c": "#8bf9dd" } ] },
 			"popOut": { "dist": 80, "angleMin": 55, "angleMax": 125 },

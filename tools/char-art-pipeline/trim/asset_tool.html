@@ -53,6 +53,19 @@
   .row.sel { background:#33383f; box-shadow:inset 3px 0 0 var(--accent); }
   .row img { width:38px; height:38px; object-fit:contain; background:#3a3d42; border-radius:4px; }
   .row .name { flex:1; } .row .name.gen { color:#7dd3a0; }
+  .row .pbtn { flex:0 0 auto; background:transparent; border:1px solid var(--line); color:#9aa0a6; border-radius:5px;
+    width:22px; height:22px; line-height:1; font-size:12px; cursor:pointer; padding:0; }
+  .row .pbtn:hover { background:#3a3d42; color:#e7e9ec; }
+  .row .pbtn.on { background:var(--accent); border-color:var(--accent); color:#0b0f14; }
+  .prow { padding:8px 12px 12px 20px; border-bottom:1px solid #2f3237; background:#212429; }
+  .prow textarea { width:100%; box-sizing:border-box; min-height:64px; resize:vertical; font:12px/1.4 ui-monospace,Menlo,monospace;
+    color:#e7e9ec; background:#171a1e; border:1px solid var(--line); border-radius:6px; padding:7px 9px; }
+  .prow textarea.dirty { border-color:#c9a227; }
+  .prow-actions { display:flex; align-items:center; gap:10px; margin-top:6px; }
+  .prow .psave { background:var(--accent); border:0; color:#0b0f14; border-radius:5px; padding:4px 12px; font-weight:600; cursor:pointer; }
+  .prow .psave:hover { filter:brightness(1.08); }
+  .prow .pstat { font-size:11px; color:#7f868d; }
+  .prow .pstat.ok { color:#7dd3a0; } .prow .pstat.err { color:#e0736a; }
   .badge { min-width:22px; text-align:center; padding:2px 7px; border-radius:10px; font-size:11px; background:#3a3d42; color:#9aa0a6; }
   .badge.has { background:var(--dot); color:#fff; }
 
@@ -407,6 +420,7 @@
 <script>
 const state = { cats:[], items:[], meta:{}, idx:0, zoom:1, natural:{w:0,h:0}, view:'source', ver:1, tab:'trim', group:'',
   regMode:false, checked:new Set(), bosses:{}, presets:{},
+  prompts:{}, promptOpen:new Set(), promptDirty:new Set(),   // per-entry roster prompt: cat→{slug:text}, which rows are expanded, which have unsaved edits
   treatment:{ large:[{color:'#ffffff',width:12}], small:[{color:'#ffffff',width:12}] } };
 const ENEMY_AREAS = new Set(['mossbog','gloomwood','boneyard','emberfall','frostvault','dragons-ascent']);
 const MERGE_CATS = new Set(['magic','blade','range','blade-gen','range-gen','magic-gen']);
@@ -429,9 +443,9 @@ function subLabel(cat){ if(!isIconCat(cat)) return labelFor(cat); const s=cat.sl
 function isBoss(cat, name){ const s=state.bosses[cat]; return !!(s && s.has(String(name).replace(/\.png$/i,''))); }
 
 /* ---------- two-level grouping: top = Hero/Enemy/…, second = subcategories ---------- */
-const AREA_ORDER = ['mossbog','gloomwood','boneyard','emberfall','frostvault','dragons-ascent','enemies'];
+const AREA_ORDER = ['mossbog','gloomwood','boneyard','emberfall','frostvault','dragons-ascent'];
 const ICON_ORDER = ['general','currency','ui','chest','nav','status','node','fx','banner','slot','ability','stat','chrome','board','combat','afk','gacha','minigame','dev'].map(s=>'icons-'+s);   // Icons subtab order
-function groupOf(cat){ if(cat==='heroes') return 'Hero'; if(ENEMY_AREAS.has(cat)||cat==='enemies') return 'Enemy';
+function groupOf(cat){ if(cat==='heroes') return 'Hero'; if(ENEMY_AREAS.has(cat)) return 'Enemy';
   if(MERGE_CATS.has(cat)) return 'Merge Icons'; if(GEAR_CATS.has(cat)) return 'Gear'; if(LOOT_CATS.has(cat)) return 'Loot'; if(isIconCat(cat)) return 'Icons'; return labelFor(cat); }
 function countOf(cat){ const c=state.cats.find(x=>x.name===cat); return c?c.images.length:0; }
 function orderBy(list, order){ return list.slice().sort((a,b)=>{ const ia=order.indexOf(a), ib=order.indexOf(b); return (ia<0?99:ia)-(ib<0?99:ib); }); }
@@ -537,7 +551,7 @@ function selectCategoryTab(name){
 function renderList() {
   const el = document.getElementById('list');
   if (!state.openCat && state.cats.length) state.openCat = (cur() && cur().cat) || state.cats[0].name;
-  el.querySelectorAll('.cat,.row,.rarityhdr').forEach(n => n.remove());
+  el.querySelectorAll('.cat,.row,.rarityhdr,.prow').forEach(n => n.remove());
   const h2 = el.querySelector('h2');
   const c = state.cats.find(x => x.name === state.openCat);
   if (!c) { if (h2) h2.textContent = 'Assets'; renderTabs(); return; }
@@ -563,14 +577,82 @@ function renderList() {
     const row = document.createElement('div');
     row.className = 'row' + (idx === state.idx ? ' sel' : '') + (boss ? ' boss' : '');
     row.innerHTML = `<input type="checkbox" class="rowchk"><img src="/img/${c.name}/${encodeURIComponent(n)}?v=${state.ver}">
-      <span class="name">${base}${boss?' <span class="bossbadge">BOSS</span>':''}</span><span class="badge ${np?'has':''}">${np}</span>`;
+      <span class="name">${base}${boss?' <span class="bossbadge">BOSS</span>':''}</span><span class="badge ${np?'has':''}">${np}</span><button class="pbtn" title="Show / edit prompt">✎</button>`;
     const chk = row.querySelector('.rowchk'); chk.checked = state.checked.has(key);
     chk.onclick = (e) => e.stopPropagation();              // don't select the row when ticking
     chk.onchange = () => { chk.checked ? state.checked.add(key) : state.checked.delete(key); updateRegenChecked(); };
     row.onclick = () => select(idx); el.appendChild(row);
+    // per-entry prompt editor (roster subject) — collapse/expand under the row
+    const open = state.promptOpen.has(key);
+    const pbtn = row.querySelector('.pbtn'); pbtn.classList.toggle('on', open);
+    pbtn.onclick = (e) => { e.stopPropagation(); togglePrompt(key); };
+    const prow = document.createElement('div'); prow.className = 'prow'; prow.hidden = !open;
+    const ta = document.createElement('textarea'); ta.dataset.key = key;
+    ta.value = promptText(c.name, base); ta.classList.toggle('dirty', state.promptDirty.has(key));
+    ta.placeholder = 'generation prompt (roster subject)…';
+    ta.oninput = () => { (state.prompts[c.name] ||= {})[base] = ta.value; state.promptDirty.add(key); ta.classList.add('dirty'); };
+    ta.onclick = (e) => e.stopPropagation();
+    const actions = document.createElement('div'); actions.className = 'prow-actions';
+    const stat = document.createElement('span'); stat.className = 'pstat';
+    const sv = document.createElement('button'); sv.className = 'psave'; sv.textContent = 'Save';
+    sv.onclick = (e) => { e.stopPropagation(); savePrompt(key, ta, stat); };
+    actions.appendChild(sv); actions.appendChild(stat);
+    prow.appendChild(ta); prow.appendChild(actions);
+    prow.onclick = (e) => e.stopPropagation();
+    el.appendChild(prow);
   }
+  loadPrompts(c.name);   // fetch the category's roster prompts once, then fill any open editors
   updateRegenChecked();
   renderTabs();
+}
+/* ---------- per-entry roster prompt: show/edit under each row ---------- */
+function promptText(cat, base){ const m = state.prompts[cat]; return (m && (base in m)) ? m[base] : ''; }
+async function loadPrompts(cat){
+  if (!cat) return;
+  state.promptsLoaded ||= new Set(); state._promptFetching ||= new Set();
+  if (state.promptsLoaded.has(cat)) { applyPrompts(cat); return; }
+  if (state._promptFetching.has(cat)) return;
+  state._promptFetching.add(cat);
+  try {
+    const r = await (await fetch('/api/prompts?cat='+encodeURIComponent(cat))).json();
+    const m = (r && r.prompts) || {};
+    state.prompts[cat] = Object.assign(m, state.prompts[cat] || {});   // server values, but keep any locally-typed (dirty) edits on top
+    state.promptsLoaded.add(cat);
+  } catch(e) { /* leave whatever we have */ }
+  finally { state._promptFetching.delete(cat); }
+  applyPrompts(cat);
+}
+function applyPrompts(cat){
+  const m = state.prompts[cat] || {};
+  document.querySelectorAll('#list .prow textarea').forEach(ta => {
+    const key = ta.dataset.key; if (!key) return;
+    const slash = key.indexOf('/'); if (key.slice(0, slash) !== cat) return;
+    if (state.promptDirty.has(key)) return;                 // never clobber unsaved edits
+    const base = key.slice(slash+1).replace(/\.png$/i,'');
+    ta.value = (base in m) ? m[base] : '';
+  });
+}
+function togglePrompt(key){
+  const nowOpen = !state.promptOpen.has(key);
+  if (nowOpen) state.promptOpen.add(key); else state.promptOpen.delete(key);
+  renderList();
+  if (nowOpen){ const ta=[...document.querySelectorAll('#list .prow textarea')].find(t=>t.dataset.key===key); if(ta) ta.focus(); }
+}
+async function savePrompt(key, ta, stat){
+  const slash = key.indexOf('/'), cat = key.slice(0, slash), base = key.slice(slash+1).replace(/\.png$/i,'');
+  const val = ta.value;
+  stat.className = 'pstat'; stat.textContent = 'saving…';
+  try {
+    const r = await (await fetch('/api/prompt', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ cat, slug: base, prompt: val }) })).json();
+    if (r && r.ok){
+      const norm = val.replace(/[\t\r\n]+/g,' ').trim();
+      (state.prompts[cat] ||= {})[base] = norm; ta.value = norm;
+      state.promptDirty.delete(key); ta.classList.remove('dirty');
+      stat.className = 'pstat ok'; stat.textContent = '✓ saved';
+      setTimeout(()=>{ if (stat.textContent==='✓ saved') stat.textContent=''; }, 1800);
+    } else { stat.className = 'pstat err'; stat.textContent = '✕ '+((r&&r.error)||'save failed'); }
+  } catch(e){ stat.className = 'pstat err'; stat.textContent = '✕ '+e; }
 }
 function openCategory(name){
   state.openCat = name; state.checked.clear();                  // checks are per open category

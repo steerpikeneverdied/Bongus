@@ -3,6 +3,6 @@
 	"name": "Magma Golem",
 	"iconAssetId": "enemy.magma-golem",
 	"combat": {
-		"scale": 1.55
+		"scale": 1.4
 	}
 }

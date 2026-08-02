@@ -1,5 +1,8 @@
 {
 	"id": 3092,
 	"name": "Elder Wyrm",
-	"iconAssetId": "enemy.elder-wyrm"
+	"iconAssetId": "enemy.elder-wyrm",
+	"combat": {
+		"scale": 1.3
+	}
 }

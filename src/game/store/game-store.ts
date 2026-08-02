@@ -47,7 +47,10 @@ export function createGameStore(initial: any): GameStore {
 
   const getState = () => state;
   const subscribe = (listener: () => void): (() => void) => { listeners.add(listener); return () => { listeners.delete(listener); }; };
-  const subscribeFx = (listener: () => void): (() => void) => { fxListeners.add(listener); return () => { fxListeners.delete(listener); }; };
+  const subscribeFx = (listener: () => void): (() => void) => {
+    fxListeners.add(listener);
+    return () => { fxListeners.delete(listener); if (fxListeners.size === 0) pendingFx = EMPTY_FX; }; // FxLayer gone → drop any residual
+  };
   const getFxEpoch = () => fxEpoch;
   const takePendingFx = (): FxEvent[] => { const b = pendingFx; pendingFx = EMPTY_FX; return b; };
 
@@ -56,17 +59,21 @@ export function createGameStore(initial: any): GameStore {
     // The reducer returns the SAME reference for a no-op action (e.g. BATTLE_TICK while not fighting).
     // Skip the notify then — this preserves useReducer's bail-out (no wasted re-render).
     if (next === state) return;
-    // Lift the reducer's pure-data VFX events into the fx buffer and keep them OUT of the subscribed
-    // snapshot (this is what removes the old CLEAR_FX second re-render). `next` is a fresh object
-    // (next !== state), so mutating next.fx here is safe.
+    // Lift the reducer's pure-data VFX events off the subscribed snapshot (keeps per-tick fx out of React
+    // state — the removal of the old CLEAR_FX second re-render). `next` is a fresh object (next !== state),
+    // so mutating next.fx here is safe. Buffer for FxLayer's post-commit drain ONLY while it is subscribed
+    // (mounted); when it's unmounted (full screen / headless / hero-menu / AFK popup) there is NO consumer,
+    // so DROP the events — they are view-only and must never accumulate + replay as a burst on remount.
     if (next.fx && next.fx.length) {
-      const events = next.fx as FxEvent[];
+      const events = fxListeners.size > 0 ? (next.fx as FxEvent[]) : null;
       next.fx = [];
-      pendingFx = pendingFx.length ? pendingFx.concat(events) : events; // accumulate until FxLayer drains
-      fxEpoch = (fxEpoch + 1) | 0;
       state = next;
+      if (events) {
+        pendingFx = pendingFx.length ? pendingFx.concat(events) : events; // accumulate until FxLayer drains this frame
+        fxEpoch = (fxEpoch + 1) | 0;
+      }
       for (const l of listeners) l();
-      for (const l of fxListeners) l();
+      if (events) for (const l of fxListeners) l();
     } else {
       state = next;
       for (const l of listeners) l();

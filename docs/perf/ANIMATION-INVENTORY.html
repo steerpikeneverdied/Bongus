@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Animation Inventory — Combat Clean</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #0b0f1e; color: #dfe7fb; font: 15px/1.55 -apple-system, system-ui, sans-serif; }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 28px 20px 90px; }
+  h1 { font-size: 26px; margin: 0 0 4px; }
+  h2 { font-size: 18px; margin: 30px 0 8px; padding-top: 14px; border-top: 1px solid #26304f; }
+  .sub { color: #8fa3c8; margin: 0 0 14px; }
+  code { background: #141a30; color: #a9d5ff; padding: 1px 5px; border-radius: 5px; font-size: 12.5px; }
+  table { width: 100%; border-collapse: collapse; margin: 8px 0 4px; font-size: 12.5px; }
+  th, td { text-align: left; padding: 6px 9px; border-bottom: 1px solid #232d49; vertical-align: top; }
+  th { color: #8fa3c8; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: .4px; }
+  tr:hover td { background: #10152a; }
+  .tag { font-weight: 800; border-radius: 5px; padding: 1px 6px; font-size: 10.5px; white-space: nowrap; }
+  .inf  { background: #4a1420; color: #ff9db0; }
+  .one  { background: #143a4a; color: #8fe3ff; }
+  .raf  { background: #2a2450; color: #c7b8ff; }
+  .vfx  { color: #ffd45e; font-weight: 700; }
+  .other{ color: #8fa3c8; }
+  .cut  { color: #ff9db0; font-weight: 700; }
+  .slow { color: #ffcf8a; font-weight: 700; }
+  .keep { color: #9befbd; font-weight: 700; }
+  .legend { background: #10152a; border: 1px solid #232d49; border-radius: 10px; padding: 10px 14px; margin: 12px 0; font-size: 13px; }
+  .legend b { color: #eaf0ff; }
+  .yes { background: linear-gradient(180deg,#0f2a1c,#0c1a14); border: 1px solid #2f6b47; border-radius: 12px; padding: 14px 16px; margin: 14px 0; }
+  .yes b { color: #9befbd; }
+  .note { color: #7f8fb0; font-size: 12.5px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>Animation Inventory</h1>
+<p class="sub">Every animation in Combat Clean — decide keep / cut / alter. The <code>anim</code> figure in the perf log = <code>document.getAnimations()</code> (running CSS animations + WAAPI). rAF loops are not in that number but still cost CPU/GPU.</p>
+
+<div class="legend">
+<span class="tag inf">∞</span> always-on (CSS <code>animation … infinite</code>) — runs forever = <b>the heat floor, prune first</b> &nbsp;·&nbsp;
+<span class="tag one">1×</span> one-shot (fires on an event, then stops) — cheap &nbsp;·&nbsp;
+<span class="tag raf">rAF</span> JS loop<br>
+<b class="vfx">VFX</b> = the juice (keep 60fps) &nbsp;·&nbsp; <b class="other">OTHER</b> = ambient/UI (30fps or cut) &nbsp;·&nbsp; <b>screen</b> = only runs on that screen
+</div>
+
+<h2>§1 — ALWAYS-ON on the COMBAT / MERGE screen → THE HEAT FLOOR</h2>
+<p class="sub">Runs continuously while fighting/merging — this is the ~40–60 <code>anim</code> floor the logs show. Prune here first.</p>
+<table>
+  <tr><th></th><th>Keyframe</th><th>file:line</th><th>What</th><th>Count</th><th>Type</th><th>Suggest</th></tr>
+  <tr><td><span class="tag inf">∞</span></td><td><code>heroBob</code></td><td>index.css:1232</td><td>every hero avatar bobs</td><td>~5</td><td class="other">OTHER</td><td class="cut">cut / slow (biggest count)</td></tr>
+  <tr><td><span class="tag inf">∞</span></td><td><code>enemySway</code></td><td>index.css:1233</td><td>every enemy sways</td><td>~3–5</td><td class="other">OTHER</td><td class="cut">cut / slow</td></tr>
+  <tr><td><span class="tag inf">∞</span></td><td><code>emberRise</code></td><td>index.css:1187</td><td>ambient embers drifting</td><td>~6–12</td><td class="other">OTHER</td><td class="cut">cut count / static</td></tr>
+  <tr><td><span class="tag inf">∞</span></td><td><code>mbCogSpin</code></td><td>index.css:1561</td><td>generator cog spins</td><td>~2–3</td><td class="other">OTHER</td><td class="slow">slow / static</td></tr>
+  <tr><td><span class="tag inf">∞</span></td><td><code>chargeRise</code></td><td>index.css:1393</td><td>limit charge-pips rise</td><td>7 × ready hero</td><td class="other">OTHER</td><td class="slow">reduce pips / cut</td></tr>
+  <tr><td><span class="tag inf">∞</span></td><td><code>limitSweep</code> + <code>limitBreathe</code> + <code>lbPop</code></td><td>index.css:230,232,244</td><td>charged limit-bar sweep+breathe+pop (3)</td><td>3 × charged hero</td><td class="vfx">VFX-ish</td><td class="slow">collapse to 1</td></tr>
+  <tr><td><span class="tag inf">∞</span></td><td><code>hpFlash</code></td><td>index.css:1657</td><td>low-HP bar flashes red</td><td>per low bar</td><td class="other">OTHER (feedback)</td><td class="keep">keep / slow</td></tr>
+  <tr><td><span class="tag inf">∞</span></td><td><code>focusPulse</code> + <code>reticleBob</code></td><td>index.css:1665,1667</td><td>focused-enemy pulse + reticle</td><td>1 (focused)</td><td class="other">OTHER</td><td class="keep">keep</td></tr>
+  <tr><td><span class="tag inf">∞</span></td><td><code>bossShiver</code></td><td>index.css:1256</td><td>boss pre-slam shiver (.1s/10fps)</td><td>boss</td><td class="vfx">VFX</td><td class="keep">keep (brief)</td></tr>
+  <tr><td><span class="tag inf">∞</span></td><td><code>dangerPulse</code></td><td>index.css:1276</td><td>boss danger warning</td><td>boss</td><td class="other">OTHER</td><td class="keep">keep</td></tr>
+  <tr><td><span class="tag inf">∞</span></td><td><code>introQPulse</code></td><td>index.css:2077</td><td>concealed-enemy "?" pulse</td><td>intro/gate</td><td class="other">OTHER</td><td class="keep">keep</td></tr>
+  <tr><td><span class="tag inf">∞</span></td><td><code>ldotpulse</code></td><td>index.css:1228</td><td>current level-track dot pulse</td><td>1</td><td class="other">OTHER</td><td class="slow">optional cut</td></tr>
+  <tr><td><span class="tag inf">∞</span></td><td><code>mbCanmerge</code> / <code>mbBestRing</code> / <code>mbConnFlow</code></td><td>index.css:1590,1613,1619</td><td>merge-board hints (pulse/ring/flow)</td><td>hints</td><td class="other">OTHER</td><td class="keep">keep / slow</td></tr>
+  <tr><td><span class="tag inf">∞</span></td><td><code>specOrderPulse</code> / <code>potionOrderPulse</code></td><td>index.css:422,437</td><td>special/potion order-card pulse</td><td>per order</td><td class="other">OTHER</td><td class="slow">keep / slow</td></tr>
+  <tr><td><span class="tag inf">∞</span></td><td><code>ctaPulse</code></td><td>index.css:1204</td><td>call-to-action button pulse</td><td>0–1</td><td class="other">OTHER</td><td class="keep">keep</td></tr>
+</table>
+
+<h2>§2 — ALWAYS-ON on OTHER screens (burn only while that screen is open)</h2>
+<table>
+  <tr><th>Keyframe(s)</th><th>file:line</th><th>Screen</th></tr>
+  <tr><td><code>loseHeartbeat</code>, <code>loseCtaPulse</code></td><td>304,320</td><td>Lose</td></tr>
+  <tr><td><code>acRays</code>, <code>acPulse</code></td><td>330,346</td><td>Area-complete</td></tr>
+  <tr><td><code>guRays</code></td><td>370</td><td>Generator-unlock</td></tr>
+  <tr><td><code>bannerShineSweep</code>, <code>bannerGlowSpin</code>, <code>bannerAuraPulse</code>, <code>pityPulse</code>, <code>btnShine</code>, <code>affordPulse</code>, <code>gsheen</code></td><td>1434,1440,1446,1480,1497,1500,825</td><td>Gacha</td></tr>
+  <tr><td><code>gFuseGlow</code>, <code>gbadge</code>, <code>hsSpin</code></td><td>853,861,1787</td><td>Gear</td></tr>
+  <tr><td><code>rewardBounce</code></td><td>496,557</td><td>reward cells / pull</td></tr>
+  <tr><td><code>afkPulse</code>, <code>afkAlertPulse</code>, <code>afkBobL</code>, <code>afkCta</code></td><td>1935,2273,2321,2343</td><td>AFK popup</td></tr>
+  <tr><td><code>ascDiamondPulse</code>, <code>hmFloat</code></td><td>2125,2156</td><td>Hero menu</td></tr>
+</table>
+
+<h2>§3 — WAAPI combat VFX (the juice → keep 60fps)</h2>
+<table>
+  <tr><th></th><th>Effect</th><th>file:line</th><th>Trigger</th></tr>
+  <tr><td><span class="tag one">1×</span></td><td>Chip brightness flash + shake (2)</td><td>FxLayer.jsx:62,70</td><td>every landed hit</td></tr>
+  <tr><td><span class="tag one">1×</span></td><td>Attacker telegraph lunge</td><td>FxLayer.jsx:129</td><td>per attacker/tick</td></tr>
+  <tr><td><span class="tag one">1×</span></td><td>Arena shake</td><td>FxLayer.jsx:98</td><td>special hits</td></tr>
+  <tr><td><span class="tag one">1×</span></td><td>Order-card damage flash</td><td>FxLayer.jsx:114</td><td>order tiles slam</td></tr>
+  <tr><td><span class="tag one">1×</span></td><td>Floating damage number</td><td>FxLayer.jsx:366</td><td>per damage instance</td></tr>
+  <tr><td><span class="tag one">1×</span></td><td>Combo popper + combo tag</td><td>FxLayer.jsx:382,409</td><td>crit / combo</td></tr>
+  <tr><td><span class="tag one">1×</span></td><td>Boss telegraph warn + ring</td><td>FxLayer.jsx:427,442</td><td>boss telegraph</td></tr>
+  <tr><td><span class="tag one">1×</span></td><td>Boss special shock + strike</td><td>FxLayer.jsx:479,492</td><td>boss slam</td></tr>
+  <tr><td><span class="tag one">1×</span></td><td>Boss heal/raise pulses + ring</td><td>FxLayer.jsx:522,541,552</td><td>boss heal/raise</td></tr>
+  <tr><td><span class="tag one">1×</span></td><td>Limit-break cinematic + beam</td><td>FxLayer.jsx:282,286</td><td>limit break</td></tr>
+  <tr><td><span class="tag one">1×</span></td><td>Limit-bar pulse/wipe/ghost/pop</td><td>limit-energy.js:42,48,54,58,70</td><td>limit charge/fill</td></tr>
+</table>
+
+<h2>§4 — WAAPI one-shots, board / meta (fire-and-finish; cadence-agnostic)</h2>
+<table>
+  <tr><th>Area</th><th>file:line</th><th>What</th></tr>
+  <tr><td>Merge board</td><td>Board.jsx:122,173,206,405</td><td>tile fade / spawn-pop / gen-throw / merge-squash</td></tr>
+  <tr><td>Orders</td><td>Orders.jsx:131,138</td><td>reroll white-wipe</td></tr>
+  <tr><td>Hero level-up / equip / fuse</td><td>hero-fx.js (26 sites)</td><td>Heroes/Gear screens</td></tr>
+  <tr><td>Reward cinematics</td><td>reveal-engine.js (5), gacha-reveal.js, chest-smash.js, currency-pickup.js, generator-unlock.js</td><td>gacha / chest / currency / unlock</td></tr>
+  <tr><td>AFK popup</td><td>AfkPopup.jsx:69,80,93</td><td>offline-earnings anim</td></tr>
+  <tr><td>Gear clone / intro</td><td>GearScreen.jsx:146, intro-director.js:49</td><td>fuse clone / level+boss intro</td></tr>
+</table>
+
+<h2>§5 — rAF loops (the "clocks") + the 60/30 plan</h2>
+<table>
+  <tr><th>Loop</th><th>file</th><th>Runs</th><th>Plan</th></tr>
+  <tr><td><span class="tag raf">rAF</span> <b>fx-engine</b> (canvas VFX)</td><td>fx/fx-engine.js</td><td>60fps, parks when idle</td><td class="keep">KEEP 60fps — the VFX clock</td></tr>
+  <tr><td><span class="tag raf">rAF</span> <b>bar-ticker</b> (HP + limit bars)</td><td>fx/bar-ticker.js</td><td>60fps while a bar animates</td><td class="slow">THROTTLE → 30fps</td></tr>
+  <tr><td><span class="tag raf">rAF</span> <b>sim loop</b></td><td>controller/game-loop.ts</td><td>60fps rAF, 5Hz sim</td><td>leave (cheap math)</td></tr>
+  <tr><td><span class="tag raf">rAF</span> Autobattler / Board / Orders</td><td>Autobattler/Board/Orders.jsx</td><td>per-event (CountUp, FLIP, countdowns)</td><td>leave (one-shots)</td></tr>
+  <tr><td><span class="tag raf">rAF</span> chest / gacha / currency / reveal / hero-fx / chaos-orb</td><td>fx/*.js</td><td>per-event, self-terminating</td><td>leave</td></tr>
+</table>
+
+<div class="yes">
+<b>Can we do 60fps VFX / 30fps everything else? — YES.</b>
+<ul>
+<li><b>VFX at 60fps:</b> the fx-engine canvas already has its own rAF → keep it; the WAAPI combat flashes/trails (§3) are short one-shots that run at 60 naturally.</li>
+<li><b>Other at 30fps:</b> throttle the <b>bar-ticker</b> rAF to every-other-frame (HP/limit fills at 30fps — invisible). The sim is already 5Hz internally.</li>
+<li><b>Caveat — CSS <code>∞</code> ambient (§1/§2):</b> these run on the compositor at the display's refresh; you <b>can't</b> globally cap a CSS animation to 30fps. Hit the goal by <b>cutting</b> the ones you don't want and/or using <code>steps(n)</code> / coarser keyframes on keepers (visually ~30fps + cheaper). Pruning the always-on set is the real heat win either way.</li>
+</ul>
+</div>
+
+<p class="note">Go through §1 and mark cut vs slow; I'll wire it behind the debug toggles so you can A/B on the phone.</p>
+
+</div>
+</body>
+</html>

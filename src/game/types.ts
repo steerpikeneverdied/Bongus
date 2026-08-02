@@ -49,6 +49,10 @@ export interface World {
   bus: GameSignals;
 }
 
+// A pure-data VFX event (the reducer's existing fx-event shape: `{ id, type, ...payload }`). The store
+// facade buffers each dispatch's batch (game-store `pendingFx`) for FxLayer's post-commit drain.
+export type FxEvent = { id: number; type: string; [k: string]: unknown };
+
 // ── the cross-module signal hub (typed events on world.bus; replaces MergeCombat's fx queue) ──
 export interface GameSignals {
   readonly merge: Signal<{ chain: string; level: number; cell: number }>;

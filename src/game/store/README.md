@@ -1,7 +1,20 @@
-# store — the sim reducer + persistence
+# store — the live world store + sim reducer + persistence
+
+`game-store.ts` is the **live, subscribable world store**: it holds the authoritative run state and runs
+the reducer (`createGameStore(initial)` → `{ getState, dispatch, subscribe, subscribeFx, getFxEpoch,
+takePendingFx, bus }`). It was lifted OUT of React so the RAF loop (`src/controller/game-loop.ts`) and player
+actions dispatch through the SAME reducer, and React reads it via `useSyncExternalStore`. A no-op dispatch
+(reducer returns the same reference) skips the notify, matching `useReducer`'s bail-out. Cross-module signals
+live on `bus` (`createGameSignals`), reserved for future non-view events.
 
 `actions.ts` (the action-type map) and `persistence.ts` (maps the runtime state slice ↔ the
 six-section account blob).
+
+**VFX transport** — the reducer stays pure: it still emits pure-data `fx` events on the state it returns.
+The store facade lifts each dispatch's `fx` batch into a `pendingFx` buffer (kept OUT of the subscribed
+snapshot, so per-tick VFX never re-renders state consumers) and bumps `fxEpoch`; `FxLayer` subscribes via
+`subscribeFx`/`getFxEpoch` and drains `takePendingFx()` in a **post-commit** effect (fresh DOM for VFX that
+queries element positions). The former `state.fx` queue + `CLEAR_FX` action/handler are retired.
 
 The reducer (`reducer.ts`) is a thin **combinator**: it merges the per-domain HANDLER MAPS from the
 slice files into one dispatch table keyed by `action.type` and routes to the owner (unknown type →
@@ -9,7 +22,7 @@ state unchanged). Each action is owned by exactly one slice:
 
 | Slice | Owns |
 |---|---|
-| `reducer-shell.ts` | screen/menu/AFK/minigame/reward + plumbing (regen, reset, clear-fx) |
+| `reducer-shell.ts` | screen/menu/AFK/minigame/reward + plumbing (regen, reset) |
 | `reducer-board.ts` | merge board (generator tap, move / merge / swap) |
 | `reducer-orders.ts` | fulfil / fill-gap / empty / reroll |
 | `reducer-combat.ts` | level select, tick, limit break, win/loss/area/chest resolution |
@@ -22,7 +35,10 @@ latter two are re-exported from `reducer.ts` so the module's public surface (`re
 `buildBattle`) is unchanged.
 
 **Invariants** — every slice handler is pure over `(state, action)`; randomness comes from the module
-PRNG (`sim-random.ts`, seeded by the controller), time from action payloads (`now`). One action.type =
+PRNG (`sim-random.ts`, seeded by the controller from the run's persisted `state.seed` → `profile.seed` →
+restored on load, so a FRESH run from a given seed is reproducible — the determinism gate; the rng CURSOR
+is not persisted, so a mid-run reload restarts the stream from the seed rather than continuing the pre-save
+stream), time from action payloads (`now`). One action.type =
 one owning slice (no key collisions across the merged maps). Persistence is lossless:
 `fromBlob(toBlob(slice))` reproduces the slice `initState` expects (wallets→`resources`,
 heroes/gear→`items`, rest→`profile`/`features`). The `battle` is transient (rebuilt by `buildBattle` on

@@ -50,7 +50,6 @@ export const A = {
   UPGRADE_HERO: 'UPGRADE_HERO',
   DEBUG_GRANT_CURRENCY: 'DEBUG_GRANT_CURRENCY',
   RESET_GAME: 'RESET_GAME',
-  CLEAR_FX: 'CLEAR_FX',
 } as const;
 
 export type ActionType = typeof A[keyof typeof A];

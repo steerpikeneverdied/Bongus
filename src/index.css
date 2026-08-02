@@ -30,6 +30,10 @@ body {
   max-width: 460px;
   margin: 0 auto;
   height: 100dvh;
+  /* Top safe area: the padding region belongs to .app, so the gradient below bleeds up into the
+     notch (background-origin defaults to padding-box) while the header + everything below it is
+     pushed clear of the status bar. box-sizing:border-box → content column = 100dvh − safe-top. */
+  padding-top: var(--safe-top-eff);
   display: flex;
   flex-direction: column;
   background: radial-gradient(120% 80% at 50% 0%, #1b2340 0%, var(--bg) 55%, #0a0f1c 100%);
@@ -166,6 +170,31 @@ body {
 .chip { width: 50px; display: flex; flex-direction: column; align-items: center; gap: 3px; }
 .chip-art { width: 100%; height: 34px; display: flex; align-items: center; justify-content: center; }
 .chip-art .art-img { width: auto; height: 100%; max-width: 100%; filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.5)); }
+
+/* Debug A/B (Settings ▸ No shadows/blur): kill ALL shadow + blur compositing to measure their render
+   cost. `filter: none !important` beats even inline styles; a running WAAPI filter animation still wins,
+   so HpBar's flash honours the toggle in JS. Heavy-handed by design — a dev toggle, never a shipped style. */
+.fx-no-shadows, .fx-no-shadows * {
+  filter: none !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* Settings modal (top-right cog → SettingsPopup). Non-pausing overlay on the popup layer — combat keeps
+   running behind it so the debug render toggles A/B live. */
+.settings-scrim { position: fixed; inset: 0; z-index: 1200; background: rgba(4, 7, 16, 0.6); display: flex; align-items: flex-start; justify-content: center; padding: 16px; padding-top: calc(16px + env(safe-area-inset-top)); box-sizing: border-box; }
+.settings-card { width: 100%; max-width: 360px; max-height: 82vh; overflow-y: auto; background: linear-gradient(180deg, #1b2340, #131834); border: 1px solid rgba(255,255,255,.14); border-radius: 16px; padding: 14px 16px 18px; box-shadow: 0 18px 48px rgba(0,0,0,.55); }
+.settings-head { display: flex; align-items: center; justify-content: space-between; font: 800 17px/1 system-ui, sans-serif; color: #eaf0ff; margin-bottom: 8px; }
+.settings-x { background: rgba(255,255,255,.08); color: #cdd6f0; border: 0; border-radius: 8px; width: 30px; height: 30px; font-size: 15px; cursor: pointer; }
+.settings-sect-h { font: 700 11px/1 system-ui, sans-serif; letter-spacing: 1px; text-transform: uppercase; color: #8fa3c8; margin: 12px 0 8px; }
+.settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.settings-toggle { display: flex; align-items: center; gap: 8px; background: rgba(8,12,26,.55); border: 1px solid rgba(255,255,255,.1); border-radius: 10px; padding: 10px; font: 600 13px/1.2 system-ui, sans-serif; color: #dbe4fb; cursor: pointer; }
+.settings-toggle input { width: 18px; height: 18px; accent-color: #56d6c0; flex: none; }
+.settings-btn { background: rgba(56,214,192,.14); border: 1px solid rgba(56,214,192,.4); color: #baf3ea; border-radius: 10px; padding: 11px 10px; font: 700 13px/1.2 system-ui, sans-serif; cursor: pointer; text-align: center; }
+.settings-btn.danger { background: rgba(214,80,80,.14); border-color: rgba(214,80,80,.45); color: #ffc9c9; width: 100%; }
+.cog-btn { background: rgba(255,255,255,.08); color: #cdd6f0; border: 0; border-radius: 8px; width: 32px; height: 32px; font-size: 17px; line-height: 1; cursor: pointer; }
 .art-emoji.chip-emoji { font-size: 24px; }
 .chip.dead { opacity: 0.3; filter: grayscale(1); }
 
@@ -657,12 +686,17 @@ body {
    The combat panel keeps the same area it has on the merge screen (screen minus
    header, nav, order tray, and the full-width board), on EVERY screen. */
 :root {
+  /* Top safe-area inset (notch / status bar). Reads the real device inset AND the dev
+     device-preview's injected --safe-top (env() is 0 in the desktop preview iframe), whichever is
+     larger. Requires viewport-fit=cover (set in index.html). Consumed by .app padding-top + the
+     --combat-h calc + the FTUE card float. Bottom inset is intentionally NOT handled yet. */
+  --safe-top-eff: max(env(safe-area-inset-top, 0px), var(--safe-top, 0px));
   --header-h: 52px;
   --orders-h: 84px; /* orders bar shortened 25% (112 → 84) to enlarge combat */
   --app-w: min(460px, 100vw);
   --board-frac: 0.857143; /* board height ÷ app-width = rows/cols (6/7). Lower ⇒ shorter board (tight screens condense it). */
   --cbh-enemy: 54px; --cbh-boss: 108px; --cbh-hero: 75.6px; /* in-combat sprite base heights (× per-unit combat.scale) */
-  --combat-h: max(150px, calc(100dvh - var(--header-h) - var(--nav-h) - var(--orders-h) - (var(--app-w) * var(--board-frac))));
+  --combat-h: max(150px, calc(100dvh - var(--safe-top-eff) - var(--header-h) - var(--nav-h) - var(--orders-h) - (var(--app-w) * var(--board-frac))));
 }
 /* Condense the whole vertical stack on SHORT screens (e.g. iPhone SE, 667px tall) so the taller 7×6
    board + combat + orders all fit: shorter orders bar, shorter board, smaller hero/enemy sprites.
@@ -674,7 +708,9 @@ body {
     --cbh-enemy: 44px; --cbh-boss: 88px; --cbh-hero: 62px;
   }
 }
-/* Layout contract: the column is HEADER + COMBAT + CONTEXT + NAVBAR = 100dvh.
+/* Layout contract: the column is HEADER + COMBAT + CONTEXT + NAVBAR = 100dvh − safe-top
+   (the top safe-area inset is applied as .app padding-top; the notch space is taken from the combat
+   panel via the --combat-h calc, so the orders rail + merge board keep their size).
    Header, combat panel and navbar are RIGID (flex:0 0 …) so they never shrink.
    Only the context panel flexes — flex:1 1 0 means it takes EXACTLY the leftover
    space (basis 0 → its own content never feeds back into the layout), and clips
@@ -2250,7 +2286,7 @@ body { font-family: 'Uniform Condensed Bold', system-ui, -apple-system, sans-ser
 /* the card: flexible height, ~20% top / 30% bottom margins on iPhone 16, shrinking as the screen
    gets smaller (leftover vertical space split 40:60 = 20:30, floored so it stays a popup on tiny screens) */
 .afk-popup .card { position: absolute; left: 14px; right: 14px; --reserve: 426px;
-  top: max(10px, calc((100% - var(--reserve)) * 0.40)); bottom: max(10px, calc((100% - var(--reserve)) * 0.60));
+  top: max(calc(10px + var(--safe-top-eff)), calc((100% - var(--reserve)) * 0.40)); bottom: max(10px, calc((100% - var(--reserve)) * 0.60));
   display: grid; grid-template-rows: auto minmax(0,1fr) auto auto; overflow: hidden; isolation: isolate; background: #0c1410;
   border-radius: 26px; border: 1px solid #2a3346; border-top-color: rgba(255,255,255,.18);
   box-shadow: 0 24px 60px rgba(0,0,0,.72), 0 0 0 1px rgba(0,0,0,.45); }
@@ -2269,7 +2305,7 @@ body { font-family: 'Uniform Condensed Bold', system-ui, -apple-system, sans-ser
 /* scene */
 .afk-popup .scene { position: relative; z-index: 4; min-height: 0; overflow: hidden; }
 .afk-popup .ground { position: absolute; left: 0; right: 0; bottom: 0; height: 34%; background: linear-gradient(180deg, transparent, rgba(4,10,7,.5) 55%, rgba(3,7,5,.82)); z-index: 1; }
-.afk-popup .killwrap { position: absolute; top: 5px; left: 0; right: 0; z-index: 7; text-align: center; pointer-events: none; }
+.afk-popup .killwrap { position: absolute; top: calc(5px + var(--safe-top-eff)); left: 0; right: 0; z-index: 7; text-align: center; pointer-events: none; }
 .afk-popup .lbl { font-family: 'Uniform Condensed Bold', sans-serif; letter-spacing: 2px; font-size: 11px; color: #ffd9d9; text-transform: uppercase; }
 .afk-popup .killrow { display: inline-flex; align-items: center; gap: 8px; margin-top: -2px; }
 .afk-popup .sk { font-size: 24px; filter: drop-shadow(0 2px 3px #000); }

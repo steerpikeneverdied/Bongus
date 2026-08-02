@@ -16,26 +16,27 @@ export const shellHandlers: Record<string, (state: S, action: Act) => S> = {
   [A.SET_SCREEN]: (state, action) =>
     // Changing the active screen (e.g. a nav-bar tap) also closes any open hero menu sub-view.
     ({ ...state, screen: action.screen, menuHeroId: null }),
+  // NOTE: these full-screen toggles used to clear a `state.fx` queue; fx no longer lives on state (the
+  // store buffers it and DROPS it while FxLayer is unmounted — game-store.ts), so there is nothing to clear.
   [A.SET_HERO_MENU]: (state, action) =>
-    // Opening clears the fx queue so no stale combat VFX flashes when FxLayer remounts on close.
-    ({ ...state, menuHeroId: action.heroId, fx: action.heroId ? [] : state.fx }),
+    ({ ...state, menuHeroId: action.heroId }),
   [A.SET_AFK_OPEN]: (state, action) =>
-    // Full-screen AFK collection popup (combat paused underneath). Clear fx on open like the hero menu.
-    ({ ...state, afkOpen: action.open, fx: action.open ? [] : state.fx }),
+    // Full-screen AFK collection popup (combat paused underneath).
+    ({ ...state, afkOpen: action.open }),
   [A.SET_HEADLESS]: (state, action) =>
-    // Background mode: the view unmounts but the engine keeps ticking. Clear fx (nothing renders them).
-    ({ ...state, headless: action.on, fx: action.on ? [] : state.fx }),
+    // Background mode: the view unmounts but the engine keeps ticking.
+    ({ ...state, headless: action.on }),
   [A.SET_MINIGAME]: (state, action) =>
     // A minigame is a full screen that replaces the current one; combat runs headless underneath.
-    ({ ...state, minigame: action.minigame ?? null, fx: action.minigame ? [] : state.fx }),
+    ({ ...state, minigame: action.minigame ?? null }),
   [A.START_RANDOM_MINIGAME]: (state) =>
     // Dev/test quick-launch: pick a RANDOM pooled minigame with the standard context and open it
-    // INSTANTLY (no chaos-orb transition). Same full-screen path as SET_MINIGAME (clears fx).
-    ({ ...state, minigame: buildMinigameLaunch(state, rng, 'dev'), fx: [] }),
+    // INSTANTLY (no chaos-orb transition). Same full-screen path as SET_MINIGAME.
+    ({ ...state, minigame: buildMinigameLaunch(state, rng, 'dev') }),
   [A.FINISH_MINIGAME]: (state, action) =>
     // The (server-resolved) reward comes back → leave the minigame and reveal it in the reward popup.
     // Amounts were computed server-side (meta endpoint); the grant happens on claim (CLOSE_REWARD).
-    ({ ...state, minigame: null, fx: [], rewardPopup: { reward: action.reward || { coins: 0, heroXp: 0, gearXp: 0 }, source: action.source || 'minigame' } }),
+    ({ ...state, minigame: null, rewardPopup: { reward: action.reward || { coins: 0, heroXp: 0, gearXp: 0 }, source: action.source || 'minigame' } }),
   [A.CLOSE_REWARD]: (state) => {
     // Claim: grant the shown reward into the wallet, then dismiss.
     const r = (state.rewardPopup && state.rewardPopup.reward) || { coins: 0, heroXp: 0, gearXp: 0 };
@@ -62,7 +63,6 @@ export const shellHandlers: Record<string, (state: S, action: Act) => S> = {
     ({ ...state, flags: { ...state.flags, [action.flag]: action.value } }),
   [A.REGEN_TICK]: (state, action) =>
     ({ ...state, energy: Energy.regen(state.energy, action.now), now: action.now }),
-  [A.RESET_GAME]: (_state, action) => initState(action.now),
-  [A.CLEAR_FX]: (state, action) =>
-    ({ ...state, fx: state.fx.filter((e: any) => !action.ids.includes(e.id)) }),
+  [A.RESET_GAME]: (_state, action) => initState(action.now, null, action.seed), // seed generated + seeded at the controller boundary before dispatch
+  // (CLEAR_FX retired: the store drains each dispatch's fx onto world.bus; there is no reducer-side fx queue.)
 };

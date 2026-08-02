@@ -1,13 +1,12 @@
 // Top currency bar: energy (+countdown), coins, hero XP, gear XP.
 // `data-stat` marks the landing target for the currency-explosion VFX.
 import { useState, useEffect } from 'react';
-import { useGame } from '../controller/GameContext';
+import { useHudGame } from '../controller/GameContext';
 import { resolve } from './assets.js';
 import Art, { Icon } from './Art.jsx';
 import { msToNext } from '../model/energy.js';
 import { subscribe, syncToState, getDisplay } from './fx/counter-tween.js';
 import { fmtK } from './fmt.js';
-import { debugFeatureOn } from '../model/debug.js';
 
 function Stat({ statKey, iconKey, val, sub }) {
   return (
@@ -36,21 +35,21 @@ function TweenableStat({ statKey, iconKey, stateValue, sub }) {
   return <Stat statKey={statKey} iconKey={iconKey} val={fmtK(displayVal)} sub={sub} />;
 }
 
-export default function Header() {
-  const { state, actions } = useGame();
+export default function Header({ onOpenSettings }) {
+  // HUD view: keeps energy/now (updates on the 1s regen tick) but excludes battle/fx → no 5Hz re-render.
+  const { state, actions } = useHudGame();
   const { energy, coins, heroXp, gearXp, now } = state;
   const full = energy.current >= energy.max;
   const secs = full ? null : Math.ceil(msToNext(energy, now) / 1000);
-  const onReset = () => { if (window.confirm('Reset ALL progress? This cannot be undone.')) actions.resetGame(); };
   return (
     <header className="header">
       <Stat statKey="energy" iconKey="ui.energy" val={`${energy.current}/${energy.max}`} sub={full ? 'full' : `+1 ${secs}s`} />
       <TweenableStat statKey="coins" iconKey="ui.coin" stateValue={coins} />
       <TweenableStat statKey="heroXp" iconKey="ui.heroXp" stateValue={heroXp} />
       <TweenableStat statKey="gearXp" iconKey="ui.gearXp" stateValue={gearXp} />
-      {debugFeatureOn('testMinigame') && <button type="button" className="bg-btn" title="Test minigame (random from pool)" onClick={() => actions.startRandomMinigame()}><Icon id="dev.minigame" /></button>}
       <button type="button" className="bg-btn" title="Background mode — hide visuals, keep the engine running" onClick={() => actions.setHeadless(true)}><Icon id="headless" /></button>
-      <button type="button" className="reset-btn" title="Reset progress" onClick={onReset}>⟲</button>
+      {/* Settings (reset + debug toggles/actions live inside — see SettingsPopup). */}
+      <button type="button" className="cog-btn" title="Settings" onClick={onOpenSettings}>⚙</button>
     </header>
   );
 }

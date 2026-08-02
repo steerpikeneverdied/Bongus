@@ -1,10 +1,19 @@
 {
   "generated_by": "asset_tool",
-  "treatmentLarge": [],
+  "treatmentLarge": [
+    {
+      "color": "#ffffff",
+      "width": 4
+    }
+  ],
   "treatmentSmall": [
     {
       "color": "#000000",
       "width": 2
+    },
+    {
+      "color": "#ff0000",
+      "width": 1
     }
   ],
   "presets": {
@@ -96,6 +105,38 @@
         {
           "color": "#000000",
           "width": 2
+        }
+      ]
+    },
+    "icon_new": {
+      "large": [
+        {
+          "color": "#ffffff",
+          "width": 12
+        }
+      ],
+      "small": [
+        {
+          "color": "#000000",
+          "width": 6
+        }
+      ]
+    },
+    "enemy_boss": {
+      "large": [
+        {
+          "color": "#ffffff",
+          "width": 4
+        }
+      ],
+      "small": [
+        {
+          "color": "#000000",
+          "width": 2
+        },
+        {
+          "color": "#ff0000",
+          "width": 1
         }
       ]
     }
@@ -453,7 +494,16 @@
       }
     },
     "heroes/necromancer.png": {
-      "pockets": [],
+      "pockets": [
+        [
+          784,
+          629
+        ],
+        [
+          307,
+          637
+        ]
+      ],
       "reg": [
         0.5431,
         0.978
@@ -793,18 +843,71 @@
       }
     },
     "boneyard/bone-colossus.png": {
-      "pockets": [],
+      "pockets": [
+        [
+          696,
+          684
+        ],
+        [
+          738,
+          726
+        ],
+        [
+          527,
+          626
+        ],
+        [
+          132,
+          578
+        ],
+        [
+          81,
+          577
+        ],
+        [
+          302,
+          491
+        ],
+        [
+          527,
+          542
+        ],
+        [
+          531,
+          581
+        ],
+        [
+          573,
+          535
+        ],
+        [
+          399,
+          582
+        ],
+        [
+          400,
+          544
+        ],
+        [
+          426,
+          580
+        ],
+        [
+          637,
+          847
+        ]
+      ],
       "portrait": {
         "scale": 1,
         "x": 0,
         "y": 0
       },
       "reg": [
-        0.5006,
-        0.9124
+        0.5401,
+        0.8839
       ],
       "combat": {
-        "scale": 0.95
+        "scale": 1.3
       }
     },
     "boneyard/bone-hound.png": {
@@ -854,7 +957,7 @@
         0.8882
       ],
       "combat": {
-        "scale": 1.75
+        "scale": 1.7
       }
     },
     "boneyard/grave-wraith.png": {
@@ -928,8 +1031,8 @@
         ]
       ],
       "reg": [
-        0.5344,
-        0.8746
+        0.5373,
+        0.8966
       ],
       "combat": {
         "scale": 1.55
@@ -966,13 +1069,30 @@
       }
     },
     "gloomwood/elder-treant.png": {
-      "pockets": [],
+      "pockets": [
+        [
+          619,
+          561
+        ],
+        [
+          643,
+          723
+        ],
+        [
+          694,
+          817
+        ],
+        [
+          150,
+          728
+        ]
+      ],
       "reg": [
-        0.5389,
-        0.8989
+        0.527,
+        0.9017
       ],
       "combat": {
-        "scale": 1.05
+        "scale": 1.25
       }
     },
     "gloomwood/goblin-archer.png": {
@@ -1164,14 +1284,17 @@
     "mossbog/marsh-behemoth.png": {
       "pockets": [
         [
-          631,
-          606
+          652,
+          552
         ]
       ],
       "reg": [
-        0.5113,
-        0.88
-      ]
+        0.5527,
+        0.8784
+      ],
+      "combat": {
+        "scale": 1.25
+      }
     },
     "mossbog/mud-golem.png": {
       "pockets": [
@@ -1302,14 +1425,37 @@
     "dragons-ascent/elder-wyrm.png": {
       "pockets": [
         [
-          180,
-          254
+          560,
+          761
+        ],
+        [
+          481,
+          801
+        ],
+        [
+          319,
+          774
+        ],
+        [
+          416,
+          800
+        ],
+        [
+          292,
+          600
+        ],
+        [
+          294,
+          310
         ]
       ],
       "reg": [
-        0.4591,
-        0.9102
-      ]
+        0.491,
+        0.8709
+      ],
+      "combat": {
+        "scale": 1.3
+      }
     },
     "dragons-ascent/gargoyle.png": {
       "pockets": [
@@ -1424,14 +1570,19 @@
         0.8743
       ],
       "combat": {
-        "scale": 1.2
+        "scale": 1.1
       }
     },
     "emberfall/cinder-imp.png": {
-      "pockets": [],
+      "pockets": [
+        [
+          603,
+          667
+        ]
+      ],
       "reg": [
-        0.5013,
-        0.8479
+        0.5188,
+        0.8619
       ],
       "combat": {
         "scale": 1
@@ -1440,49 +1591,66 @@
     "emberfall/coal-brute.png": {
       "pockets": [],
       "reg": [
-        0.4827,
-        0.8114
+        0.5157,
+        0.8486
       ],
       "combat": {
-        "scale": 1.4
+        "scale": 1.3
       }
     },
     "emberfall/ember-bat.png": {
       "pockets": [],
       "reg": [
-        0.5019,
-        0.9599
-      ],
-      "combat": {
-        "scale": 1
-      }
-    },
-    "emberfall/flame-skull.png": {
-      "pockets": [],
-      "reg": [
-        0.516,
+        0.5313,
         1
       ],
       "combat": {
-        "scale": 0.85
+        "scale": 0.95
+      }
+    },
+    "emberfall/flame-skull.png": {
+      "pockets": [
+        [
+          387,
+          800
+        ]
+      ],
+      "reg": [
+        0.5517,
+        1
+      ],
+      "combat": {
+        "scale": 0.95
       }
     },
     "emberfall/hellhound.png": {
       "pockets": [],
       "reg": [
-        0.6101,
-        0.8944
+        0.5903,
+        0.7856
       ],
       "combat": {
-        "scale": 0.9
+        "scale": 1.15
       }
     },
     "emberfall/infernal-tyrant.png": {
-      "pockets": [],
+      "pockets": [
+        [
+          610,
+          653
+        ],
+        [
+          234,
+          392
+        ]
+      ],
       "reg": [
-        0.4507,
-        0.9118
-      ]
+        0.5006,
+        0.8894
+      ],
+      "combat": {
+        "scale": 1.35
+      }
     },
     "emberfall/lava-slug.png": {
       "pockets": [],
@@ -1491,27 +1659,41 @@
         0.7934
       ],
       "combat": {
-        "scale": 1.1
+        "scale": 1.15
       }
     },
     "emberfall/magma-golem.png": {
-      "pockets": [],
-      "reg": [
-        0.5397,
-        0.774
+      "pockets": [
+        [
+          601,
+          594
+        ]
       ],
-      "combat": {
-        "scale": 1.55
-      }
-    },
-    "emberfall/molten-knight.png": {
-      "pockets": [],
       "reg": [
-        0.578,
-        0.8271
+        0.5228,
+        0.8196
       ],
       "combat": {
         "scale": 1.4
+      }
+    },
+    "emberfall/molten-knight.png": {
+      "pockets": [
+        [
+          338,
+          640
+        ],
+        [
+          278,
+          618
+        ]
+      ],
+      "reg": [
+        0.5152,
+        0.8626
+      ],
+      "combat": {
+        "scale": 1.25
       }
     },
     "emberfall/salamander.png": {
@@ -1592,20 +1774,24 @@
     "frostvault/glacial-warden.png": {
       "pockets": [
         [
-          674,
-          624
+          401,
+          676
         ],
         [
-          715,
-          744
+          237,
+          643
+        ],
+        [
+          624,
+          641
         ]
       ],
       "reg": [
-        0.5953,
-        0.8329
+        0.551,
+        0.8769
       ],
       "combat": {
-        "scale": 1.05
+        "scale": 1.4
       }
     },
     "frostvault/ice-golem.png": {
@@ -2845,19 +3031,34 @@
       "pockets": []
     },
     "icons-chest/chest-common.png": {
-      "pockets": []
+      "pockets": [],
+      "combat": {
+        "scale": 0.85
+      }
     },
     "icons-chest/chest-epic.png": {
-      "pockets": []
+      "pockets": [],
+      "combat": {
+        "scale": 1
+      }
     },
     "icons-chest/chest-legendary.png": {
-      "pockets": []
+      "pockets": [],
+      "combat": {
+        "scale": 1.05
+      }
     },
     "icons-chest/chest-rare.png": {
-      "pockets": []
+      "pockets": [],
+      "combat": {
+        "scale": 0.95
+      }
     },
     "icons-chest/chest-uncommon.png": {
-      "pockets": []
+      "pockets": [],
+      "combat": {
+        "scale": 0.9
+      }
     },
     "icons-chrome/ascend.png": {
       "pockets": []
@@ -2904,54 +3105,76 @@
     "icons-currency/ascension-crystal.png": {
       "pockets": [
         [
-          430,
-          810
+          248,
+          116
         ]
-      ]
+      ],
+      "combat": {
+        "scale": 0.9
+      }
     },
     "icons-currency/coins.png": {
       "pockets": [
         [
-          427,
-          834
+          248,
+          100
         ]
-      ]
+      ],
+      "combat": {
+        "scale": 0.85
+      }
     },
     "icons-currency/energy.png": {
       "pockets": [
         [
-          473,
-          774
+          246,
+          81
         ]
-      ]
+      ],
+      "combat": {
+        "scale": 0.95
+      }
     },
     "icons-currency/gear-xp.png": {
       "pockets": [
         [
-          400,
-          908
+          250,
+          248
         ],
         [
-          435,
-          575
+          235,
+          149
         ]
-      ]
+      ],
+      "combat": {
+        "scale": 0.9
+      }
     },
     "icons-currency/gems.png": {
       "pockets": [
         [
-          441,
-          889
+          159,
+          186
         ]
-      ]
+      ],
+      "combat": {
+        "scale": 1
+      }
     },
     "icons-currency/hero-xp.png": {
       "pockets": [
         [
-          430,
-          886
+          299,
+          153
+        ],
+        [
+          310,
+          151
         ]
-      ]
+      ],
+      "combat": {
+        "scale": 1
+      }
     },
     "icons-dev/dev-background-mode.png": {
       "pockets": []
@@ -3050,6 +3273,9 @@
       "pockets": []
     },
     "icons-ui/timer.png": {
+      "pockets": []
+    },
+    "icons-currency/saturated central main crystal.png": {
       "pockets": []
     }
   }

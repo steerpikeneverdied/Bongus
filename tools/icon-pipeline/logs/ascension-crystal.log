@@ -1,1 +1,2 @@
-OK-REF: /Users/simonhill/bishop-idle-merge/tools/icon-pipeline/raw/ascension-crystal.png (raw ~1024, deferred downscale)
+WARN: /Users/simonhill/bishop-idle-merge/tools/icon-pipeline/raw/ascension-crystal.png is RGB and rembg not installed; install via 'pip install rembg'
+OK: /Users/simonhill/bishop-idle-merge/tools/icon-pipeline/raw/ascension-crystal.png 1024x1024 RGB

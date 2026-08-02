@@ -26,6 +26,7 @@ export function pickPersistable(state: any) {
     battle: { level: state.battle.level, limitEnergy: Object.fromEntries((state.battle.heroes || []).map((h: any) => [h.id, h.limitEnergy || 0])) },
     clearedLevel: state.clearedLevel, replayReturn: state.replayReturn, crystals: state.crystals, pendingAfk: state.pendingAfk,
     unlockedGenerators: state.unlockedGenerators, flags: state.flags,
+    seed: state.seed, // run PRNG seed — persisted so the run is reproducible from-seed across reloads
     lastSeen: state.now,
   };
 }
@@ -56,7 +57,7 @@ export function toBlob(slice: any): ClientAccountView {
       unlockedGenerators: slice.unlockedGenerators, flags: slice.flags,
       clearedLevel: slice.clearedLevel, replayReturn: slice.replayReturn, pendingAfk: slice.pendingAfk, screen: slice.screen,
       nextId: slice.nextId, nextCid: slice.nextCid, lastSeen: slice.lastSeen,
-      energyLastRegenAt: slice.energy.lastRegenAt,
+      energyLastRegenAt: slice.energy.lastRegenAt, seed: slice.seed,
     },
     features: { merge: { board: slice.board, orders: slice.orders }, battle: { level: slice.battle.level, limitEnergy: slice.battle.limitEnergy || {} } },
   };
@@ -83,6 +84,7 @@ export function fromBlob(blob: ClientAccountView): any {
     // "reached" (= cleared + 1). Persist the replay warp-back so it survives a refresh mid-replay.
     clearedLevel: p.clearedLevel != null ? p.clearedLevel : Math.max(0, (p.furthestLevel || 1) - 1),
     replayReturn: p.replayReturn ?? null, crystals, pendingAfk: p.pendingAfk || null, lastSeen: p.lastSeen,
+    seed: p.seed, // run PRNG seed (undefined for pre-seed saves → initState keeps the boundary-generated one)
     unlockedGenerators: p.unlockedGenerators, // may be undefined for old saves → initState backfills from clearedLevel
     flags: p.flags || {}, // persisted feature/FTUE flags (special-orders unlock, etc.); old saves → none set
   };

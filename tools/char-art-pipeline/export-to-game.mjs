@@ -117,6 +117,7 @@ const cfgFor = (cat) => cat === 'heroes' ? CATS.heroes : (ENEMY_CATS.has(cat) ? 
 // asset-registry art. For each die-cut icon (_256.png) copy it to assets/combatclean/icons/<slug>.png,
 // point EVERY registry key that shares that icon (manifest assetKeys) at it in assets.json, and keep
 // the assets.js `art:` field honest. Runs instead of the hero/enemy path, then gates + exits. ──
+const iconExportSize = (cat) => (cat === 'chest' ? 256 : 128);   // in-game icon asset size per category: chests are displayed large → 256; everything else → 128.
 if (ICONS) runIconsExport();
 
 function setArt(src, key, artVal) {   // set/replace the single-line assets.js entry's `art:` field
@@ -130,11 +131,12 @@ function setArt(src, key, artVal) {   // set/replace the single-line assets.js e
   return src.slice(0, m.index) + m[1] + body + m[3] + src.slice(m.index + m[0].length);
 }
 
-const ICON_EXPORT_SIZE = 32;   // in-game icons ship at 32×32 (they render ~16-22px; ~2× source). Named + exposed.
-function resizePng(src, dest, size) {   // downscale the die-cut to a square `size` PNG (LANCZOS, alpha preserved)
-  execFileSync('python3', ['-c',
-    'import sys;from PIL import Image;s=int(sys.argv[3]);Image.open(sys.argv[1]).convert("RGBA").resize((s,s),Image.LANCZOS).save(sys.argv[2])',
-    src, dest, String(size)]);
+function resizePng(src, dest, size) {   // downscale the die-cut to a square `size` PNG (alpha preserved).
+  // Uses macOS `sips` — NOT python/PIL: the trim tool runs export via a LOGIN shell whose python3
+  // (system /usr/bin/python3) lacks PIL, which silently failed every icon export. sips is always present.
+  mkdirSync(dirname(dest), { recursive: true });
+  copyFileSync(src, dest);
+  execFileSync('sips', ['-z', String(size), String(size), dest], { stdio: 'ignore' });
 }
 
 function runIconsExport() {
@@ -171,7 +173,7 @@ function runIconsExport() {
   const exported = [], errors = []; const retargeted = [];
   for (const r of ready) {
     try {
-      resizePng(r.src, join(ICONS_ART, r.slug + '.png'), ICON_EXPORT_SIZE);   // ship icons at 32×32 (downscaled from the 256 die-cut — outline stays crisp)
+      resizePng(r.src, join(ICONS_ART, r.slug + '.png'), iconExportSize(r.category));   // chest → 256, everything else → 128
       const anchor = anchorFor('icons-' + r.category, r.slug);   // reg point from trim_meta, if authored
       for (const key of r.assetKeys) {
         assets.assets[key] = { type: 'image', file: 'icons/' + r.slug + '.png', ...(anchor ? { anchor } : {}) };

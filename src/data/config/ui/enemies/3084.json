@@ -3,6 +3,6 @@
 	"name": "Glacial Warden",
 	"iconAssetId": "enemy.glacial-warden",
 	"combat": {
-		"scale": 1.05
+		"scale": 1.4
 	}
 }
